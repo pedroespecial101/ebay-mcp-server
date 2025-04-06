@@ -7,7 +7,7 @@ This project is a demonstration of an MCP server using FastMCP.
 To install the dependencies, run:
 
 ```bash
-pip install -r requirements.txt
+uv sync
 ```
 
 ## Usage
@@ -15,29 +15,15 @@ pip install -r requirements.txt
 To start the server, run:
 
 ```bash
-python src/server.py
+uv run fastmcp run src/server.py
 ```
 
-## Contributing
-
-Please read `CONTRIBUTING.md` for details on our code of conduct, and the process for submitting pull requests to us.
+## Install
+In Claude Desktop, run:
+```bash
+uv run fastmcp install src/server.py -e EBAY_APP_ID=<YOUR_EBAY_APP_ID> -e EBAY_CLIENT_ID=<YOUR_EBAY_CLIENT_ID>
+```
 
 ## License
 
 This project is licensed under the MIT License - see the `LICENSE` file for details.
-```
-
-### 4. Create `.python-version`
-
-Filepath: .python-version
-Replace lines: 1-0
-```
-3.12
-```
-
-### 5. Update `pyproject.toml`
-
-Filepath: pyproject.toml
-Replace lines: 4-4
-```toml
-description = "A demonstration MCP server using FastMCP"
