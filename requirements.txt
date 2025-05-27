@@ -1,0 +1,5 @@
+# Project dependencies
+
+dotenv>=0.9.9
+fastmcp>=0.4.1
+httpx>=0.28.1
