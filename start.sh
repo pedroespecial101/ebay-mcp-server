@@ -1,78 +1,65 @@
 #!/bin/bash
 
 # Configuration
-SERVER_PID_FILE="fastmcp_server.pid"
-LOG_FILE="fastmcp_server.log"
+LOG_FILE="logs/fastmcp_server.log" # Updated log file path
 VENV_PATH=".venv/bin/activate"
 SERVER_SCRIPT="src/server.py"
 
-# Function to start the server
-start_server() {
-    echo "Starting FastMCP server..."
-    # Activate virtual environment
+echo "Ensuring no old FastMCP server instances are running..."
+# Kill any existing server processes by matching the command line
+# This is more robust than relying on a PID file.
+pkill -f "python $SERVER_SCRIPT"
+
+# Add a small delay to allow processes to terminate if needed
+sleep 1
+
+
+
+echo "Starting FastMCP server..."
+
+# Activate virtual environment
+if [ -f "$VENV_PATH" ]; then
     source "$VENV_PATH"
-    # Run server with stdio transport, save PID, and redirect output to log file
-    nohup python "$SERVER_SCRIPT" > "$LOG_FILE" 2>&1 & echo $! > "$SERVER_PID_FILE"
-    echo "Server started with PID $(cat $SERVER_PID_FILE)"
+else
+    echo "Error: Virtual environment not found at $VENV_PATH. Please ensure it's set up."
+    exit 1
+fi
+
+echo "Unsetting EBAY_OAUTH_TOKEN..."
+unset EBAY_OAUTH_TOKEN
+
+# Create logs directory if it doesn't exist
+mkdir -p "$(dirname "$LOG_FILE")"
+
+# Run server with stdio transport, redirect output to log file
+# nohup allows the server to keep running after the script exits
+# '&' runs it in the background
+nohup python "$SERVER_SCRIPT" >> "$LOG_FILE" 2>&1 &
+
+# Get the PID of the last background process
+SERVER_PID=$!
+
+# Wait a moment for the server to potentially start or fail
+sleep 2
+
+# Check if the server process is actually running
+if ps -p "$SERVER_PID" > /dev/null; then
+    echo "Server started successfully with PID $SERVER_PID."
     echo "Logs are being written to $LOG_FILE"
     echo "Server is running with stdio transport. Use an MCP client to interact with it."
-}
-
-# Function to stop the server
-stop_server() {
-    if [ -f "$SERVER_PID_FILE" ]; then
-        PID=$(cat "$SERVER_PID_FILE")
-        echo "Stopping FastMCP server (PID: $PID)..."
-        kill -TERM "$PID"
-        rm -f "$SERVER_PID_FILE"
-        echo "Server stopped"
-    else
-        echo "No server PID file found. Is the server running?"
+elif grep -q "Traceback (most recent call last):" "$LOG_FILE" || grep -q "Error:" "$LOG_FILE"; then
+    echo "Server failed to start. An error was detected in the log file."
+    echo "Last 10 lines of $LOG_FILE:"
+    tail -n 10 "$LOG_FILE"
+    exit 1
+else
+    echo "Server may have failed to start. PID $SERVER_PID is not running."
+    echo "Please check $LOG_FILE for details."
+    if [ -f "$LOG_FILE" ]; then
+        echo "Last 10 lines of $LOG_FILE:"
+        tail -n 10 "$LOG_FILE"
     fi
-}
-
-# Function to restart the server
-restart_server() {
-    stop_server
-    sleep 2
-    start_server
-}
-
-# Function to check server status
-status_server() {
-    if [ -f "$SERVER_PID_FILE" ]; then
-        PID=$(cat "$SERVER_PID_FILE")
-        if ps -p "$PID" > /dev/null; then
-            echo "FastMCP server is running with PID: $PID"
-            return 0
-        else
-            echo "PID file exists but server is not running"
-            return 1
-        fi
-    else
-        echo "FastMCP server is not running"
-        return 1
-    fi
-}
-
-# Main script logic
-case "$1" in
-    start)
-        start_server
-        ;;
-    stop)
-        stop_server
-        ;;
-    restart)
-        restart_server
-        ;;
-    status)
-        status_server
-        ;;
-    *)
-        echo "Usage: $0 {start|stop|restart|status}"
-        exit 1
-        ;;
-esac
+    exit 1
+fi
 
 exit 0

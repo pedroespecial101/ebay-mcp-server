@@ -1,3 +1,39 @@
+## Updates in TrajectoryID <Removed redundant dotenv dependency from requirements.txt>, 28052025 - 18:05:30
+
+- Removed `dotenv>=0.9.9` from `requirements.txt` to rely solely on `python-dotenv==1.0.0`, preventing potential conflicts and cleaning up dependencies.
+
+## Updates in TrajectoryID implement_daily_log_rotation (0022), 28052025 - 09:05.00
+
+- Implemented daily log rotation using `TimedRotatingFileHandler` in `src/server.py`.
+- Centralized logging configuration in `src/server.py` and removed `logging.basicConfig()` from `src/ebay_service.py`.
+- Modified `start.sh` to append (`>>`) to log files instead of truncating (`>`), complementing the new Python-based log rotation.
+
+## Updates in TrajectoryID simplify_start_script (0020), 28052025 - 08:18.00
+
+- Simplified `start.sh` script:
+  - Removed `start`, `stop`, `restart`, `status` command arguments and associated functions.
+  - The script now unconditionally kills any existing server instances matching `python src/server.py` using `pkill -f` before starting a new one.
+  - Removed PID file (`fastmcp_server.pid`) creation and management.
+  - Updated log file path to `logs/fastmcp_server.log` and added creation of the `logs` directory if it doesn't exist.
+  - Added a check after server startup to confirm if the process is running and provide feedback, including tailing the log on failure.
+
+## Updates in TrajectoryID brain_dump_issue_resolution_and_logging_improvements (2025-05-28T07:37:35+01:00), 28052025 - 07:50.00
+
+- **Logging Overhaul**:
+    - Implemented Python's `logging` module for robust server logging in `src/ebay_service.py` and `src/server.py`.
+    - Logs are now directed to `logs/fastmcp_server.log`.
+    - Log files are appended, preventing loss of history on restart.
+    - Implemented daily log rotation, keeping the last 7 days of logs.
+    - Replaced all `print()` statements with structured `logger` calls (info, debug, error).
+- **eBay Authentication Enhancements**:
+    - Introduced `USE_ENV_OAUTH_TOKEN` environment variable in `.env` to switch between using a hardcoded `EBAY_OAUTH_TOKEN` (if `True`) and the client credentials flow (if `False` or unset - default).
+    - Added detailed logging for token acquisition, indicating which method (environment token or client credentials) is used.
+    - Corrected client credentials flow in `src/ebay_service.py` to use `EBAY_CLIENT_ID` and `EBAY_CLIENT_SECRET` for `httpx.BasicAuth`.
+    - Improved error handling in MCP tools: if token acquisition fails, the specific error is logged and returned to the MCP client, preventing API calls with invalid tokens.
+    - Refined OAuth scopes requested during client credentials flow to be more minimal and primarily ReadOnly, while retaining `https://api.ebay.com/oauth/api_scope/sell.inventory` for `get_offer_by_sku` functionality.
+- **Debugging Improvements**:
+    - Added extensive debug logging to the `get_offer_by_sku` MCP tool in `src/server.py`, including details of request headers, parameters, and API responses to help diagnose issues like the 401 error.
+
 ## Updates in TrajectoryID fix_server_startup_config (0019), 27052025 - 21:05.00
 
 - Switched to using stdio transport for FastMCP server as it's the only supported transport
@@ -92,3 +128,7 @@
 ## Updates in TrajectoryID requirements_setup (0001), 27052025 - 16:54.09
 
 - Created `requirements.txt` with project dependencies.
+
+## Updates in TrajectoryID diagnostic_logging (0021), 28052025 - 08:53.00
+
+- Added diagnostic logging to `src/ebay_service.py` and `src/server.py` to display the prefix of the OAuth token being used. This is to help differentiate which token is active when `USE_ENV_OAUTH_TOKEN` is true, especially when comparing behavior between direct script execution (like `test_offer.py`) and execution within the MCP server environment.
