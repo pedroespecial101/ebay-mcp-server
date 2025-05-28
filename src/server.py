@@ -1,7 +1,13 @@
 from fastmcp import FastMCP
 import httpx
 from dotenv import load_dotenv
-from ebay_service import get_ebay_access_token
+import os
+import sys
+
+# Add the src directory to the Python path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from src.ebay_service import get_ebay_access_token
 
 load_dotenv()
 
