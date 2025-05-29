@@ -1,3 +1,45 @@
+## Updates in TrajectoryID <align_oauth_callback_and_token_redirect_uri (ebay_mcp_server)>, <29052025 - 08:30.00>
+
+- Modified `ebay_auth/ebay_auth.py` to correctly handle OAuth redirection in environments using a public-facing URL (e.g., via Cloudflare tunnel):
+    - Changed `LOCAL_CALLBACK_PATH` from `"/ebay_auth_callback"` to `"/oauth/callback"` to align with common existing setups and the previous `ebay_authentication_token.py` script. This ensures the local Python HTTP server listens on the expected path.
+    - Updated the `_exchange_auth_code_and_get_user_details` function:
+        - The `redirect_uri` parameter in the token exchange POST request is now sourced from a new environment variable: `EBAY_APP_CONFIGURED_REDIRECT_URI`.
+        - This new variable must be set in the `.env` file to the exact public redirect URI that eBay sends the user back to (e.g., `https://your-public-domain.com/oauth/callback`). This is crucial for the token exchange to succeed when not operating purely on `localhost`.
+    - The initial authorization request to eBay (in `initiate_user_login`) correctly continues to use the `EBAY_RU_NAME` as its `redirect_uri` parameter.
+
+## Updates in TrajectoryID <debug_invalid_scope_reduce_scopes (ebay_mcp_server)>, <29052025 - 08:16.00>
+
+- Further debugged `invalid_scope` error in `ebay_auth/ebay_auth.py` by reducing `DEFAULT_SCOPES` to a single, common scope: `"https://api.ebay.com/oauth/api_scope/commerce.identity.readonly"`. This is to isolate whether the issue is with a specific scope or a more general configuration problem.
+
+## Updates in TrajectoryID <fix_invalid_scope_ebay_auth (ebay_mcp_server)>, <29052025 - 08:14.00>
+
+- Corrected an `invalid_scope` error in `ebay_auth/ebay_auth.py` by removing the overly general scope `"https://api.ebay.com/oauth/api_scope "` from the `DEFAULT_SCOPES` list. This scope was likely causing the OAuth flow to fail.
+
+## Updates in TrajectoryID <update_ebay_auth_port (ebay_mcp_server)>, <29052025 - 08:12.00>
+
+- Modified `ebay_auth/ebay_auth.py` to change the `LOCAL_SERVER_PORT` for the OAuth callback handler from `8000` to `9292`. This aligns with the port used in the older `ebay_authentication_token.py` script.
+
+## Updates in TrajectoryID <Add eBay OAuth login flow to ebay_auth.py, (add_ebay_login_flow_to_auth_module)>, <29052025 - 08:03.00>
+
+- Modified `ebay_auth/ebay_auth.py` to include a full OAuth2 user login flow:
+    - Added new imports: `webbrowser`, `threading`, `http.server`, `socketserver`, `queue`, `urllib.parse`, `uuid`.
+    - Defined new constants for eBay authorization endpoint, default OAuth scopes, local HTTP server port, and callback path.
+    - Integrated an `OAuthCallbackHandler` class (adapted from `ebay_authentication_token.py`) to handle the redirect from eBay after user authorization.
+    - Added a function `_start_local_http_server` to run the callback server in a separate thread.
+    - Created `_exchange_auth_code_and_get_user_details` to handle the exchange of the authorization code for access and refresh tokens, and then fetch user details using the new tokens. This function saves the tokens and user details to the `.env` file.
+    - Implemented the main new public function `initiate_user_login()` which:
+        - Constructs the eBay authorization URL.
+        - Opens the URL in the user's web browser.
+        - Starts the local HTTP server.
+        - Waits for the authorization code (or error) from the callback handler via a queue.
+        - Calls `_exchange_auth_code_and_get_user_details` upon receiving the code.
+        - Logs the outcome.
+    - Updated the command-line interface to include a new `login` action that triggers `initiate_user_login()`.
+    - Refined `refresh_access_token` to include scopes in the refresh request, as recommended by eBay.
+    - Improved `get_user_details` to avoid potential recursive loops during token refresh attempts.
+    - Ensured `_save_to_env` converts values to strings before saving.
+    - Added basic CSRF protection using a `state` parameter (validation part is noted as a TODO).
+
 ## Updates in TrajectoryID <use_fastmcp_dev_in_start_sh (ebay_mcp_server)>, 29052025 - 07:30.58
 
 - Modified `start.sh` to use `fastmcp dev src/server.py` for starting the server.
