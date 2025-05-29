@@ -201,7 +201,7 @@ def _exchange_auth_code_and_get_user_details(auth_code):
 
     if not all([client_id, client_secret, auth_code, redirect_uri_value]):
         logging.error("Missing CLIENT_ID, CLIENT_SECRET, auth_code, or EBAY_APP_CONFIGURED_REDIRECT_URI for token exchange.")
-        return None, None, None, None # access_token, refresh_token, user_id, user_name
+        return {"status": "error", "message": "Configuration error for token exchange.", "error_details": "Missing credentials or redirect URI."}
 
     payload = {
         "grant_type": "authorization_code",
@@ -227,7 +227,7 @@ def _exchange_auth_code_and_get_user_details(auth_code):
         if not access_token:
             logging.error("Access token not found in eBay response during code exchange.")
             logging.debug(f"Full token exchange response: {token_data}")
-            return None, None, None, None
+            return {"status": "error", "message": "Access token not found in eBay response.", "error_details": token_data}
 
         logging.info(f"Access token received: {access_token[:10]}...")
         if refresh_token:
@@ -263,19 +263,29 @@ def _exchange_auth_code_and_get_user_details(auth_code):
             logging.error("Failed to obtain tokens, so cannot fetch user details or save credentials.")
             # No need to call _save_to_env here
 
-        return access_token, refresh_token, user_id, user_name
+        # Return based on success of getting tokens and user details, and saving them
+        if access_token and user_id and user_name:
+            # This path implies _save_to_env was attempted. We should check its result if critical.
+            # For now, assume if we got here with details, it's mostly successful.
+            return {"status": "success", "message": "Tokens and user details obtained.", "user_name": user_name}
+        elif access_token: # Got tokens, but not full user details
+            return {"status": "partial_success", "message": "Access token obtained, but user details incomplete.", "access_token_preview": access_token[:10]}
+        else: # Failed to get access_token
+            return {"status": "error", "message": "Failed to obtain access token during exchange."}
 
     except requests.exceptions.HTTPError as e:
         logging.error(f"HTTP error during token exchange: {e}")
+        error_details = str(e)
         if e.response is not None:
             logging.error(f"Response content: {e.response.text}")
-        return None, None, None, None
+            error_details = e.response.text
+        return {"status": "error", "message": "HTTP error during token exchange.", "error_details": error_details}
     except requests.exceptions.RequestException as e:
         logging.error(f"Request failed during token exchange: {e}")
-        return None, None, None, None
+        return {"status": "error", "message": "Request failed during token exchange.", "error_details": str(e)}
     except Exception as e:
         logging.error(f"An unexpected error occurred during token exchange: {e}")
-        return None, None, None, None
+        return {"status": "error", "message": "Unexpected error during token exchange.", "error_details": str(e)}
 
 def initiate_user_login():
     """Initiates the full eBay OAuth2 user login flow."""
@@ -288,7 +298,7 @@ def initiate_user_login():
 
     if not client_id or not ebay_ru_name:
         logging.error("EBAY_CLIENT_ID or EBAY_RU_NAME not found in .env. Cannot initiate login.")
-        return False
+        return {"status": "error", "message": "Configuration error: EBAY_CLIENT_ID or EBAY_RU_NAME missing."}
 
     # The actual URL where eBay will send the user back. This must match what's configured for EBAY_RU_NAME.
     # For this script, it's our local server.
@@ -328,13 +338,14 @@ def initiate_user_login():
         auth_response = auth_response_queue.get(block=True) 
     except queue.Empty:
         logging.error("Timeout waiting for authorization response from local server.")
-        return False
+        return {"status": "error", "message": "Timeout waiting for eBay authorization callback."}
     
     server_thread.join(timeout=5) # Wait a bit for server thread to finish cleanly
 
     if auth_response.get('error'):
-        logging.error(f"Error during initial OAuth authorization: {auth_response['error']}")
-        return False
+        error_details = auth_response['error']
+        logging.error(f"Error during initial OAuth authorization: {error_details}")
+        return {"status": "error", "message": "Error received from eBay during authorization.", "error_details": error_details}
 
     auth_code = auth_response.get('auth_code')
     received_state = auth_response.get('state')
@@ -347,23 +358,33 @@ def initiate_user_login():
 
     if not auth_code:
         logging.error("No authorization code received from callback.")
-        return False
+        return {"status": "error", "message": "No authorization code received from eBay callback."}
 
-    access_token, refresh_token, user_id, user_name = _exchange_auth_code_and_get_user_details(auth_code)
+    exchange_result = _exchange_auth_code_and_get_user_details(auth_code)
 
-    if access_token and user_id:
-        logging.info("Successfully obtained tokens and user details.")
+    if exchange_result.get("status") == "success":
+        logging.info(f"Successfully obtained tokens and user details: {exchange_result.get('message')}")
+        # Keep the print statements for direct script execution feedback
         print(f"\n--- eBay Login Successful ---")
-        print(f"User Name: {user_name}")
-        print(f"User ID: {user_id}")
-        print(f"Access Token: {access_token[:15]}... (saved to .env)")
-        if refresh_token:
-            print(f"Refresh Token: {refresh_token[:15]}... (saved to .env)")
+        print(f"User Name: {exchange_result.get('user_name', 'N/A')}")
+        # Potentially add User ID to print if returned by _exchange_auth_code_and_get_user_details
+        print(f"Access Token: {exchange_result.get('access_token_preview', 'N/A')}... (details saved to .env)")
         print("-----------------------------")
-        return True
-    else:
-        logging.error("Failed to obtain tokens or user details after authorization.")
-        return False
+    elif exchange_result.get("status") == "partial_success":
+        logging.warning(f"eBay login partially successful: {exchange_result.get('message')}")
+        print(f"\n--- eBay Login Partially Successful ---")
+        print(f"{exchange_result.get('message')}")
+        print(f"Access Token: {exchange_result.get('access_token_preview', 'N/A')}... (details saved to .env)")
+        print("-----------------------------")
+    else: # Error case
+        logging.error(f"Failed to obtain tokens or user details after authorization: {exchange_result.get('message')}")
+        print(f"\n--- eBay Login Failed ---")
+        print(f"Error: {exchange_result.get('message')}")
+        if exchange_result.get('error_details'):
+            print(f"Details: {exchange_result.get('error_details')}")
+        print("-----------------------------")
+    
+    return exchange_result
 
 def refresh_access_token(client_id=None, client_secret=None, refresh_token_val=None):
     """Refreshes the eBay access token using the refresh token."""

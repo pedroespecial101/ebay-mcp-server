@@ -1,3 +1,10 @@
+## Updates in TrajectoryID <fix_trigger_login_return_type, (cascade_bugfix_001)>, 29052025 - 11:52:00
+
+- **ebay_auth/ebay_auth.py**:
+    - Modified `_exchange_auth_code_and_get_user_details()` to return a dictionary with `status`, `message`, and `error_details` instead of a tuple.
+    - Modified `initiate_user_login()` to return a dictionary with `status`, `message`, and `error_details` instead of a boolean. This function now propagates or generates these dictionaries to provide detailed feedback.
+    - This change ensures that the `trigger_ebay_login` MCP tool in `src/server.py` receives the expected dictionary structure, resolving an `AttributeError`.
+
 ## Updates in TrajectoryID <suggest_trigger_login_on_auth_failure, (cascade_enhancement_001)>, 29052025 - 11:21:06
 
 - **src/ebay_service.py**:
