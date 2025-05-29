@@ -48,8 +48,8 @@ async def get_ebay_access_token() -> str:
         logger.debug(f"get_ebay_access_token: EBAY_USER_ACCESS_TOKEN (first 10 chars): {access_token[:10]}...")
         return access_token
     else:
-        error_msg = ("EBAY_USER_ACCESS_TOKEN not found. "
-                     "Please use the 'trigger_ebay_login' MCP tool to authenticate with eBay. "
-                     "After successful login and restarting the MCP server, this token should be available.")
+        error_msg = ("The user's EBAY_USER_ACCESS_TOKEN was not found. The user needs to authenticate with eBay before they can use this MCP. "
+                     "You can use the 'trigger_ebay_login' tool. This will open a browser window for eBay login by the user. "
+                     "Once they have completed this process, you should be able to try your request again!")
         logger.error(error_msg)
         return error_msg

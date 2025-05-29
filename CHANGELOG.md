@@ -1,3 +1,12 @@
+## Updates in TrajectoryID <improve_llm_friendly_error_messages, (cascade_enhancement_002)>, 29052025 - 12:05:51
+
+- **src/ebay_service.py**:
+    - Updated error message in `get_ebay_access_token()` to provide LLM-friendly guidance, explicitly mentioning how to help the user authenticate using the `trigger_ebay_login` tool.
+- **src/server.py**:
+    - Improved error messages in `_execute_ebay_api_call()` when token refresh fails, making them more actionable and helpful for the LLM.
+    - Removed unnecessary "restart MCP server" instruction from `trigger_ebay_login()` success message, as it appears to work without restarting.
+    - All error messages now include clear instructions for the LLM on how to help the user authenticate with eBay.
+
 ## Updates in TrajectoryID <fix_trigger_login_return_type, (cascade_bugfix_001)>, 29052025 - 11:52:00
 
 - **ebay_auth/ebay_auth.py**:

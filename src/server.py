@@ -107,8 +107,9 @@ async def _execute_ebay_api_call(tool_name: str, client: httpx.AsyncClient, api_
                 refreshed_access_token = await get_ebay_access_token() # This should now pick up the new token from .env
                 
                 if is_token_error(refreshed_access_token):
-                    error_msg = (f"{tool_name}: Failed to retrieve token from .env after refresh attempt: {refreshed_access_token}. "
-                                 f"Consider using the 'trigger_ebay_login' MCP tool to re-authenticate.")
+                    error_msg = (f"{tool_name}: Failed to retrieve token from .env after refresh attempt. "
+                                 f"The user needs to authenticate with eBay again. You can use the 'trigger_ebay_login' tool to help the user login. "
+                                 f"This will open a browser window for eBay login. Once completed, try this request again!")
                     logger.error(error_msg)
                     return error_msg
                 
@@ -124,8 +125,9 @@ async def _execute_ebay_api_call(tool_name: str, client: httpx.AsyncClient, api_
                     logger.exception(error_msg)
                     return error_msg
             else:
-                error_msg = (f"{tool_name}: Token refresh attempt failed. Original 401 error for token {access_token[:10]}...: {e.response.text}. "
-                             f"Please use the 'trigger_ebay_login' MCP tool to re-authenticate.")
+                error_msg = (f"{tool_name}: Token refresh attempt failed. The user's eBay authentication has expired and needs to be renewed. "
+                             f"You can use the 'trigger_ebay_login' tool to help the user login to eBay again. "
+                             f"This will open a browser window for eBay authentication. Once the user completes this process, try this request again!")
                 logger.error(error_msg)
                 return error_msg
         else:
@@ -160,10 +162,7 @@ async def trigger_ebay_login() -> str:
         
         if login_result and login_result.get("status") == "success":
             logger.info("trigger_ebay_login: eBay login process completed successfully according to initiate_user_login.")
-            return (
-                "eBay login process completed. Tokens should be updated in your .env file. "
-                "IMPORTANT: Please RESTART the MCP server in your IDE for the new tokens to be used."
-            )
+            return "eBay login process completed successfully. The user has been authenticated with eBay and can now use the eBay API tools."
         elif login_result and "error" in login_result:
             error_details = login_result.get("error_details", "No specific error details provided.")
             logger.error(f"trigger_ebay_login: eBay login process failed. Error: {login_result.get('message')}, Details: {error_details}")
