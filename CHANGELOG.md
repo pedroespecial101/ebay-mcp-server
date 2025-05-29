@@ -88,6 +88,18 @@
 - Script automatically handles PID management and logging.
 - Made script executable with `chmod +x`.
 
+## Updates in TrajectoryID enhance_oauth_userid_and_lint_fixes, <28052025 - 20:33.12>
+
+- **Enhanced eBay OAuth Flow (`ebay_authentication_token.py`)**:
+    - Modified the OAuth callback handler to fetch and display the eBay UserID on the HTML redirect page after successful authentication.
+    - Refactored the token exchange and user information fetching logic into a new helper function `_exchange_code_and_get_user()`.
+    - The local HTTP server now shows a page like: "Authentication Successful! Logged in as eBay UserID: [actual_user_id]".
+    - Error messages on the HTML redirect page are also more detailed.
+    - Ensured that both `access_token` and `refresh_token` (if provided) are saved to the `.env` file, along with the `EBAY_OAUTH_TOKEN` and `EBAY_OAUTH_REFRESH_TOKEN` respectively.
+    - Improved robustness of `.env` file path detection for loading and saving credentials.
+    - Added `find_dotenv` to imports in `ebay_authentication_token.py`.
+    - Corrected linting errors at the end of the `main` function by removing orphaned `try-except` remnants and ensuring proper use of `sys.exit()`.
+
 ## Updates in TrajectoryID add_offer_by_sku_tool (0010), 27052025 - 20:17.00
 
 - Added `get_offer_by_sku` tool to `src/server.py` for fetching offer details from eBay Sell Inventory API.

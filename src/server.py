@@ -304,4 +304,4 @@ if __name__ == "__main__":
     logger.info("Starting FastMCP server with stdio transport...")
     logger.info("To test authentication, use the MCP client to call the 'test_auth' function or other tools.")
     logger.info(f"Logging to: {LOG_FILE_PATH}")
-    mcp.run_stdio_server()
+    mcp.run(transport="stdio")
