@@ -121,13 +121,16 @@ This configuration tells the IDE to:
 2. Use the `run` command (instead of the `dev` command used by `start.sh`)
 3. Point to the server.py file
 
-Changes to the MCP server code will require restarting the MCP server process in your IDE for changes to take effect, which is separate from running the `start.sh` script.
+**Important Notes:** 
+- Changes to the MCP server **code** will require restarting the MCP server process in your IDE for changes to take effect, which is separate from running the `start.sh` script.
+- Authentication performed through the `trigger_ebay_login` MCP tool in the IDE does **not** require restarting the MCP server. Tokens are automatically loaded after successful authentication.
 
 ### MCP Client Integration
 
 The server implements the Model Context Protocol, allowing AI assistants and other MCP clients to call the exposed functions directly. Available functions include:
 
 - `test_auth()`: Test authentication and token retrieval
+- `trigger_ebay_login()`: Initiates the eBay OAuth2 login flow directly from the MCP IDE
 - `add(a: int, b: int)`: Simple addition function (useful for testing)
 - `search_ebay_items(query: str, limit: int = 10)`: Search items on eBay
 - `get_category_suggestions(query: str)`: Get category suggestions from eBay Taxonomy API
@@ -169,15 +172,29 @@ async def your_new_function(param1: str, param2: int = 10) -> str:
 
 ## Authentication Flow
 
-The project implements the OAuth2 authorization code flow for eBay:
+The project implements the OAuth2 authorization code flow for eBay with two authentication methods:
 
-1. User initiates login via the `ebay_auth.py` script
+### Method 1: Command-line Authentication
+
+1. User initiates login via the `ebay_auth.py` script:
+   ```bash
+   python ebay_auth/ebay_auth.py login
+   ```
 2. Browser opens to eBay login page
 3. After login, eBay redirects to the configured redirect URI
 4. The script exchanges the authorization code for access and refresh tokens
 5. Tokens are stored in the `.env` file
 6. The MCP server uses these tokens for API calls
-7. When the access token expires, it automatically refreshes using the refresh token
+
+### Method 2: In-IDE MCP Authentication (Recommended)
+
+1. AI assistant or user calls the `trigger_ebay_login` MCP tool
+2. Browser opens to eBay login page
+3. After login, eBay redirects to the configured redirect URI
+4. Tokens are automatically stored in the `.env` file
+5. The MCP server immediately begins using the new tokens without requiring a restart
+
+In both cases, when the access token expires, it automatically refreshes using the refresh token. If the refresh token also expires or becomes invalid, the system will prompt for re-authentication using the `trigger_ebay_login` tool.
 
 ## Future Plans
 
@@ -198,7 +215,18 @@ Potential enhancements for the project:
 
 ## Troubleshooting
 
-Common issues and solutions:
+### Authentication Issues
+
+- **Missing or Invalid Tokens**: If you receive an error about missing or invalid tokens, use the `trigger_ebay_login` MCP tool to authenticate with eBay.
+- **Token Refresh Failures**: If token refresh attempts fail, the system will prompt you to re-authenticate using the `trigger_ebay_login` MCP tool.
+- **Authentication Flow Not Working**: Ensure your eBay application settings, especially the `EBAY_RU_NAME` and `EBAY_APP_CONFIGURED_REDIRECT_URI` in the `.env` file, are correctly configured.
+
+### Server Issues
+
+- **Code Changes Not Taking Effect**: After modifying the server code, restart the MCP server process in your IDE. For local testing with `start.sh`, use `./start.sh` to restart the server.
+- **Multiple Authentication Attempts**: If multiple authentication attempts occur in rapid succession, you may encounter port conflicts. Wait a few moments between attempts.
+
+### Other Common Issues
 
 - **Authentication Failures**: Check that your eBay App credentials are correctly set in the `.env` file
 - **Token Refresh Issues**: If tokens aren't refreshing, try manually re-authenticating with `python ebay_auth/ebay_auth.py login`
