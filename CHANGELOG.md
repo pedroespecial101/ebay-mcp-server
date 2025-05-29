@@ -1,3 +1,18 @@
+## Updates in TrajectoryID <suggest_trigger_login_on_auth_failure, (cascade_enhancement_001)>, 29052025 - 11:21:06
+
+- **src/ebay_service.py**:
+    - Modified `get_ebay_access_token()`: If the access token is not found, the error message now explicitly suggests using the `trigger_ebay_login` MCP tool.
+- **src/server.py**:
+    - Modified `_execute_ebay_api_call()`: If token refresh attempts fail (either cannot retrieve token after refresh or refresh itself fails), the error messages now explicitly suggest using the `trigger_ebay_login` MCP tool to re-authenticate.
+
+## Updates in TrajectoryID <auto_ebay_login_mcp_tool, (cascade_feature_001)>, 29052025 - 11:21:06
+
+- **src/server.py**:
+    - Added new MCP tool `trigger_ebay_login()`.
+    - This tool calls `ebay_auth.ebay_auth.initiate_user_login()` in a separate thread to allow users to perform the eBay OAuth2 login flow directly from the MCP IDE.
+    - The tool returns a message instructing the user to restart the MCP server in their IDE after successful login for the new tokens to be picked up from the updated `.env` file.
+    - Imported `initiate_user_login` from `ebay_auth.ebay_auth`.
+
 ## Updates in TrajectoryID <start_script_mcp_clarification, (ebay_mcp_server_documentation)>, 29052025 - 10:49.07
 
 - Updated `start.sh` script to add clear warning messages about its purpose for testing only.

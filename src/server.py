@@ -52,6 +52,7 @@ logger.info("Logging configured with TimedRotatingFileHandler.")
 import asyncio # New import
 from ebay_auth.ebay_auth import refresh_access_token as ebay_auth_refresh_token # New import
 from src.ebay_service import get_ebay_access_token # Original import
+from ebay_auth.ebay_auth import initiate_user_login # For triggering login flow
 
 # Create an MCP server
 mcp = FastMCP("Ebay API")
@@ -106,7 +107,8 @@ async def _execute_ebay_api_call(tool_name: str, client: httpx.AsyncClient, api_
                 refreshed_access_token = await get_ebay_access_token() # This should now pick up the new token from .env
                 
                 if is_token_error(refreshed_access_token):
-                    error_msg = f"{tool_name}: Failed to retrieve token from .env after refresh attempt: {refreshed_access_token}"
+                    error_msg = (f"{tool_name}: Failed to retrieve token from .env after refresh attempt: {refreshed_access_token}. "
+                                 f"Consider using the 'trigger_ebay_login' MCP tool to re-authenticate.")
                     logger.error(error_msg)
                     return error_msg
                 
@@ -122,7 +124,8 @@ async def _execute_ebay_api_call(tool_name: str, client: httpx.AsyncClient, api_
                     logger.exception(error_msg)
                     return error_msg
             else:
-                error_msg = f"{tool_name}: Token refresh attempt failed (ebay_auth_refresh_token returned None). Original 401 error for token {access_token[:10]}...: {e.response.text}"
+                error_msg = (f"{tool_name}: Token refresh attempt failed. Original 401 error for token {access_token[:10]}...: {e.response.text}. "
+                             f"Please use the 'trigger_ebay_login' MCP tool to re-authenticate.")
                 logger.error(error_msg)
                 return error_msg
         else:
@@ -137,6 +140,46 @@ async def _execute_ebay_api_call(tool_name: str, client: httpx.AsyncClient, api_
         error_msg = f"{tool_name}: An unexpected error occurred during eBay API request: {e}"
         logger.exception(error_msg)
         return error_msg
+
+# MCP Tool to trigger eBay login
+@mcp.tool()
+async def trigger_ebay_login() -> str:
+    """Initiates the eBay OAuth2 login flow. 
+    
+    This will open a browser window for eBay authentication. After successful login, 
+    the .env file will be updated with new tokens. 
+    IMPORTANT: You MUST restart the MCP server in your IDE after completing the login 
+    for the new tokens to take effect.
+    """
+    logger.info("Executing trigger_ebay_login MCP tool.")
+    try:
+        loop = asyncio.get_event_loop()
+        # Run the synchronous initiate_user_login in a separate thread
+        # initiate_user_login handles its own browser opening and local server for callback
+        login_result = await loop.run_in_executor(None, initiate_user_login)
+        
+        if login_result and login_result.get("status") == "success":
+            logger.info("trigger_ebay_login: eBay login process completed successfully according to initiate_user_login.")
+            return (
+                "eBay login process completed. Tokens should be updated in your .env file. "
+                "IMPORTANT: Please RESTART the MCP server in your IDE for the new tokens to be used."
+            )
+        elif login_result and "error" in login_result:
+            error_details = login_result.get("error_details", "No specific error details provided.")
+            logger.error(f"trigger_ebay_login: eBay login process failed. Error: {login_result.get('message')}, Details: {error_details}")
+            return f"eBay login process failed. Error: {login_result.get('message')}. Details: {error_details}. Please check server logs."
+        else:
+            # This case might occur if initiate_user_login returns None or an unexpected structure
+            logger.warning(f"trigger_ebay_login: eBay login process finished, but the result was unexpected: {login_result}")
+            return (
+                "eBay login process finished. The outcome is unclear. Please check server logs. "
+                "If login was successful, RESTART the MCP server in your IDE."
+            )
+
+    except Exception as e:
+        logger.exception("trigger_ebay_login: An unexpected error occurred while trying to initiate eBay login.")
+        return f"An unexpected error occurred while trying to initiate eBay login: {str(e)}. Check server logs."
+
 
 # Add an addition tool
 @mcp.tool()
