@@ -1,3 +1,68 @@
+## Updates in TrajectoryID <use_fastmcp_dev_in_start_sh (ebay_mcp_server)>, 29052025 - 07:30.58
+
+- Modified `start.sh` to use `fastmcp dev src/server.py` for starting the server.
+- This change is based on FastMCP documentation, which suggests `fastmcp dev` for testing servers over STDIO and launching an MCP Inspector.
+- This might provide the necessary environment or active STDIO channel to prevent the server from exiting prematurely.
+- Updated the `pkill` command in `start.sh` to `pkill -f "fastmcp dev $SERVER_SCRIPT"` to correctly stop server instances started with the new command.
+
+## Updates in TrajectoryID <use_fastmcp_run_in_start_sh (ebay_mcp_server)>, 29052025 - 07:30.13
+
+- Modified `start.sh` to use `fastmcp run src/server.py --transport stdio` for starting the server, instead of `python src/server.py`.
+- This change aligns with FastMCP's recommended way of running servers via its CLI, which might handle event loops or server context differently.
+- Updated the `pkill` command in `start.sh` to `pkill -f "fastmcp run $SERVER_SCRIPT"` to correctly stop server instances started with the new command.
+
+## Updates in TrajectoryID <fix_mcp_run_call_transport (ebay_mcp_server)>, 29052025 - 07:28.09
+
+- Corrected the `mcp.run()` call in `src/server.py` to use the correct `transport="stdio"` argument.
+- Previously, `mcp.run()` was incorrectly called with a list of server instances (`mcp_server_list`) instead of the transport string, causing a `ValueError: Unknown transport`.
+- Removed the unused `mcp_server_list` variable.
+
+## Updates in TrajectoryID <add_mcp_run_debug_logging (ebay_mcp_server)>, 29052025 - 07:26.18
+
+- Added debug logging around the `mcp.run()` call in `src/server.py` to help diagnose server startup issues.
+- Logged messages "Attempting to call mcp.run()..." and "mcp.run() completed or exited." are now emitted before and after the `mcp.run()` execution respectively.
+- Ensured `mcp.run()` is called with `mcp_server_list`.
+
+## Updates in TrajectoryID <improve_start_sh_error_detection (ebay_mcp_server)>, 29052025 - 07:25.22
+
+- Modified `start.sh` to improve error detection during server startup.
+- Added a command to clear `fastmcp_server.log` (`echo "Clearing $LOG_FILE for fresh start..." > "$LOG_FILE"`) before the `python src/server.py` execution.
+- This ensures that the script's `grep` command for error checking operates on a clean log file for each startup attempt, preventing old errors from causing false positives.
+
+## Updates in TrajectoryID <fix_ebay_auth_nameerror (ebay_mcp_server)>, 29052025 - 07:23.36
+
+- Fixed a `NameError: name 'args' is not defined` in `ebay_auth/ebay_auth.py`.
+- The `elif args.action == "refresh_token":` block was incorrectly indented, causing it to be outside the `if __name__ == "__main__":` guard.
+- Corrected the indentation to ensure command-line argument parsing logic only runs when the script is executed directly, not when imported as a module.
+
+## Updates in TrajectoryID <integrate_ebay_auth_module_server_py_updates (ebay_mcp_server)>, 29052025 - 07:21.53
+
+- Refactored `src/server.py` to integrate robust eBay API token refresh mechanism:
+    - Added new helper function `_execute_ebay_api_call` to centralize API call logic, including:
+        - Initial token acquisition.
+        - Execution of specific API call logic for each tool.
+        - Handling of 401 (Unauthorized) errors by attempting token refresh using `ebay_auth.ebay_auth.refresh_access_token`.
+        - Retrying the API call with the new token if refresh is successful.
+        - Comprehensive logging for all stages of the process.
+    - Updated `is_token_error` to include new error messages from `ebay_service.py`.
+    - Modified MCP tools (`search_ebay_items`, `get_category_suggestions`, `get_item_aspects_for_category`, `get_offer_by_sku`) to:
+        - Define an inner `_api_call` function for their specific request logic.
+        - Utilize the new `_execute_ebay_api_call` helper function for all eBay API interactions.
+        - Ensure `response.raise_for_status()` is used to propagate HTTP errors for handling by the helper.
+- Added `asyncio` and `ebay_auth.ebay_auth.refresh_access_token` imports to `src/server.py`.
+
+## Updates in TrajectoryID <integrate_ebay_auth_module (ebay_mcp_server)>, 29052025 - 07:26.30
+
+- Created a new Python module `ebay_auth` in the `ebay_auth/` directory to handle eBay API authentication and token management.
+- The module `ebay_auth/ebay_auth.py` includes:
+    - Functions to load eBay API credentials and tokens from a `.env` file.
+    - `refresh_access_token()`: Refreshes the eBay access token using the stored refresh token and saves the new token(s) to `.env`.
+    - `get_user_details()`: Fetches the eBay User ID and User Name using an access token (refreshes token if necessary) and saves details to `.env`.
+    - Command-line interface to manually trigger `get_user` or `refresh_token` actions.
+    - Logging to trace token usage and assist in debugging.
+- Added `ebay_auth/requirements.txt` specifying dependencies (`python-dotenv`, `requests`).
+- Added `ebay_auth/__init__.py` to make the directory a Python package.
+
 ## Updates in TrajectoryID <Removed redundant dotenv dependency from requirements.txt>, 28052025 - 18:05:30
 
 - Removed `dotenv>=0.9.9` from `requirements.txt` to rely solely on `python-dotenv==1.0.0`, preventing potential conflicts and cleaning up dependencies.
