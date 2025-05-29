@@ -52,6 +52,12 @@ if ps -p "$SERVER_PID" > /dev/null; then
     echo "Server started successfully with PID $SERVER_PID."
     echo "Logs are being written to $LOG_FILE"
     echo "Server is running with stdio transport. Use an MCP client to interact with it."
+    echo ""
+    echo "===== REMINDER: TESTING MODE ONLY ====="
+    echo "This server instance is separate from your IDE's MCP integration."
+    echo "Any code changes will require restarting this server using ./start.sh"
+    echo "AND separately restarting your IDE's MCP integration for changes to take effect there."
+    echo "========================================="
 elif grep -q "Traceback (most recent call last):" "$LOG_FILE" || grep -q "Error:" "$LOG_FILE"; then
     echo "Server failed to start. An error was detected in the log file."
     echo "Last 10 lines of $LOG_FILE:"

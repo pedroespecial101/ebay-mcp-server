@@ -1,3 +1,23 @@
+## Updates in TrajectoryID <start_script_mcp_clarification, (ebay_mcp_server_documentation)>, 29052025 - 10:49.07
+
+- Updated `start.sh` script to add clear warning messages about its purpose for testing only.
+- Added explicit reminders that the script runs a separate instance from the IDE's MCP integration.
+- Included instructions that both the test server and IDE MCP need to be restarted separately for changes to take effect.
+
+## Updates in TrajectoryID <readme_mcp_integration_clarification, (ebay_mcp_server_documentation)>, 29052025 - 10:47.44
+
+- Updated README.md to clarify the difference between the `start.sh` script and the IDE's MCP integration.
+- Added a dedicated section on IDE MCP integration explaining how the server is configured in the IDE.
+- Explained that the `start.sh` script is for local development and testing only, and doesn't affect the IDE's MCP integration.
+- Added sample MCP configuration JSON to help users understand how the server is integrated with IDEs.
+
+## Updates in TrajectoryID <comprehensive_readme_creation, (ebay_mcp_server_documentation)>, 29052025 - 10:35.08
+
+- Created a comprehensive README.md file for the eBay MCP server project.
+- Documented key features, technology stack, project structure, installation instructions, and usage guidelines.
+- Added sections on authentication flow, adding new functions, troubleshooting, security considerations, and future plans.
+- Provided detailed information to help both humans and AI agents understand the project architecture and purpose.
+
 ## Updates in TrajectoryID <add_accept_language_header_to_get_offer, (ebay_mcp_troubleshooting_accept_language)>, 29052025 - 10:15.56
 
 - Modified `src/server.py` in the `get_offer_by_sku` MCP tool.
