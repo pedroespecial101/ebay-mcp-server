@@ -248,6 +248,7 @@ async def get_offer_by_sku(sku: str) -> str:
             "Authorization": f"Bearer {access_token}",
             "Content-Type": "application/json",
             "X-EBAY-C-MARKETPLACE-ID": "EBAY_GB",
+            "Accept-Language": "en-GB",
         }
         base_url = "https://api.ebay.com/sell/inventory/v1/offer"
         

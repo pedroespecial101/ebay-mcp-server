@@ -3,7 +3,7 @@ import requests
 import argparse
 import logging
 from base64 import b64encode
-from dotenv import load_dotenv, set_key, find_dotenv
+from dotenv import load_dotenv, set_key, get_key, find_dotenv
 import webbrowser
 import threading
 import http.server
@@ -21,6 +21,8 @@ USER_API_ENDPOINT = "https://apiz.ebay.com/commerce/identity/v1/user/"
 EBAY_AUTHORIZATION_ENDPOINT = "https://auth.ebay.com/oauth2/authorize"
 
 DEFAULT_SCOPES = (
+    "https://api.ebay.com/oauth/api_scope",
+    "https://api.ebay.com/oauth/api_scope/sell.inventory",
     "https://api.ebay.com/oauth/api_scope/commerce.identity.readonly",
 )
 
@@ -67,10 +69,37 @@ def _save_to_env(key_values):
         logging.error("Cannot save to .env file: Path not determined.")
         return False
     try:
+        # Get current values for comparison if username is changing
+        current_username = get_key(DOTENV_PATH, "EBAY_USER_NAME")
+        new_username = key_values.get("EBAY_USER_NAME")
+
+        if new_username and current_username and new_username != current_username:
+            logging.info(f"Username changing from '{current_username}' to '{new_username}'. Comparing tokens:")
+            
+            old_access_token = get_key(DOTENV_PATH, "EBAY_USER_ACCESS_TOKEN")
+            new_access_token = key_values.get("EBAY_USER_ACCESS_TOKEN")
+            if old_access_token and new_access_token:
+                logging.info(f"  Access Token OLD: {old_access_token[:15]}... {'DIFFERENT' if old_access_token != new_access_token else 'SAME'} NEW: {new_access_token[:15]}...")
+            elif new_access_token:
+                logging.info(f"  New Access Token: {new_access_token[:15]}... (No old token found to compare)")
+
+            old_refresh_token = get_key(DOTENV_PATH, "EBAY_USER_REFRESH_TOKEN")
+            new_refresh_token = key_values.get("EBAY_USER_REFRESH_TOKEN")
+            if old_refresh_token and new_refresh_token:
+                logging.info(f"  Refresh Token OLD: {old_refresh_token[:15]}... {'DIFFERENT' if old_refresh_token != new_refresh_token else 'SAME'} NEW: {new_refresh_token[:15]}...")
+            elif new_refresh_token:
+                logging.info(f"  New Refresh Token: {new_refresh_token[:15]}... (No old token found to compare)")
+        
         for key, value in key_values.items():
             if value is not None:
-                set_key(DOTENV_PATH, key, str(value)) # Ensure value is string
-                logging.info(f"Saved {key} to .env: {str(value)[:10]}...")
+                set_key_result = set_key(DOTENV_PATH, key, str(value)) # Ensure value is string
+                # set_key returns a tuple: (success_boolean, key_written, value_written)
+                success, key_written, value_written = set_key_result 
+                if success:
+                    logging.info(f"set_key reported SUCCESS for {key_written}. Value (truncated): {str(value_written)[:15]}...")
+                else:
+                    # Log the original key and value attempted, and the full result from set_key
+                    logging.error(f"set_key reported FAILURE for {key} (attempted value: {str(value)[:15]}...). Result: {set_key_result}")
             else:
                 logging.warning(f"Skipped saving {key} to .env as its value is None.")
         load_dotenv(DOTENV_PATH, override=True) # Reload .env to reflect changes
@@ -143,9 +172,11 @@ def _start_local_http_server(port, path_segment):
     # Example: http://localhost:8000/ebay_auth_callback
     # The handler will receive the full path including the path_segment.
     try:
-        http_server_instance = socketserver.TCPServer(("localhost", port), OAuthCallbackHandler)
-        logging.info(f"Local HTTP server started on http://localhost:{port}")
-        logging.info(f"Waiting for eBay to redirect to your configured RuName (which should forward to http://localhost:{port}{path_segment})...")
+        # Allow the port to be reused immediately
+        socketserver.TCPServer.allow_reuse_address = True
+        http_server_instance = socketserver.TCPServer(("", port), OAuthCallbackHandler)
+        logging.info(f"Local HTTP server started on port {port}, listening on all available interfaces (reuse_address enabled).")
+        logging.info(f"Waiting for eBay to redirect to your configured RuName (which should forward to a local address on port {port} at path {path_segment})...")
         http_server_instance.serve_forever()
         logging.info("Local HTTP server stopped.")
     except Exception as e:
@@ -204,19 +235,34 @@ def _exchange_auth_code_and_get_user_details(auth_code):
         else:
             logging.warning("Refresh token NOT received during initial code exchange. This is unusual.")
 
-        # Save new tokens to .env
-        env_vars_to_save = {"EBAY_USER_ACCESS_TOKEN": access_token}
-        if refresh_token:
-            env_vars_to_save["EBAY_USER_REFRESH_TOKEN"] = refresh_token
-        _save_to_env(env_vars_to_save)
-
         # Now get user details using the new access token
         user_id, user_name = get_user_details(access_token=access_token)
-        if user_id and user_name:
-            logging.info(f"Successfully fetched user details after token exchange: UserID={user_id}, UserName={user_name}")
-        else:
-            logging.warning("Could not fetch user details after obtaining new tokens. Tokens saved, but user info might be missing in .env.")
-        
+
+        if access_token and user_id and user_name:
+            logging.info(f"Successfully fetched tokens and user details: UserID={user_id}, UserName={user_name}, AccessToken={access_token[:10]}..., RefreshToken={(refresh_token[:10] + '...') if refresh_token else 'N/A'}")
+            env_vars_to_save = {
+                "EBAY_USER_ACCESS_TOKEN": access_token,
+                "EBAY_USER_ID": user_id,
+                "EBAY_USER_NAME": user_name
+            }
+            if refresh_token:
+                env_vars_to_save["EBAY_USER_REFRESH_TOKEN"] = refresh_token
+            
+            if _save_to_env(env_vars_to_save):
+                logging.info("All user credentials saved to .env successfully.")
+            else:
+                logging.error("Failed to save all user credentials to .env.")
+                # Decide if we should return None here if saving fails critically
+        elif access_token: # We got tokens but not user details
+            logging.warning(f"Obtained tokens (AccessToken={access_token[:10]}...) but failed to fetch user details. Saving tokens only.")
+            env_vars_to_save = {"EBAY_USER_ACCESS_TOKEN": access_token}
+            if refresh_token:
+                env_vars_to_save["EBAY_USER_REFRESH_TOKEN"] = refresh_token
+            _save_to_env(env_vars_to_save) # Attempt to save tokens anyway
+        else: # No tokens, no details
+            logging.error("Failed to obtain tokens, so cannot fetch user details or save credentials.")
+            # No need to call _save_to_env here
+
         return access_token, refresh_token, user_id, user_name
 
     except requests.exceptions.HTTPError as e:
@@ -263,6 +309,7 @@ def initiate_user_login():
         "prompt": "login", # Optional: forces user to login even if already sessioned with eBay
         "state": oauth_state # For CSRF protection
     }
+    logging.info(f"Generated scope string: '{auth_url_params['scope']}'") # Log the generated scope string
     authorization_url = f"{EBAY_AUTHORIZATION_ENDPOINT}?{urlencode(auth_url_params)}"
 
     logging.info(f"Opening browser to: {EBAY_AUTHORIZATION_ENDPOINT} with query params...")
@@ -415,10 +462,6 @@ def get_user_details(access_token=None):
             return None, None
 
         logging.info(f"Fetched user details: UserID={user_id}, UserName={user_name}")
-        _save_to_env({
-            "EBAY_USER_ID": user_id,
-            "EBAY_USER_NAME": user_name
-        })
         return user_id, user_name
 
     except requests.exceptions.HTTPError as e:

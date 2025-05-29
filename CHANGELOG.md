@@ -1,3 +1,55 @@
+## Updates in TrajectoryID <add_accept_language_header_to_get_offer, (ebay_mcp_troubleshooting_accept_language)>, 29052025 - 10:15.56
+
+- Modified `src/server.py` in the `get_offer_by_sku` MCP tool.
+- Added `"Accept-Language": "en-GB"` to the HTTP headers for the eBay API call.
+- This change is an attempt to resolve a 403 "Insufficient permissions" error that occurs when calling the API via the MCP server, despite the same call succeeding when made from a test script. The hypothesis is that an explicit `Accept-Language` header matching the `X-EBAY-C-MARKETPLACE-ID` might align the request more closely with eBay's expectations or the successful test script's implicit environment.
+
+## Updates in TrajectoryID <fix_oauth_scope_formatting, (not_available)>, 29052025 - 09:59.00
+
+- Corrected `DEFAULT_SCOPES` in `ebay_auth/ebay_auth.py` by adding missing commas between scope strings and removing the invalid generic scope. This resolves the `invalid_scope` error during eBay OAuth.
+
+## Updates in TrajectoryID <debug_invalid_scope_logging, (not_available)>, 29052025 - 09:56.00
+
+- Added logging in `ebay_auth/ebay_auth.py` to output the exact OAuth scope string being sent to eBay during the authorization process. This is to help diagnose the persistent `invalid_scope` error.
+
+## Updates in TrajectoryID <fix_oauth_server_addr_in_use, (cascade_fix_002)> <29052025 - 09:28:00>
+
+- **ebay_auth.py**: Modified `_start_local_http_server` to set `socketserver.TCPServer.allow_reuse_address = True`. This allows the local OAuth callback server to restart and bind to the port more quickly, preventing `[Errno 48] Address already in use` errors when performing consecutive logins.
+
+## Updates in TrajectoryID <debug_ebay_auth_set_key_logging, (cascade_debug_001)> <29052025 - 09:20:00>
+
+- **ebay_auth.py**: Modified the `_save_to_env` function to capture and log the success/failure status returned by `python-dotenv`'s `set_key` function. This will provide more detailed insight into why eBay tokens might not be updating correctly in the `.env` file.
+
+## Updates in TrajectoryID <fix_save_to_env_nameerror (ebay_mcp_server)>, <29052025 - 09:00.00>
+
+- Fixed a `NameError: name 'get_key' is not defined` in the `_save_to_env` function within `ebay_auth/ebay_auth.py`.
+- The `get_key` function from the `python-dotenv` library was being used to retrieve existing token values for comparison logging but was not included in the import statement.
+- Added `get_key` to the line: `from dotenv import load_dotenv, set_key, get_key, find_dotenv`.
+
+## Updates in TrajectoryID <enhance_token_update_logging (ebay_mcp_server)>, <29052025 - 09:15.00>
+
+- Enhanced logging in the `_save_to_env` function within `ebay_auth/ebay_auth.py` to aid debugging of token updates:
+    - Before saving new credentials, the function now retrieves the current `EBAY_USER_NAME`, `EBAY_USER_ACCESS_TOKEN`, and `EBAY_USER_REFRESH_TOKEN` from the `.env` file.
+    - If the incoming `EBAY_USER_NAME` (from a new login) differs from the one currently in `.env`, it logs:
+        - A message indicating that the username is changing.
+        - A comparison of the first 15 characters of the old and new access tokens, stating if they are 'SAME' or 'DIFFERENT'.
+        - A similar comparison for the old and new refresh tokens.
+    - This provides clear visibility into whether tokens are being correctly replaced when switching between eBay users.
+    - Also increased the general log output for saved values from 10 to 15 characters.
+
+## Updates in TrajectoryID <update_oauth_server_binding (ebay_mcp_server)>, <29052025 - 09:05.00>
+
+- Modified the local HTTP server in `ebay_auth/ebay_auth.py` (`_start_local_http_server` function) to bind to host `""` (all available interfaces) instead of `"localhost"`.
+- This change is intended to make the OAuth callback server more robustly listen for incoming connections, potentially resolving "connection refused" errors from Cloudflare if they were related to IPv4/IPv6 interface binding specifics on `localhost`.
+- Updated related log messages to reflect the change in binding.
+
+## Updates in TrajectoryID <refactor_env_saving_for_tokens (ebay_mcp_server)>, <29052025 - 08:48.00>
+
+- Refactored `.env` saving logic in `ebay_auth/ebay_auth.py` to ensure reliable updates for all user credentials, including access and refresh tokens:
+    - Modified `get_user_details` to no longer call `_save_to_env` internally. It now only returns the fetched `user_id` and `user_name`.
+    - Updated `_exchange_auth_code_and_get_user_details` to collect `access_token`, `refresh_token` (if available), `user_id`, and `user_name`. After all values are successfully retrieved, it makes a *single* call to `_save_to_env` with a dictionary containing all these credentials.
+    - This consolidation aims to fix an issue where `EBAY_USER_ACCESS_TOKEN` and `EBAY_USER_REFRESH_TOKEN` might not have been updating correctly in the `.env` file when switching users.
+
 ## Updates in TrajectoryID <align_oauth_callback_and_token_redirect_uri (ebay_mcp_server)>, <29052025 - 08:30.00>
 
 - Modified `ebay_auth/ebay_auth.py` to correctly handle OAuth redirection in environments using a public-facing URL (e.g., via Cloudflare tunnel):
