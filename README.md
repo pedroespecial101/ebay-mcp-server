@@ -4,6 +4,8 @@
 
 This project implements a Model Context Protocol (MCP) server for eBay OAuth API integration, primarily focused on seller actions. The server uses FastMCP to expose eBay API endpoints as callable functions that can be accessed by AI assistants and other MCP clients. The project is designed to use user-level tokens rather than application-level authentication, allowing actions to be performed on behalf of a specific eBay seller account.
 
+Additionally, the project includes an MCP Test UI that provides a web interface for testing MCP tools, allowing for interactive parameter input and result visualization without requiring an IDE or AI assistant integration.
+
 ## Key Features
 
 - OAuth2 authentication with eBay's API using user-level tokens
@@ -15,6 +17,7 @@ This project implements a Model Context Protocol (MCP) server for eBay OAuth API
 - Robust error handling and token refresh logic
 - Centralized logging system with timed rotation
 - Server management script for easy lifecycle management
+- Web-based MCP Test UI for interactive tool testing and parameter input
 
 ## Technology Stack
 
@@ -25,6 +28,10 @@ This project implements a Model Context Protocol (MCP) server for eBay OAuth API
 - **python-dotenv**: Environment variable management
 - **httpx**: Asynchronous HTTP client for API calls
 - **logging**: Standard Python logging with TimedRotatingFileHandler
+- **FastAPI**: For the MCP Test UI backend
+- **Jinja2**: Template engine for the MCP Test UI
+- **Bootstrap 5**: Frontend framework for the MCP Test UI
+- **Pydantic**: Data validation for the MCP Test UI
 
 ## Project Structure
 
@@ -35,12 +42,19 @@ ebay-mcp-server/
 ├── README.md               # Project documentation (this file)
 ├── ebay_auth/              # eBay authentication module
 │   └── ebay_auth.py        # OAuth implementation for eBay
+├── ebay_docs/              # eBay API documentation and project reference files
 ├── logs/                   # Server logs directory
 │   └── fastmcp_server.log  # Server log file with rotation
+├── mcp_test_ui/            # Web UI for testing MCP tools
+│   ├── app.py              # FastAPI application for the UI
+│   ├── requirements.txt    # UI-specific dependencies
+│   ├── static/             # Static assets for the UI
+│   └── templates/          # Jinja2 templates for UI pages
 ├── src/                    # Source code directory
 │   ├── ebay_service.py     # eBay service utilities
 │   └── server.py           # Main MCP server implementation
-├── start.sh                # Server management script
+├── start.sh                # MCP server management script
+├── mcp_test_ui_start.py    # Script to start the MCP Test UI
 ├── requirements.txt        # Python dependencies
 └── tests/                  # Test directory for unit tests
 ```
@@ -196,13 +210,42 @@ The project implements the OAuth2 authorization code flow for eBay with two auth
 
 In both cases, when the access token expires, it automatically refreshes using the refresh token. If the refresh token also expires or becomes invalid, the system will prompt for re-authentication using the `trigger_ebay_login` tool.
 
+## MCP Test UI
+
+The project includes a web-based user interface for testing MCP tools directly in the browser:
+
+### Features
+
+- Interactive web UI for testing all available MCP tools
+- Automatic parameter form generation based on tool input schemas
+- Support for different parameter types (string, integer, boolean, etc.)
+- Real-time tool execution with formatted results display
+- Accordion-style organization of tools for easy navigation
+
+### Usage
+
+1. Start the MCP Test UI server:
+   ```bash
+   python mcp_test_ui_start.py
+   ```
+
+2. Open a browser and navigate to http://127.0.0.1:8000
+
+3. Select a tool from the list, fill in the required parameters, and click "Execute" to test the tool
+
+4. View the execution results and response time in the UI
+
 ## Future Plans
 
 Potential enhancements for the project:
 
-1. **Database Integration**: Move token storage from `.env` file to a secure database
-2. **Multiple User Support**: Allow the server to manage tokens for multiple eBay seller accounts
-3. **More eBay APIs**: Expand the available functions to cover additional eBay APIs:
+1. **Pydantic Integration**: Implement Pydantic models throughout the codebase for improved validation and type safety
+2. **Database Integration**: Move token storage from `.env` file to a secure database
+3. **Multiple User Support**: Allow the server to manage tokens for multiple eBay seller accounts
+4. **More eBay APIs**: Expand the available functions to cover additional eBay APIs
+5. **Enhanced Error Handling**: Improve error reporting and recovery mechanisms
+6. **Expanded MCP Test UI**: Add more features to the testing interface
+7. **Automated Test Suite**: Develop comprehensive tests for all components
    - Order Management API
    - Fulfillment API
    - Marketing API
