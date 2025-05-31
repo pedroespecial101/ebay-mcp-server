@@ -1,3 +1,57 @@
+## Updates in TrajectoryID <fix_mcp_test_ui_tool_execution, (cascade_enhancement_007)>, 31052025 - 08:06:48
+
+- **mcp_test_ui/app.py**:
+    - Fixed MCP tool execution to properly use the FastMCP Client within an async context manager
+    - Updated parameter handling for `call_tool` method to use the correct `arguments` parameter
+    - Added custom JSON encoder to properly handle non-serializable result types
+    - Implemented robust error handling for different parameter passing scenarios
+
+## Updates in TrajectoryID <fix_mcp_test_ui_parameter_handling, (cascade_enhancement_006)>, 31052025 - 07:48:12
+
+- **mcp_test_ui/app.py**:
+    - Fixed parameter extraction from MCP tools to correctly use `inputSchema` attribute instead of `parameters`
+    - Enhanced parameter parsing to handle different schema structures (dict and object types)
+    - Added debug logging to troubleshoot parameter detection
+
+- **mcp_test_ui/templates/index.html**:
+    - Improved template logic for parameter display with explicit length check
+    - Added parameter count display for debugging
+    - Added CSS class to parameter fields for better styling
+
+- **mcp_test_ui_start.py**:
+    - Enhanced port handling to kill existing processes before starting
+
+## Updates in TrajectoryID <improve_mcp_test_ui, (cascade_enhancement_005)>, 31052025 - 07:15:57
+
+- **src/server.py**:
+    - Removed the "restart server" instruction from `trigger_ebay_login` MCP tool
+    - Enhanced authentication response to include eBay username
+
+- **mcp_test_ui/**:
+    - Completely redesigned UI to use a single-page architecture instead of separate tool pages
+    - Added proper form input fields for all parameter types
+    - Implemented accordions that can be open simultaneously (removed parent constraint)
+    - Added "Expand All" and "Collapse All" buttons for better UX
+    - Enhanced parameter parsing to better handle complex types (arrays, objects, booleans)
+    - Improved result formatting and display
+
+## Updates in TrajectoryID <add_mcp_test_ui, (cascade_enhancement_004)>, 30052025 - 14:45:22
+
+- **mcp_test_ui/**:
+    - Created a new Swagger-like web UI for testing MCP tools outside of IDE/LLM environments
+    - Implemented FastAPI-based web server that dynamically discovers all available MCP tools
+    - Added HTML templates with forms for tool inputs and JSON result display
+    - Integrated with FastMCP Client to preserve authentic MCP call flow
+    - Features include:
+        - Automatic tool discovery with parameter information
+        - Type conversion aligned with MCP protocol expectations
+        - Interactive "Try it out" functionality for each tool
+        - JSON formatting for results
+        - Responsive UI with Bootstrap styling
+
+- **mcp_test_ui_start.py**:
+    - Added launcher script for easy starting of the MCP Test UI server
+
 ## Updates in TrajectoryID <add_ebay_inventory_api_calls, (cascade_enhancement_003)>, 29052025 - 22:18:06
 
 - **src/server.py**:

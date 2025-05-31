@@ -1,0 +1,18 @@
+Clearing logs/fastmcp_server.log for fresh start...
+2025-05-29 22:22:58,795 - server_module - INFO - Logging configured with TimedRotatingFileHandler.
+2025-05-29 22:22:58,824 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 12
+2025-05-29 22:22:58,825 - src.ebay_service - INFO - Attempting to load .env from: /Users/petetreadaway/Projects/ebay-mcp-server/src/../.env
+2025-05-29 22:22:58,827 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 12
+2025-05-29 22:22:58,828 - src.ebay_service - INFO - .env file loaded successfully.
+2025-05-29 22:22:58,828 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 12
+2025-05-29 22:22:58,829 - dotenv.main - WARNING - Python-dotenv could not parse statement starting at line 12
+2025-05-29 22:22:58,830 - mcp.server.lowlevel.server - DEBUG - Initializing server 'Ebay API'
+2025-05-29 22:22:58,830 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-05-29 22:22:58,830 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-05-29 22:22:58,830 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-05-29 22:22:58,830 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-05-29 22:22:58,830 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-05-29 22:22:58,830 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-05-29 22:22:58,830 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+Starting MCP inspector...
+❌  Proxy Server PORT IS IN USE at port 6277 ❌ 

@@ -149,9 +149,7 @@ async def trigger_ebay_login() -> str:
     """Initiates the eBay OAuth2 login flow. 
     
     This will open a browser window for eBay authentication. After successful login, 
-    the .env file will be updated with new tokens. 
-    IMPORTANT: You MUST restart the MCP server in your IDE after completing the login 
-    for the new tokens to take effect.
+    the .env file will be updated with new tokens.
     """
     logger.info("Executing trigger_ebay_login MCP tool.")
     try:
@@ -162,7 +160,9 @@ async def trigger_ebay_login() -> str:
         
         if login_result and login_result.get("status") == "success":
             logger.info("trigger_ebay_login: eBay login process completed successfully according to initiate_user_login.")
-            return "eBay login process completed successfully. The user has been authenticated with eBay and can now use the eBay API tools."
+            # Get the user details if available
+            user_name = login_result.get("user_name", "TreadersLoft")
+            return f"eBay login process completed successfully. The user '{user_name}' has been authenticated with eBay and can now use the eBay API tools."
         elif login_result and "error" in login_result:
             error_details = login_result.get("error_details", "No specific error details provided.")
             logger.error(f"trigger_ebay_login: eBay login process failed. Error: {login_result.get('message')}, Details: {error_details}")
@@ -171,8 +171,7 @@ async def trigger_ebay_login() -> str:
             # This case might occur if initiate_user_login returns None or an unexpected structure
             logger.warning(f"trigger_ebay_login: eBay login process finished, but the result was unexpected: {login_result}")
             return (
-                "eBay login process finished. The outcome is unclear. Please check server logs. "
-                "If login was successful, RESTART the MCP server in your IDE."
+                "eBay login process finished. The outcome is unclear. Please check server logs."
             )
 
     except Exception as e:

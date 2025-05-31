@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+
+{% block title %}MCP Test UI - Home{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h2 class="mb-0"><i class="fas fa-info-circle me-2"></i>MCP Test UI</h2>
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    This UI allows you to test your MCP tools in a Swagger-like interface. 
+                    Select a tool from the list below to view its details and test it.
+                </p>
+                <div class="alert alert-info">
+                    <strong>Current MCP Server:</strong> {{ mcp_server_path }}
+                    {% if not tools %}
+                        <div class="mt-2">
+                            <span class="badge bg-warning text-dark">No tools found</span>
+                            Please set a valid MCP server path to see available tools.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if tools %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h3 class="mb-0"><i class="fas fa-tools me-2"></i>Available Tools</h3>
+                <div>
+                    <button id="expandAllBtn" class="btn btn-sm btn-outline-light me-2">
+                        <i class="fas fa-expand-alt me-1"></i>Expand All
+                    </button>
+                    <button id="collapseAllBtn" class="btn btn-sm btn-outline-light">
+                        <i class="fas fa-compress-alt me-1"></i>Collapse All
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="accordion" id="toolsAccordion">
+                    {% for tool in tools %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading{{ loop.index }}">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                    data-bs-target="#collapse{{ loop.index }}" aria-expanded="false" 
+                                    aria-controls="collapse{{ loop.index }}">
+                                <strong>{{ tool.name }}</strong>
+                                {% if tool.description %}
+                                <span class="ms-2 text-muted small">{{ tool.description|truncate(100) }}</span>
+                                {% endif %}
+                            </button>
+                        </h2>
+                        <div id="collapse{{ loop.index }}" class="accordion-collapse collapse" 
+                             aria-labelledby="heading{{ loop.index }}">
+                            <div class="accordion-body">
+                                {% if tool.description %}
+                                <p>{{ tool.description }}</p>
+                                <hr>
+                                {% endif %}
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="card mb-3">
+                                            <div class="card-header bg-light">
+                                                <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>Parameters</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <form id="toolForm-{{ tool.name }}" class="tool-form" data-tool-name="{{ tool.name }}">
+                                                    <!-- Debug info to check if parameters are detected -->
+                                                    <div class="small text-muted mb-2">Parameter count: {{ tool.parameters|length }}</div>
+                                                    
+                                                    {% if tool.parameters and tool.parameters|length > 0 %}
+                                                    {% for param in tool.parameters %}
+                                                    <div class="mb-3 parameter-field">
+                                                        <label for="{{ tool.name }}-{{ param.name }}" class="form-label">
+                                                            {{ param.name }} 
+                                                            {% if param.required %}
+                                                            <span class="badge bg-danger">Required</span>
+                                                            {% else %}
+                                                            <span class="badge bg-success">Optional</span>
+                                                            {% endif %}
+                                                            <span class="badge bg-secondary">{{ param.type }}</span>
+                                                        </label>
+                                                        
+                                                        {% if param.type in ["array", "list", "object", "dict"] %}
+                                                        <textarea class="form-control" id="{{ tool.name }}-{{ param.name }}" name="{{ param.name }}" rows="3" 
+                                                                {% if param.required %}required{% endif %}></textarea>
+                                                        <div class="form-text">
+                                                            {% if param.type in ["array", "list"] %}
+                                                            Enter as JSON array (e.g., ["item1", "item2"]) or comma-separated values
+                                                            {% else %}
+                                                            Enter as JSON object (e.g., {"key": "value"})
+                                                            {% endif %}
+                                                        </div>
+                                                        
+                                                        {% elif param.type in ["boolean", "bool"] %}
+                                                        <div class="form-check form-switch">
+                                                            <input class="form-check-input" type="checkbox" id="{{ tool.name }}-{{ param.name }}" name="{{ param.name }}">
+                                                        </div>
+                                                        
+                                                        {% else %}
+                                                        <input type="{{ param.get_html_input_type() }}" class="form-control" id="{{ tool.name }}-{{ param.name }}" 
+                                                            name="{{ param.name }}" {% if param.required %}required{% endif %}>
+                                                        {% endif %}
+                                                        
+                                                        {% if param.description %}
+                                                        <div class="form-text">{{ param.description }}</div>
+                                                        {% endif %}
+                                                    </div>
+                                                    {% endfor %}
+                                                    
+                                                    <div class="d-grid gap-2">
+                                                        <button type="submit" class="btn btn-primary execute-btn">
+                                                            <i class="fas fa-play me-1"></i>Execute
+                                                        </button>
+                                                    </div>
+                                                    {% else %}
+                                                    <p><em>No parameters required</em></p>
+                                                    <div class="d-grid gap-2">
+                                                        <button type="submit" class="btn btn-primary execute-btn">
+                                                            <i class="fas fa-play me-1"></i>Execute
+                                                        </button>
+                                                    </div>
+                                                    {% endif %}
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="card result-section" id="resultSection-{{ tool.name }}" style="display: none;">
+                                            <div class="card-header bg-light">
+                                                <div class="d-flex justify-content-between">
+                                                    <h5 class="mb-0"><i class="fas fa-poll me-2"></i>Response</h5>
+                                                    <div>
+                                                        <span class="badge bg-secondary execution-time" id="executionTime-{{ tool.name }}"></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="alert" id="resultStatus-{{ tool.name }}"></div>
+                                                <pre id="resultContent-{{ tool.name }}" class="border rounded p-3 bg-light"></pre>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // Remove data-bs-parent attribute to allow multiple accordions to be open simultaneously
+        $('.accordion-collapse').each(function() {
+            $(this).removeAttr('data-bs-parent');
+        });
+        
+        // Expand all button
+        $('#expandAllBtn').click(function() {
+            $('.accordion-collapse').collapse('show');
+        });
+        
+        // Collapse all button
+        $('#collapseAllBtn').click(function() {
+            $('.accordion-collapse').collapse('hide');
+        });
+        
+        // Tool form submission
+        $('.tool-form').submit(function(e) {
+            e.preventDefault();
+            
+            const form = $(this);
+            const toolName = form.data('tool-name');
+            const formData = new FormData(form[0]);
+            
+            // Show loading
+            form.find('.execute-btn').html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Executing...').prop('disabled', true);
+            
+            $.ajax({
+                url: '/execute/' + toolName,
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    // Format the response
+                    let formattedResult = '';
+                    
+                    if (response.success) {
+                        $('#resultStatus-' + toolName).html('<span class="text-success">Success</span>').removeClass('alert-danger').addClass('alert-success');
+                        $('#executionTime-' + toolName).text(response.elapsed_time + ' seconds');
+                        
+                        if (response.result && response.result.length > 0) {
+                            for (const item of response.result) {
+                                if (item.type === 'text') {
+                                    // Try to parse as JSON if it looks like JSON
+                                    try {
+                                        if (item.content.trim().startsWith('{') || item.content.trim().startsWith('[')) {
+                                            const jsonObj = JSON.parse(item.content);
+                                            formattedResult += JSON.stringify(jsonObj, null, 2);
+                                        } else {
+                                            formattedResult += item.content;
+                                        }
+                                    } catch (e) {
+                                        formattedResult += item.content;
+                                    }
+                                } else if (item.type === 'image') {
+                                    formattedResult += `<img src="${item.url}" class="img-fluid" alt="Result image">`;
+                                } else {
+                                    formattedResult += item.content;
+                                }
+                            }
+                        } else {
+                            formattedResult = '<em>No result</em>';
+                        }
+                    } else {
+                        $('#resultStatus-' + toolName).html('<span class="text-danger">Error</span>').removeClass('alert-success').addClass('alert-danger');
+                        formattedResult = response.error || 'Unknown error';
+                    }
+                    
+                    $('#resultContent-' + toolName).html(formattedResult);
+                    $('#resultSection-' + toolName).show();
+                },
+                error: function(xhr) {
+                    let errorText = 'Unknown error';
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        errorText = response.error || 'Server error';
+                    } catch (e) {
+                        errorText = xhr.responseText || 'Server error';
+                    }
+                    
+                    $('#resultStatus-' + toolName).html('<span class="text-danger">Error</span>').removeClass('alert-success').addClass('alert-danger');
+                    $('#resultContent-' + toolName).text(errorText);
+                    $('#resultSection-' + toolName).show();
+                },
+                complete: function() {
+                    form.find('.execute-btn').html('<i class="fas fa-play me-1"></i>Execute').prop('disabled', false);
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

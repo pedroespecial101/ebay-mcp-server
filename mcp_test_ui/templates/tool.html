@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}MCP Test UI - {{ tool.name }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ tool.name }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h2 class="mb-0">{{ tool.name }}</h2>
+            </div>
+            <div class="card-body">
+                <p class="card-text">{{ tool.description }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0"><i class="fas fa-play-circle me-2"></i>Try it out</h3>
+            </div>
+            <div class="card-body">
+                <form id="toolForm">
+                    {% if tool.parameters %}
+                    <h5>Parameters:</h5>
+                    {% for param in tool.parameters %}
+                    <div class="mb-3">
+                        <label for="{{ param.name }}" class="form-label">
+                            {{ param.name }} 
+                            {% if param.required %}
+                            <span class="badge bg-danger">Required</span>
+                            {% else %}
+                            <span class="badge bg-success">Optional</span>
+                            {% endif %}
+                            <span class="badge bg-secondary">{{ param.type }}</span>
+                        </label>
+                        
+                        {% if param.type in ["array", "list", "object", "dict"] %}
+                        <textarea class="form-control" id="{{ param.name }}" name="{{ param.name }}" rows="3" 
+                                  {% if param.required %}required{% endif %}></textarea>
+                        <div class="form-text">
+                            {% if param.type in ["array", "list"] %}
+                            Enter as JSON array (e.g., ["item1", "item2"]) or comma-separated values
+                            {% else %}
+                            Enter as JSON object (e.g., {"key": "value"})
+                            {% endif %}
+                        </div>
+                        
+                        {% elif param.type in ["boolean", "bool"] %}
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="{{ param.name }}" name="{{ param.name }}">
+                        </div>
+                        
+                        {% else %}
+                        <input type="{{ param.get_html_input_type() }}" class="form-control" id="{{ param.name }}" 
+                               name="{{ param.name }}" {% if param.required %}required{% endif %}>
+                        {% endif %}
+                        
+                        {% if param.description %}
+                        <div class="form-text">{{ param.description }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p><em>No parameters required</em></p>
+                    {% endif %}
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="submit" class="btn btn-primary" id="executeBtn">
+                            <i class="fas fa-play me-1"></i>Execute
+                        </button>
+                    </div>
+                </form>
+                
+                <div id="resultSection" class="mt-4" style="display: none;">
+                    <h5><i class="fas fa-poll me-2"></i>Response</h5>
+                    <div class="alert alert-secondary">
+                        <div class="d-flex justify-content-between">
+                            <strong>Status: <span id="resultStatus"></span></strong>
+                            <span>Time: <span id="resultTime"></span> seconds</span>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">Result</h6>
+                        </div>
+                        <div class="card-body">
+                            <pre id="resultContent" class="border rounded p-3 bg-light"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        $('#toolForm').submit(function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            
+            // Show loading
+            $('#executeBtn').html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Executing...').prop('disabled', true);
+            
+            $.ajax({
+                url: '/execute/{{ tool.name }}',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    // Format the response
+                    let formattedResult = '';
+                    
+                    if (response.success) {
+                        $('#resultStatus').html('<span class="text-success">Success</span>');
+                        $('#resultTime').text(response.elapsed_time);
+                        
+                        if (response.result && response.result.length > 0) {
+                            for (const item of response.result) {
+                                if (item.type === 'text') {
+                                    // Try to parse as JSON if it looks like JSON
+                                    try {
+                                        if (item.content.trim().startsWith('{') || item.content.trim().startsWith('[')) {
+                                            const jsonObj = JSON.parse(item.content);
+                                            formattedResult += JSON.stringify(jsonObj, null, 2);
+                                        } else {
+                                            formattedResult += item.content;
+                                        }
+                                    } catch (e) {
+                                        formattedResult += item.content;
+                                    }
+                                } else if (item.type === 'image') {
+                                    formattedResult += `<img src="${item.url}" class="img-fluid" alt="Result image">`;
+                                } else {
+                                    formattedResult += item.content;
+                                }
+                            }
+                        } else {
+                            formattedResult = '<em>No result</em>';
+                        }
+                    } else {
+                        $('#resultStatus').html('<span class="text-danger">Error</span>');
+                        formattedResult = response.error || 'Unknown error';
+                    }
+                    
+                    $('#resultContent').html(formattedResult);
+                    $('#resultSection').show();
+                },
+                error: function(xhr) {
+                    const response = JSON.parse(xhr.responseText);
+                    $('#resultStatus').html('<span class="text-danger">Error</span>');
+                    $('#resultContent').text(response.error || 'Unknown error');
+                    $('#resultSection').show();
+                },
+                complete: function() {
+                    $('#executeBtn').html('<i class="fas fa-play me-1"></i>Execute').prop('disabled', false);
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
