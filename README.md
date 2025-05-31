@@ -14,6 +14,8 @@ Additionally, the project includes an MCP Test UI that provides a web interface 
   - Browse API for searching items
   - Taxonomy API for category suggestions and item aspects
   - Inventory API for retrieving offer details by SKU
+  - Inventory management (update offers, withdraw offers, get listing fees)
+- Pydantic models for request/response validation and type safety
 - Robust error handling and token refresh logic
 - Centralized logging system with timed rotation
 - Server management script for easy lifecycle management
@@ -31,7 +33,7 @@ Additionally, the project includes an MCP Test UI that provides a web interface 
 - **FastAPI**: For the MCP Test UI backend
 - **Jinja2**: Template engine for the MCP Test UI
 - **Bootstrap 5**: Frontend framework for the MCP Test UI
-- **Pydantic**: Data validation for the MCP Test UI
+- **Pydantic**: Data validation and type safety throughout the codebase (MCP tools and Test UI)
 
 ## Project Structure
 
@@ -150,6 +152,9 @@ The server implements the Model Context Protocol, allowing AI assistants and oth
 - `get_category_suggestions(query: str)`: Get category suggestions from eBay Taxonomy API
 - `get_item_aspects_for_category(category_id: str)`: Get item aspects for a specific category
 - `get_offer_by_sku(sku: str)`: Get offer details for a specific SKU
+- `update_offer(offer_id: str, sku: str, marketplace_id: str, price: float, available_quantity: int)`: Update an existing offer
+- `withdraw_offer(offer_id: str)`: Withdraw (delete) an existing offer
+- `get_listing_fees(offer_ids: list)`: Get listing fees for unpublished offers
 
 ## Adding New Functions
 
@@ -239,22 +244,73 @@ The project includes a web-based user interface for testing MCP tools directly i
 
 Potential enhancements for the project:
 
-1. **Pydantic Integration**: Implement Pydantic models throughout the codebase for improved validation and type safety
-2. **Database Integration**: Move token storage from `.env` file to a secure database
-3. **Multiple User Support**: Allow the server to manage tokens for multiple eBay seller accounts
-4. **More eBay APIs**: Expand the available functions to cover additional eBay APIs
-5. **Enhanced Error Handling**: Improve error reporting and recovery mechanisms
-6. **Expanded MCP Test UI**: Add more features to the testing interface
-7. **Automated Test Suite**: Develop comprehensive tests for all components
+1. **Database Integration**: Move token storage from `.env` file to a secure database
+2. **Multiple User Support**: Allow the server to manage tokens for multiple eBay seller accounts
+3. **More eBay APIs**: Expand the available functions to cover additional eBay APIs
+4. **Expanded MCP Test UI**: Add more features to the testing interface
+5. **Automated Test Suite**: Develop comprehensive tests for all components
    - Order Management API
    - Fulfillment API
    - Marketing API
    - Compliance API
-4. **Rate Limiting**: Implement rate limiting to comply with eBay API usage policies
-5. **Web Interface**: Add a web dashboard for monitoring the server status and token management
-6. **Webhook Support**: Enable webhooks for eBay notifications
-7. **Docker Container**: Containerize the application for easier deployment
-8. **API Key Management**: Implement rotation and secure storage of API credentials
+6. **Rate Limiting**: Implement rate limiting to comply with eBay API usage policies
+7. **Web Interface**: Add a web dashboard for monitoring the server status and token management
+8. **Webhook Support**: Enable webhooks for eBay notifications
+9. **Docker Container**: Containerize the application for easier deployment
+10. **API Key Management**: Implement rotation and secure storage of API credentials
+
+## Pydantic Integration
+
+This project extensively uses Pydantic for data validation, type safety, and API interaction:
+
+### Key Benefits
+
+- **Type Safety**: All MCP tools use Pydantic models for request parameters and responses
+- **Input Validation**: Automatic validation of parameters with clear error messages
+- **Structured Responses**: API responses are parsed into Pydantic models for easier data access
+- **Consistent Error Handling**: Standardized approach to error handling across all MCP tools
+- **Documentation**: Models serve as self-documenting code with descriptive field attributes
+
+### Model Organization
+
+Pydantic models are organized into several modules:
+
+- `src/models/base.py`: Base models for all eBay-related objects
+- `src/models/auth.py`: Authentication-related models
+- `src/models/ebay/*.py`: eBay API-specific models organized by API domain
+- `src/models/mcp_tools.py`: Parameter and response models for MCP tools
+- `src/models/config/settings.py`: Configuration models for server settings
+
+### MCP Tool Pattern
+
+All MCP tools follow this pattern:
+
+1. Use parameter models to validate input
+2. Use request models to structure API calls
+3. Use response models to parse API responses
+4. Return structured data while maintaining backward compatibility
+
+```python
+@mcp.tool()
+async def example_tool(param1: str, param2: int) -> str:
+    # Validate parameters using Pydantic model
+    try:
+        params = ExampleParams(param1=param1, param2=param2)
+        
+        async def _api_call(access_token: str, client: httpx.AsyncClient):
+            # Create API request using Pydantic model
+            request = ExampleRequest(field1=params.param1, field2=params.param2)
+            # Make API call...
+            # Parse response using Pydantic model
+            response_model = ExampleResponse.parse_obj(result_json)
+            return response.text  # Return original JSON for backward compatibility
+            
+        # Execute API call with error handling
+        return await _execute_ebay_api_call("example_tool", client, _api_call)
+    except Exception as e:
+        # Handle errors
+        return f"Error: {str(e)}"
+```
 
 ## Troubleshooting
 

@@ -1,3 +1,39 @@
+## Updates in TrajectoryID <pydantic_documentation_update, (cascade_enhancement_010)>, 31052025 - 09:04:08
+
+- **README.md**:
+    - Added comprehensive documentation about Pydantic integration throughout the project
+    - Updated Technology Stack section to reflect Pydantic usage beyond just the MCP Test UI
+    - Added new inventory management MCP tools to the list of available functions
+    - Created new "Pydantic Integration" section with detailed explanation of model organization and usage patterns
+    - Updated Future Plans section to remove completed Pydantic Integration item
+    - Added example code demonstrating the standard MCP tool implementation pattern with Pydantic
+
+## Updates in TrajectoryID <pydantic_refactor_auth_tools, (cascade_enhancement_009)>, 31052025 - 08:59:29
+
+- **src/server.py**:
+    - Refactored `trigger_ebay_login` and `test_auth` MCP tools to use Pydantic models for response handling
+    - Enhanced error handling with structured exceptions and detailed logging
+    - Improved documentation with important restart instructions for the login flow
+    - Maintained backward compatibility while providing structured response data
+
+- **src/models/mcp_tools.py**:
+    - Added `TestAuthResponse` Pydantic model for structured token verification responses
+    - Added `TriggerEbayLoginResponse` model with success, error, and uncertain response handling
+    - Both models provide class methods for creating proper response objects in different scenarios
+
+## Updates in TrajectoryID <pydantic_refactor_inventory_tools, (cascade_enhancement_008)>, 31052025 - 08:55:39
+
+- **src/server.py**:
+    - Refactored `update_offer`, `withdraw_offer`, and `get_listing_fees` MCP tools to use Pydantic models for parameter validation and response handling
+    - Enhanced error handling and logging in these tools with detailed context
+    - Improved response parsing to provide structured data using Pydantic models
+    - Maintained backward compatibility by returning original JSON responses
+
+- **src/models/ebay/inventory.py**:
+    - Enhanced `UpdateOfferRequest` model with additional fields to fully represent the eBay API structure
+    - Updated `ListingFeeRequest` model to correctly format offers list for the API
+    - Improved `ListingFeeResponse` model with proper success/error handling methods
+
 ## Updates in TrajectoryID <fix_mcp_test_ui_tool_execution, (cascade_enhancement_007)>, 31052025 - 08:06:48
 
 - **mcp_test_ui/app.py**:

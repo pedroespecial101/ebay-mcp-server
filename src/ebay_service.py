@@ -1,9 +1,15 @@
 import os
 import logging
 import logging.handlers 
+from typing import Optional, Union, Dict, Any
 from dotenv import load_dotenv
 import httpx
 from ebay_auth.ebay_auth import get_env_variable as get_ebay_auth_env_variable
+
+# Import Pydantic models
+from models.config.settings import EbayAuthConfig, ServerConfig
+from models.auth import TokenResponse
+from models.base import EbayResponse
 
 # --- Logging Setup ---
 # Get the absolute path to the directory where this script is located
@@ -17,9 +23,6 @@ log_file_path = os.path.join(logs_dir, 'fastmcp_server.log')
 
 # Configure logger for this module
 logger = logging.getLogger(__name__)
-# Ensure logs from this module will be output if the root logger is configured for INFO
-# If the MCP server or another part of the application configures logging, this might be overridden.
-# BasicConfig is a no-op if handlers are already configured for the root logger.
 
 # --- End Logging Setup ---
 
@@ -37,19 +40,42 @@ async def get_ebay_access_token() -> str:
     """
     Retrieves the current eBay User Access Token from the .env file.
     This token is expected to be managed (e.g., refreshed) by the ebay_auth module.
+    
+    Returns:
+        str: The access token if available, otherwise an error message.
     """
     logger.info("Attempting to retrieve EBAY_USER_ACCESS_TOKEN from .env via ebay_auth module.")
     
-    # The ebay_auth module's get_env_variable handles its own .env loading and path finding.
-    access_token = get_ebay_auth_env_variable("EBAY_USER_ACCESS_TOKEN")
-
-    if access_token:
+    # Get the auth configuration from environment variables
+    auth_config = EbayAuthConfig.from_env(dotenv_path)
+    
+    if auth_config.user_access_token:
         logger.info("Successfully retrieved EBAY_USER_ACCESS_TOKEN.")
-        logger.debug(f"get_ebay_access_token: EBAY_USER_ACCESS_TOKEN (first 10 chars): {access_token[:10]}...")
-        return access_token
+        logger.debug(f"get_ebay_access_token: EBAY_USER_ACCESS_TOKEN (first 10 chars): {auth_config.user_access_token[:10]}...")
+        return auth_config.user_access_token
     else:
         error_msg = ("The user's EBAY_USER_ACCESS_TOKEN was not found. The user needs to authenticate with eBay before they can use this MCP. "
                      "You can use the 'trigger_ebay_login' tool. This will open a browser window for eBay login by the user. "
                      "Once they have completed this process, you should be able to try your request again!")
         logger.error(error_msg)
         return error_msg
+
+
+async def get_auth_config() -> EbayAuthConfig:
+    """
+    Get the eBay authentication configuration from the environment.
+    
+    Returns:
+        EbayAuthConfig: The eBay authentication configuration.
+    """
+    return EbayAuthConfig.from_env(dotenv_path)
+
+
+async def get_server_config() -> ServerConfig:
+    """
+    Get the server configuration from the environment.
+    
+    Returns:
+        ServerConfig: The server configuration.
+    """
+    return ServerConfig.from_env()

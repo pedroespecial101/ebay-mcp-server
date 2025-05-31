@@ -4,9 +4,25 @@ import os
 import sys
 import logging
 import logging.handlers
+import json
+from typing import Any, Dict, List, Optional, Union
 
 # Add the src directory to the Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Import Pydantic models
+from src.models.base import EbayResponse
+from src.models.config.settings import EbayAuthConfig, ServerConfig
+from src.models.ebay.browse import SearchRequest, SearchResult, SearchResponse
+from src.models.ebay.taxonomy import CategorySuggestionRequest, CategorySuggestion, CategorySuggestionResponse
+from src.models.ebay.taxonomy import ItemAspectsRequest, Aspect, ItemAspectsResponse
+from src.models.ebay.inventory import OfferRequest, OfferDetails, OfferResponse
+from src.models.ebay.inventory import UpdateOfferRequest, WithdrawOfferRequest, ListingFeeRequest, ListingFeeResponse
+from src.models.mcp_tools import AddToolParams, AddToolResponse
+from src.models.mcp_tools import SearchEbayItemsParams, CategorySuggestionsParams, ItemAspectsParams, OfferBySkuParams
+from src.models.mcp_tools import UpdateOfferParams, WithdrawOfferParams, ListingFeesParams
+from src.models.mcp_tools import TestAuthResponse, TriggerEbayLoginResponse
+from src.models.auth import LoginResult
 
 # --- Centralized Logging Configuration --- 
 LOG_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'logs')
@@ -150,6 +166,8 @@ async def trigger_ebay_login() -> str:
     
     This will open a browser window for eBay authentication. After successful login, 
     the .env file will be updated with new tokens.
+    IMPORTANT: You MUST restart the MCP server in your IDE after completing the login 
+    for the new tokens to take effect.
     """
     logger.info("Executing trigger_ebay_login MCP tool.")
     try:
@@ -162,21 +180,31 @@ async def trigger_ebay_login() -> str:
             logger.info("trigger_ebay_login: eBay login process completed successfully according to initiate_user_login.")
             # Get the user details if available
             user_name = login_result.get("user_name", "TreadersLoft")
-            return f"eBay login process completed successfully. The user '{user_name}' has been authenticated with eBay and can now use the eBay API tools."
+            # Create and return a success response using the Pydantic model
+            response = TriggerEbayLoginResponse.success_response(user_name)
+            return response.data
         elif login_result and "error" in login_result:
+            error_message = login_result.get("message", "Unknown error")
             error_details = login_result.get("error_details", "No specific error details provided.")
-            logger.error(f"trigger_ebay_login: eBay login process failed. Error: {login_result.get('message')}, Details: {error_details}")
-            return f"eBay login process failed. Error: {login_result.get('message')}. Details: {error_details}. Please check server logs."
+            logger.error(f"trigger_ebay_login: eBay login process failed. Error: {error_message}, Details: {error_details}")
+            # Create and return an error response using the Pydantic model
+            response = TriggerEbayLoginResponse.error_response(error_message, error_details)
+            return response.data
         else:
             # This case might occur if initiate_user_login returns None or an unexpected structure
             logger.warning(f"trigger_ebay_login: eBay login process finished, but the result was unexpected: {login_result}")
-            return (
-                "eBay login process finished. The outcome is unclear. Please check server logs."
-            )
+            # Create and return an uncertain response using the Pydantic model
+            response = TriggerEbayLoginResponse.uncertain_response(login_result)
+            return response.data
 
     except Exception as e:
         logger.exception("trigger_ebay_login: An unexpected error occurred while trying to initiate eBay login.")
-        return f"An unexpected error occurred while trying to initiate eBay login: {str(e)}. Check server logs."
+        # Create and return an error response for the exception
+        response = TriggerEbayLoginResponse.error_response(
+            "An unexpected error occurred while trying to initiate eBay login", 
+            str(e)
+        )
+        return response.data
 
 
 # Add an addition tool
@@ -184,22 +212,40 @@ async def trigger_ebay_login() -> str:
 async def test_auth() -> str:
     """Test authentication and token retrieval"""
     logger.info("Executing test_auth MCP tool.")
-    token = await get_ebay_access_token()
     
-    if is_token_error(token):
-        logger.error(f"test_auth: Token acquisition failed: {token}")
-        # Return the specific error message from get_ebay_access_token
-        return f"Token acquisition failed. Details: {token}"
-    
-    logger.info(f"test_auth: Token successfully retrieved. Length: {len(token)}")
-    # Return first 50 chars of token and the length
-    return f"Token found (first 50 chars): {token[:50]}...\nToken length: {len(token)}"
+    try:
+        token = await get_ebay_access_token()
+        
+        if is_token_error(token):
+            logger.error(f"test_auth: Token acquisition failed: {token}")
+            # Create and return an error response using the Pydantic model
+            response = TestAuthResponse.error_response(token)
+            return response.data
+        
+        logger.info(f"test_auth: Token successfully retrieved. Length: {len(token)}")
+        # Create and return a success response using the Pydantic model
+        response = TestAuthResponse.success_response(token)
+        return response.data
+    except Exception as e:
+        logger.exception(f"test_auth: Unexpected error during token retrieval: {str(e)}")
+        # Handle unexpected errors
+        response = TestAuthResponse.error_response(f"Unexpected error during token retrieval: {str(e)}")
+        return response.data
 
 @mcp.tool()
 def add(a: int, b: int) -> int:
     """Add two numbers"""
     logger.debug(f"Executing add MCP tool with a={a}, b={b}")
-    return a + b
+    
+    # Create and validate parameters using Pydantic model
+    try:
+        params = AddToolParams(a=a, b=b)
+        result = params.a + params.b
+        response = AddToolResponse.success_response(result)
+        return response.data
+    except Exception as e:
+        logger.error(f"Error in add tool: {str(e)}")
+        return AddToolResponse.error_response(f"Error: {str(e)}").error_message or 0
 
 
 # Add a tool to search eBay items using Browse API
@@ -207,47 +253,115 @@ def add(a: int, b: int) -> int:
 async def search_ebay_items(query: str, limit: int = 10) -> str:
     """Search items on eBay using Browse API"""
     logger.info(f"Executing search_ebay_items MCP tool with query='{query}', limit={limit}.")
-
-    async def _api_call(access_token: str, client: httpx.AsyncClient):
-        headers = {
-            "Authorization": f"Bearer {access_token}",
-            "Content-Type": "application/json",
-        }
-        params = {"q": query, "limit": limit}
-        url = "https://api.ebay.com/buy/browse/v1/item_summary/search"
-        logger.debug(f"search_ebay_items: Requesting URL: {url} with params: {params} using token {access_token[:10]}...")
+    
+    # Validate parameters using Pydantic model
+    try:
+        params = SearchEbayItemsParams(query=query, limit=limit)
         
-        response = await client.get(url, headers=headers, params=params)
-        logger.debug(f"search_ebay_items: Response status: {response.status_code}")
-        response.raise_for_status() # Crucial for _execute_ebay_api_call to handle HTTP errors
-        logger.info("search_ebay_items: Successfully fetched items.")
-        return response.text
-
-    async with httpx.AsyncClient() as client:
-        return await _execute_ebay_api_call("search_ebay_items", client, _api_call)
+        async def _api_call(access_token: str, client: httpx.AsyncClient):
+            headers = {
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json",
+            }
+            api_params = {"q": params.query, "limit": params.limit}
+            url = "https://api.ebay.com/buy/browse/v1/item_summary/search"
+            logger.debug(f"search_ebay_items: Requesting URL: {url} with params: {api_params} using token {access_token[:10]}...")
+            
+            response = await client.get(url, headers=headers, params=api_params)
+            logger.debug(f"search_ebay_items: Response status: {response.status_code}")
+            response.raise_for_status() # Crucial for _execute_ebay_api_call to handle HTTP errors
+            logger.info("search_ebay_items: Successfully fetched items.")
+            return response.text
+        
+        async with httpx.AsyncClient() as client:
+            result = await _execute_ebay_api_call("search_ebay_items", client, _api_call)
+            
+            # Try to parse the response as a SearchResult
+            try:
+                if not result.startswith('Token acquisition failed') and not result.startswith('HTTPX RequestError'):
+                    result_json = json.loads(result)
+                    search_result = SearchResult(
+                        total=result_json.get('total', 0),
+                        items=[ItemSummary(
+                            item_id=item.get('itemId', ''),
+                            title=item.get('title', ''),
+                            image_url=item.get('image', {}).get('imageUrl'),
+                            price=item.get('price'),
+                            seller=item.get('seller'),
+                            condition=item.get('condition'),
+                            item_web_url=item.get('itemWebUrl')
+                        ) for item in result_json.get('itemSummaries', [])],
+                        href=result_json.get('href'),
+                        next_page=result_json.get('next'),
+                        prev_page=result_json.get('prev'),
+                        limit=result_json.get('limit'),
+                        offset=result_json.get('offset')
+                    )
+                    logger.info(f"Parsed search results: {search_result.total} items found")
+                    # Return the original JSON for backward compatibility
+                    return result
+            except Exception as e:
+                logger.warning(f"Failed to parse search results as SearchResult: {str(e)}")
+            
+            return result
+    except Exception as e:
+        logger.error(f"Error in search_ebay_items: {str(e)}")
+        return f"Error in search parameters: {str(e)}"
 
 @mcp.tool()
 async def get_category_suggestions(query: str) -> str:
     """Get category suggestions from eBay Taxonomy API for the UK catalogue."""
     logger.info(f"Executing get_category_suggestions MCP tool with query='{query}'.")
-
-    async def _api_call(access_token: str, client: httpx.AsyncClient):
-        headers = {
-            "Authorization": f"Bearer {access_token}",
-            "Content-Type": "application/json",
-        }
-        params = {"q": query}
-        url = "https://api.ebay.com/commerce/taxonomy/v1/category_tree/3/get_category_suggestions"
-        logger.debug(f"get_category_suggestions: Requesting URL: {url} with params: {params} using token {access_token[:10]}...")
+    
+    # Validate parameters using Pydantic model
+    try:
+        params = CategorySuggestionsParams(query=query)
         
-        response = await client.get(url, headers=headers, params=params)
-        logger.debug(f"get_category_suggestions: Response status: {response.status_code}")
-        response.raise_for_status()
-        logger.info("get_category_suggestions: Successfully fetched category suggestions.")
-        return response.text
-
-    async with httpx.AsyncClient() as client:
-        return await _execute_ebay_api_call("get_category_suggestions", client, _api_call)
+        async def _api_call(access_token: str, client: httpx.AsyncClient):
+            headers = {
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json",
+            }
+            api_params = {"q": params.query}
+            url = "https://api.ebay.com/commerce/taxonomy/v1/category_tree/3/get_category_suggestions"
+            logger.debug(f"get_category_suggestions: Requesting URL: {url} with params: {api_params} using token {access_token[:10]}...")
+            
+            response = await client.get(url, headers=headers, params=api_params)
+            logger.debug(f"get_category_suggestions: Response status: {response.status_code}")
+            response.raise_for_status()
+            logger.info("get_category_suggestions: Successfully fetched category suggestions.")
+            return response.text
+        
+        async with httpx.AsyncClient() as client:
+            result = await _execute_ebay_api_call("get_category_suggestions", client, _api_call)
+            
+            # Try to parse the response as a CategorySuggestionResponse
+            try:
+                if not result.startswith('Token acquisition failed') and not result.startswith('HTTPX RequestError'):
+                    result_json = json.loads(result)
+                    suggestions = []
+                    for suggestion in result_json.get('categorySuggestions', []):
+                        category = suggestion.get('category', {})
+                        suggestions.append(CategorySuggestion(
+                            category_id=category.get('categoryId', ''),
+                            category_name=category.get('categoryName', ''),
+                            category_tree_node_level=category.get('categoryTreeNodeLevel'),
+                            relevancy=suggestion.get('relevancy'),
+                            category_tree_id=result_json.get('categoryTreeId'),
+                            leaf_category=category.get('leafCategory', False)
+                        ))
+                    
+                    suggestion_response = CategorySuggestionResponse.success_response(suggestions)
+                    logger.info(f"Parsed category suggestions: {len(suggestions)} suggestions found")
+                    # Return the original JSON for backward compatibility
+                    return result
+            except Exception as e:
+                logger.warning(f"Failed to parse category suggestions: {str(e)}")
+            
+            return result
+    except Exception as e:
+        logger.error(f"Error in get_category_suggestions: {str(e)}")
+        return f"Error in category suggestion parameters: {str(e)}"
 
 @mcp.tool()
 async def get_item_aspects_for_category(category_id: str) -> str:
@@ -257,23 +371,60 @@ async def get_item_aspects_for_category(category_id: str) -> str:
         category_id: The eBay category ID to get aspects for.
     """
     logger.info(f"Executing get_item_aspects_for_category MCP tool with category_id='{category_id}'.")
-
-    async def _api_call(access_token: str, client: httpx.AsyncClient):
-        headers = {
-            "Authorization": f"Bearer {access_token}",
-            "Content-Type": "application/json",
-        }
-        url = f"https://api.ebay.com/commerce/taxonomy/v1/category_tree/3/get_item_aspects_for_category"
-        logger.debug(f"get_item_aspects_for_category: Requesting URL: {url} with category_id: {category_id} using token {access_token[:10]}...")
+    
+    # Validate parameters using Pydantic model
+    try:
+        params = ItemAspectsParams(category_id=category_id)
         
-        response = await client.get(url, headers=headers, params={"category_id": category_id})
-        logger.debug(f"get_item_aspects_for_category: Response status: {response.status_code}")
-        response.raise_for_status()
-        logger.info("get_item_aspects_for_category: Successfully fetched item aspects.")
-        return response.text
-
-    async with httpx.AsyncClient() as client:
-        return await _execute_ebay_api_call("get_item_aspects_for_category", client, _api_call)
+        async def _api_call(access_token: str, client: httpx.AsyncClient):
+            headers = {
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json",
+            }
+            url = f"https://api.ebay.com/commerce/taxonomy/v1/category_tree/3/get_item_aspects_for_category"
+            logger.debug(f"get_item_aspects_for_category: Requesting URL: {url} with category_id: {params.category_id} using token {access_token[:10]}...")
+            
+            response = await client.get(url, headers=headers, params={"category_id": params.category_id})
+            logger.debug(f"get_item_aspects_for_category: Response status: {response.status_code}")
+            response.raise_for_status()
+            logger.info("get_item_aspects_for_category: Successfully fetched item aspects.")
+            return response.text
+        
+        async with httpx.AsyncClient() as client:
+            result = await _execute_ebay_api_call("get_item_aspects_for_category", client, _api_call)
+            
+            # Try to parse the response as an ItemAspectsResponse
+            try:
+                if not result.startswith('Token acquisition failed') and not result.startswith('HTTPX RequestError'):
+                    result_json = json.loads(result)
+                    aspects = []
+                    for aspect_json in result_json.get('aspects', []):
+                        # Convert aspect metadata to Pydantic model
+                        aspect = Aspect(
+                            aspect_id=aspect_json.get('localizedAspectName'),
+                            name=aspect_json.get('localizedAspectName', ''),
+                            aspect_type=aspect_json.get('aspectConstraint', {}).get('aspectMode', ''),
+                            required=aspect_json.get('aspectConstraint', {}).get('aspectRequired', False),
+                            aspect_values=aspect_json.get('aspectValues', []),
+                            usage=aspect_json.get('aspectConstraint', {}).get('aspectUsage', ''),
+                            min_values=aspect_json.get('aspectConstraint', {}).get('itemToAspectCardinality', {}).get('minimum', 0),
+                            max_values=aspect_json.get('aspectConstraint', {}).get('itemToAspectCardinality', {}).get('maximum', 0),
+                            confidence=aspect_json.get('aspectConstraint', {}).get('confidenceThreshold', 0),
+                            value_format=aspect_json.get('aspectConstraint', {}).get('valueConstraint', {}).get('applicableForLocalizedAspectName', '')
+                        )
+                        aspects.append(aspect)
+                    
+                    aspects_response = ItemAspectsResponse.success_response(aspects)
+                    logger.info(f"Parsed item aspects: {len(aspects)} aspects found for category {params.category_id}")
+                    # Return the original JSON for backward compatibility
+                    return result
+            except Exception as e:
+                logger.warning(f"Failed to parse item aspects: {str(e)}")
+            
+            return result
+    except Exception as e:
+        logger.error(f"Error in get_item_aspects_for_category: {str(e)}")
+        return f"Error in item aspects parameters: {str(e)}"
 
 @mcp.tool()
 async def get_offer_by_sku(sku: str) -> str:
@@ -283,68 +434,113 @@ async def get_offer_by_sku(sku: str) -> str:
         sku: The seller-defined SKU (Stock Keeping Unit) of the offer.
     """
     logger.info(f"Executing get_offer_by_sku MCP tool with SKU='{sku}'.")
-
-    async def _api_call(access_token: str, client: httpx.AsyncClient):
-        headers = {
-            "Authorization": f"Bearer {access_token}",
-            "Content-Type": "application/json",
-            "X-EBAY-C-MARKETPLACE-ID": "EBAY_GB",
-            "Accept-Language": "en-GB",
-        }
-        base_url = "https://api.ebay.com/sell/inventory/v1/offer"
+    
+    # Validate parameters using Pydantic model
+    try:
+        params = OfferBySkuParams(sku=sku)
         
-        log_headers = headers.copy()
-        log_headers['Authorization'] = f"Bearer {access_token[:20]}...<truncated>"
-        logger.debug(f"get_offer_by_sku: Headers for API call: {log_headers}")
-        logger.debug(f"get_offer_by_sku: Request URL for direct SKU lookup: {base_url}?sku={sku} using token {access_token[:10]}...")
-
-        # Initial attempt: Direct SKU lookup
-        response = await client.get(base_url, headers=headers, params={"sku": sku})
-        logger.info(f"get_offer_by_sku: Direct SKU lookup response status: {response.status_code}")
-        response_text_snippet = response.text[:500] if response.text else "[Empty Response Body]"
-        logger.debug(f"get_offer_by_sku: Direct SKU lookup response text (first 500 chars): {response_text_snippet}...")
-
-        # If direct lookup fails with 403/404 (or other client error that's not 401, which is handled by _execute_ebay_api_call),
-        # try the alternative approach of listing offers.
-        # Note: response.raise_for_status() will be called *after* this block if status is still not 200.
-        if response.status_code in [403, 404]: 
-            logger.warning(f"get_offer_by_sku: Direct SKU lookup failed with {response.status_code}. Trying alternative approach (listing offers).")
+        async def _api_call(access_token: str, client: httpx.AsyncClient):
+            headers = {
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json",
+                "X-EBAY-C-MARKETPLACE-ID": "EBAY_GB",
+                "Accept-Language": "en-GB",
+            }
+            base_url = "https://api.ebay.com/sell/inventory/v1/offer"
             
-            list_offers_params = {"sku": sku, "limit": 1}
-            logger.debug(f"get_offer_by_sku: Listing offers with params: {list_offers_params}")
-            offers_response = await client.get(base_url, headers=headers, params=list_offers_params)
-            
-            logger.info(f"get_offer_by_sku: Offer list response status: {offers_response.status_code}")
-            offers_response_text_snippet = offers_response.text[:500] if offers_response.text else "[Empty Response Body]"
-            logger.debug(f"get_offer_by_sku: Offer list response text (first 500 chars): {offers_response_text_snippet}...")
-            
-            if offers_response.status_code == 200:
-                offers_data = offers_response.json()
-                if offers_data.get('offers') and len(offers_data['offers']) > 0:
-                    offer_id = offers_data['offers'][0].get('offerId')
-                    if offer_id:
-                        logger.info(f"get_offer_by_sku: Found offer ID: {offer_id} from listing. Fetching details.")
-                        offer_detail_url = f"{base_url}/{offer_id}"
-                        response = await client.get(offer_detail_url, headers=headers) # Re-assign response
-                        logger.info(f"get_offer_by_sku: Offer details response status (after listing): {response.status_code}")
-                        response_text_snippet_detail = response.text[:500] if response.text else "[Empty Response Body]"
-                        logger.debug(f"get_offer_by_sku: Offer details response text (first 500 chars): {response_text_snippet_detail}...")
+            log_headers = headers.copy()
+            log_headers['Authorization'] = f"Bearer {access_token[:20]}...<truncated>"
+            logger.debug(f"get_offer_by_sku: Headers for API call: {log_headers}")
+            logger.debug(f"get_offer_by_sku: Request URL for direct SKU lookup: {base_url}?sku={params.sku} using token {access_token[:10]}...")
+    
+            # Initial attempt: Direct SKU lookup
+            response = await client.get(base_url, headers=headers, params={"sku": params.sku})
+            logger.info(f"get_offer_by_sku: Direct SKU lookup response status: {response.status_code}")
+            response_text_snippet = response.text[:500] if response.text else "[Empty Response Body]"
+            logger.debug(f"get_offer_by_sku: Direct SKU lookup response text (first 500 chars): {response_text_snippet}...")
+    
+            # If direct lookup fails with 403/404 (or other client error that's not 401, which is handled by _execute_ebay_api_call),
+            # try the alternative approach of listing offers.
+            # Note: response.raise_for_status() will be called *after* this block if status is still not 200.
+            if response.status_code in [403, 404]: 
+                logger.warning(f"get_offer_by_sku: Direct SKU lookup failed with {response.status_code}. Trying alternative approach (listing offers).")
+                
+                list_offers_params = {"sku": params.sku, "limit": 1}
+                logger.debug(f"get_offer_by_sku: Listing offers with params: {list_offers_params}")
+                offers_response = await client.get(base_url, headers=headers, params=list_offers_params)
+                
+                logger.info(f"get_offer_by_sku: Offer list response status: {offers_response.status_code}")
+                offers_response_text_snippet = offers_response.text[:500] if offers_response.text else "[Empty Response Body]"
+                logger.debug(f"get_offer_by_sku: Offer list response text (first 500 chars): {offers_response_text_snippet}...")
+                
+                if offers_response.status_code == 200:
+                    offers_data = offers_response.json()
+                    if offers_data.get('offers') and len(offers_data['offers']) > 0:
+                        offer_id = offers_data['offers'][0].get('offerId')
+                        if offer_id:
+                            logger.info(f"get_offer_by_sku: Found offer ID: {offer_id} from listing. Fetching details.")
+                            offer_detail_url = f"{base_url}/{offer_id}"
+                            response = await client.get(offer_detail_url, headers=headers) # Re-assign response
+                            logger.info(f"get_offer_by_sku: Offer details response status (after listing): {response.status_code}")
+                            response_text_snippet_detail = response.text[:500] if response.text else "[Empty Response Body]"
+                            logger.debug(f"get_offer_by_sku: Offer details response text (first 500 chars): {response_text_snippet_detail}...")
+                        else:
+                            logger.warning("get_offer_by_sku: 'offerId' not found in listed offer. Original direct lookup response will be used.")
                     else:
-                        logger.warning("get_offer_by_sku: 'offerId' not found in listed offer. Original direct lookup response will be used.")
+                        logger.warning(f"get_offer_by_sku: No offers found in the listing for SKU {params.sku}. Original direct lookup response will be used.")
                 else:
-                    logger.warning(f"get_offer_by_sku: No offers found in the listing for SKU {sku}. Original direct lookup response will be used.")
-            else:
-                logger.error(f"get_offer_by_sku: Failed to list offers (alternative approach), status: {offers_response.status_code}. Original direct lookup response will be used.")
+                    logger.error(f"get_offer_by_sku: Failed to list offers (alternative approach), status: {offers_response.status_code}. Original direct lookup response will be used.")
+            
+            # After potential fallback, raise for status on the final 'response' object.
+            # This allows _execute_ebay_api_call to handle 401s from either direct or fallback calls.
+            response.raise_for_status()
+            
+            logger.info(f"get_offer_by_sku: Successfully fetched offer for SKU {params.sku}.")
+            return response.text
         
-        # After potential fallback, raise for status on the final 'response' object.
-        # This allows _execute_ebay_api_call to handle 401s from either direct or fallback calls.
-        response.raise_for_status()
-        
-        logger.info(f"get_offer_by_sku: Successfully fetched offer for SKU {sku}.")
-        return response.text
-
-    async with httpx.AsyncClient() as client:
-        return await _execute_ebay_api_call("get_offer_by_sku", client, _api_call)
+        async with httpx.AsyncClient() as client:
+            result = await _execute_ebay_api_call("get_offer_by_sku", client, _api_call)
+            
+            # Try to parse the response as an OfferResponse
+            try:
+                if not result.startswith('Token acquisition failed') and not result.startswith('HTTPX RequestError'):
+                    result_json = json.loads(result)
+                    
+                    # Extract offer details from the response
+                    if 'offers' in result_json and len(result_json['offers']) > 0:
+                        offer_data = result_json['offers'][0]
+                    else:
+                        offer_data = result_json
+                    
+                    # Create Pydantic model for the offer
+                    offer_details = OfferDetails(
+                        offer_id=offer_data.get('offerId', ''),
+                        sku=offer_data.get('sku', params.sku),
+                        marketplace_id=offer_data.get('marketplaceId', 'EBAY_GB'),
+                        format=offer_data.get('format', ''),
+                        available_quantity=offer_data.get('availableQuantity', 0),
+                        price=offer_data.get('price', {}),
+                        listing_policies=offer_data.get('listingPolicies', {}),
+                        listing_description=offer_data.get('listingDescription', ''),
+                        listing_status=offer_data.get('listingStatus', ''),
+                        tax=offer_data.get('tax', {}),
+                        category_id=offer_data.get('categoryId', ''),
+                        merchant_location_key=offer_data.get('merchantLocationKey', ''),
+                        inventory_location=offer_data.get('inventoryLocation', ''),
+                        listing_id=offer_data.get('listingId', '')
+                    )
+                    
+                    offer_response = OfferResponse.success_response(offer_details)
+                    logger.info(f"Parsed offer details for SKU {params.sku}: {offer_details.offer_id}")
+                    # Return the original JSON for backward compatibility
+                    return result
+            except Exception as e:
+                logger.warning(f"Failed to parse offer details: {str(e)}")
+            
+            return result
+    except Exception as e:
+        logger.error(f"Error in get_offer_by_sku: {str(e)}")
+        return f"Error in offer parameters: {str(e)}"
 
 
 @mcp.tool()
@@ -360,55 +556,98 @@ async def update_offer(offer_id: str, sku: str, marketplace_id: str = "EBAY_GB",
     """
     logger.info(f"Executing update_offer MCP tool with offer_id='{offer_id}', sku='{sku}'")
     
-    if price is None and available_quantity is None:
-        return "Error: At least one of price or available_quantity must be specified."
+    # Validate parameters using Pydantic model
+    try:
+        params = UpdateOfferParams(
+            offer_id=offer_id,
+            sku=sku,
+            marketplace_id=marketplace_id,
+            price=price,
+            available_quantity=available_quantity
+        )
+        
+        # Check if at least one update field is specified
+        if params.price is None and params.available_quantity is None:
+            return "Error: At least one of price or available_quantity must be specified."
 
-    async def _api_call(access_token: str, client: httpx.AsyncClient):
-        headers = {
-            "Authorization": f"Bearer {access_token}",
-            "Content-Type": "application/json",
-            "X-EBAY-C-MARKETPLACE-ID": marketplace_id,
-            "Accept-Language": "en-GB"
-        }
-        
-        # First, get the current offer details to ensure we have all required fields
-        get_url = f"https://api.ebay.com/sell/inventory/v1/offer/{offer_id}"
-        logger.debug(f"update_offer: Getting current offer details from: {get_url}")
-        
-        get_response = await client.get(get_url, headers=headers)
-        get_response.raise_for_status()  # This will be caught by _execute_ebay_api_call if there's an error
-        
-        current_offer = get_response.json()
-        logger.debug(f"update_offer: Successfully retrieved current offer details")
-        
-        # Update only the fields that were provided while keeping all existing data
-        if price is not None:
-            if "pricingSummary" not in current_offer:
-                current_offer["pricingSummary"] = {}
-            if "price" not in current_offer["pricingSummary"]:
-                current_offer["pricingSummary"]["price"] = {}
+        async def _api_call(access_token: str, client: httpx.AsyncClient):
+            headers = {
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json",
+                "X-EBAY-C-MARKETPLACE-ID": params.marketplace_id,
+                "Accept-Language": "en-GB"
+            }
             
-            current_offer["pricingSummary"]["price"]["value"] = str(price)
-            # Ensure we have a currency
-            if "currency" not in current_offer["pricingSummary"]["price"]:
-                current_offer["pricingSummary"]["price"]["currency"] = "GBP"  # Default to GBP, modify as needed
+            # First, get the current offer details to ensure we have all required fields
+            get_url = f"https://api.ebay.com/sell/inventory/v1/offer/{params.offer_id}"
+            logger.debug(f"update_offer: Getting current offer details from: {get_url}")
+            
+            get_response = await client.get(get_url, headers=headers)
+            get_response.raise_for_status()  # This will be caught by _execute_ebay_api_call if there's an error
+            
+            current_offer = get_response.json()
+            logger.debug(f"update_offer: Successfully retrieved current offer details for {params.sku}")
+            
+            # Create an update request based on the current offer
+            update_request = UpdateOfferRequest(
+                offer_id=params.offer_id,
+                sku=params.sku,
+                marketplace_id=params.marketplace_id,
+                format=current_offer.get('format', 'FIXED_PRICE'),
+                available_quantity=params.available_quantity if params.available_quantity is not None else current_offer.get('availableQuantity'),
+                category_id=current_offer.get('categoryId', ''),
+                listing_policies=current_offer.get('listingPolicies', {}),
+                merchant_location_key=current_offer.get('merchantLocationKey', ''),
+                pricing_summary=current_offer.get('pricingSummary', {})
+            )
+            
+            # Update price if provided
+            if params.price is not None:
+                # Ensure pricing structure exists
+                if not update_request.pricing_summary:
+                    update_request.pricing_summary = {}
+                if 'price' not in update_request.pricing_summary:
+                    update_request.pricing_summary['price'] = {}
+                
+                # Update price value
+                update_request.pricing_summary['price']['value'] = str(params.price)
+                # Ensure currency exists
+                if 'currency' not in update_request.pricing_summary['price']:
+                    update_request.pricing_summary['price']['currency'] = "GBP"  # Default to GBP
+            
+            # Convert Pydantic model to dict for the API request
+            update_payload = update_request.model_dump(exclude_none=True)
+            
+            # Make the update call
+            update_url = f"https://api.ebay.com/sell/inventory/v1/offer/{params.offer_id}"
+            logger.debug(f"update_offer: Sending PUT request to: {update_url}")
+            logger.debug(f"update_offer: Request payload: {update_payload}")
+            
+            update_response = await client.put(update_url, headers=headers, json=update_payload)
+            update_response.raise_for_status()
+            
+            logger.info(f"update_offer: Successfully updated offer {params.offer_id} for SKU {params.sku}")
+            return update_response.text
         
-        if available_quantity is not None:
-            current_offer["availableQuantity"] = available_quantity
-        
-        # Make the update call
-        update_url = f"https://api.ebay.com/sell/inventory/v1/offer/{offer_id}"
-        logger.debug(f"update_offer: Sending PUT request to: {update_url}")
-        logger.debug(f"update_offer: Request payload: {current_offer}")
-        
-        update_response = await client.put(update_url, headers=headers, json=current_offer)
-        update_response.raise_for_status()
-        
-        logger.info(f"update_offer: Successfully updated offer {offer_id}")
-        return update_response.text
-    
-    async with httpx.AsyncClient() as client:
-        return await _execute_ebay_api_call("update_offer", client, _api_call)
+        async with httpx.AsyncClient() as client:
+            result = await _execute_ebay_api_call("update_offer", client, _api_call)
+            
+            # Try to parse the response if available
+            try:
+                if not result.startswith('Token acquisition failed') and not result.startswith('HTTPX RequestError'):
+                    # For successful updates, we typically get an empty response or a status object
+                    if result and len(result.strip()) > 0:
+                        result_json = json.loads(result)
+                        logger.info(f"Parsed update response: {result_json}")
+                    else:
+                        logger.info(f"Empty success response for offer update {params.offer_id}")
+            except Exception as e:
+                logger.warning(f"Failed to parse update response: {str(e)}")
+            
+            return result
+    except Exception as e:
+        logger.error(f"Error in update_offer: {str(e)}")
+        return f"Error in update offer parameters: {str(e)}"
 
 
 @mcp.tool()
@@ -419,26 +658,50 @@ async def withdraw_offer(offer_id: str) -> str:
         offer_id: The unique identifier of the offer to withdraw.
     """
     logger.info(f"Executing withdraw_offer MCP tool with offer_id='{offer_id}'")
-
-    async def _api_call(access_token: str, client: httpx.AsyncClient):
-        headers = {
-            "Authorization": f"Bearer {access_token}",
-            "Content-Type": "application/json",
-            "X-EBAY-C-MARKETPLACE-ID": "EBAY_GB",
-            "Accept-Language": "en-GB"
-        }
-        
-        base_url = f"https://api.ebay.com/sell/inventory/v1/offer/{offer_id}/withdraw"
-        logger.debug(f"withdraw_offer: Making POST request to: {base_url}")
-        
-        response = await client.post(base_url, headers=headers)
-        response.raise_for_status()
-        
-        logger.info(f"withdraw_offer: Successfully withdrew offer {offer_id}")
-        return response.text
     
-    async with httpx.AsyncClient() as client:
-        return await _execute_ebay_api_call("withdraw_offer", client, _api_call)
+    # Validate parameters using Pydantic model
+    try:
+        params = WithdrawOfferParams(offer_id=offer_id)
+        
+        async def _api_call(access_token: str, client: httpx.AsyncClient):
+            headers = {
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json",
+                "X-EBAY-C-MARKETPLACE-ID": "EBAY_GB",
+                "Accept-Language": "en-GB"
+            }
+            
+            # Create a withdraw request using the Pydantic model
+            withdraw_request = WithdrawOfferRequest(offer_id=params.offer_id)
+            
+            base_url = f"https://api.ebay.com/sell/inventory/v1/offer/{params.offer_id}/withdraw"
+            logger.debug(f"withdraw_offer: Making POST request to: {base_url}")
+            
+            response = await client.post(base_url, headers=headers)
+            response.raise_for_status()
+            
+            logger.info(f"withdraw_offer: Successfully withdrew offer {params.offer_id}")
+            return response.text
+        
+        async with httpx.AsyncClient() as client:
+            result = await _execute_ebay_api_call("withdraw_offer", client, _api_call)
+            
+            # Try to parse the response if available
+            try:
+                if not result.startswith('Token acquisition failed') and not result.startswith('HTTPX RequestError'):
+                    # For successful withdrawals, we typically get an empty response or a status object
+                    if result and len(result.strip()) > 0:
+                        result_json = json.loads(result)
+                        logger.info(f"Parsed withdraw response: {result_json}")
+                    else:
+                        logger.info(f"Empty success response for offer withdrawal {params.offer_id}")
+            except Exception as e:
+                logger.warning(f"Failed to parse withdraw response: {str(e)}")
+            
+            return result
+    except Exception as e:
+        logger.error(f"Error in withdraw_offer: {str(e)}")
+        return f"Error in withdraw offer parameters: {str(e)}"
 
 
 @mcp.tool()
@@ -450,39 +713,70 @@ async def get_listing_fees(offer_ids: list) -> str:
     """
     logger.info(f"Executing get_listing_fees MCP tool with {len(offer_ids)} offer IDs.")
     
-    if not offer_ids:
-        return "Error: At least one offer ID must be provided."
-    
-    if len(offer_ids) > 250:
-        return "Error: Maximum of 250 offer IDs can be processed at once."
+    # Validate parameters using Pydantic model
+    try:
+        params = ListingFeesParams(offer_ids=offer_ids)
+        
+        # Validate the number of offer IDs
+        if not params.offer_ids:
+            return "Error: At least one offer ID must be provided."
+        
+        if len(params.offer_ids) > 250:
+            return "Error: Maximum of 250 offer IDs can be processed at once."
 
-    async def _api_call(access_token: str, client: httpx.AsyncClient):
-        headers = {
-            "Authorization": f"Bearer {access_token}",
-            "Content-Type": "application/json",
-            "X-EBAY-C-MARKETPLACE-ID": "EBAY_GB",
-            "Accept-Language": "en-GB"
-        }
+        async def _api_call(access_token: str, client: httpx.AsyncClient):
+            headers = {
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json",
+                "X-EBAY-C-MARKETPLACE-ID": "EBAY_GB",
+                "Accept-Language": "en-GB"
+            }
+            
+            # Create listing fee request using the Pydantic model
+            fee_request = ListingFeeRequest(
+                offers=[{"offerId": offer_id} for offer_id in params.offer_ids]
+            )
+            
+            # Convert to dict for API request
+            payload = fee_request.model_dump()
+            logger.debug(f"get_listing_fees: Request payload: {payload}")
+            
+            base_url = "https://api.ebay.com/sell/inventory/v1/offer/get_listing_fees"
+            logger.debug(f"get_listing_fees: Making POST request to: {base_url}")
+            
+            response = await client.post(base_url, headers=headers, json=payload)
+            response.raise_for_status()
+            
+            logger.info(f"get_listing_fees: Successfully retrieved listing fees")
+            return response.text
         
-        # Format the payload according to eBay API requirements
-        offer_keys = []
-        for offer_id in offer_ids:
-            offer_keys.append({"offerId": offer_id})
-        
-        payload = {"offers": offer_keys}
-        logger.debug(f"get_listing_fees: Request payload: {payload}")
-        
-        base_url = "https://api.ebay.com/sell/inventory/v1/offer/get_listing_fees"
-        logger.debug(f"get_listing_fees: Making POST request to: {base_url}")
-        
-        response = await client.post(base_url, headers=headers, json=payload)
-        response.raise_for_status()
-        
-        logger.info(f"get_listing_fees: Successfully retrieved listing fees")
-        return response.text
-    
-    async with httpx.AsyncClient() as client:
-        return await _execute_ebay_api_call("get_listing_fees", client, _api_call)
+        async with httpx.AsyncClient() as client:
+            result = await _execute_ebay_api_call("get_listing_fees", client, _api_call)
+            
+            # Try to parse the response as a ListingFeeResponse
+            try:
+                if not result.startswith('Token acquisition failed') and not result.startswith('HTTPX RequestError'):
+                    result_json = json.loads(result)
+                    
+                    # Create a ListingFeeResponse from the API response
+                    fee_response = ListingFeeResponse(
+                        fees=result_json.get('feeSummaries', []),
+                        warnings=result_json.get('warnings', [])
+                    )
+                    
+                    # Log a summary of the fees retrieved
+                    fee_count = len(fee_response.fees)
+                    logger.info(f"Parsed listing fees response: {fee_count} fee summaries retrieved")
+                    
+                    # Return the original JSON for backward compatibility
+                    return result
+            except Exception as e:
+                logger.warning(f"Failed to parse listing fees response: {str(e)}")
+            
+            return result
+    except Exception as e:
+        logger.error(f"Error in get_listing_fees: {str(e)}")
+        return f"Error in listing fees parameters: {str(e)}"
 
 
 if __name__ == "__main__":
