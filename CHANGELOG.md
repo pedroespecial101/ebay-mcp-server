@@ -1,3 +1,11 @@
+## Updates in TrajectoryID <add_ebay_inventory_api_calls, (cascade_enhancement_003)>, 29052025 - 22:18:06
+
+- **src/server.py**:
+    - Added three new eBay Inventory API MCP tools:
+        - `update_offer`: Updates an existing offer with new price and/or quantity
+        - `withdraw_offer`: Withdraws (deletes) an existing offer from eBay
+        - `get_listing_fees`: Retrieves listing fees for unpublished offers
+
 ## Updates in TrajectoryID <improve_llm_friendly_error_messages, (cascade_enhancement_002)>, 29052025 - 12:05:51
 
 - **src/ebay_service.py**:

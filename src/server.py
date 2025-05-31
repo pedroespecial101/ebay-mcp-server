@@ -348,6 +348,144 @@ async def get_offer_by_sku(sku: str) -> str:
         return await _execute_ebay_api_call("get_offer_by_sku", client, _api_call)
 
 
+@mcp.tool()
+async def update_offer(offer_id: str, sku: str, marketplace_id: str = "EBAY_GB", price: float = None, available_quantity: int = None) -> str:
+    """Update an existing offer with new price and/or quantity.
+    
+    Args:
+        offer_id: The unique identifier of the offer to update.
+        sku: The seller-defined SKU (Stock Keeping Unit) of the offer.
+        marketplace_id: The eBay marketplace ID (default: EBAY_GB).
+        price: New price for the offer (optional).
+        available_quantity: New quantity for the offer (optional).
+    """
+    logger.info(f"Executing update_offer MCP tool with offer_id='{offer_id}', sku='{sku}'")
+    
+    if price is None and available_quantity is None:
+        return "Error: At least one of price or available_quantity must be specified."
+
+    async def _api_call(access_token: str, client: httpx.AsyncClient):
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json",
+            "X-EBAY-C-MARKETPLACE-ID": marketplace_id,
+            "Accept-Language": "en-GB"
+        }
+        
+        # First, get the current offer details to ensure we have all required fields
+        get_url = f"https://api.ebay.com/sell/inventory/v1/offer/{offer_id}"
+        logger.debug(f"update_offer: Getting current offer details from: {get_url}")
+        
+        get_response = await client.get(get_url, headers=headers)
+        get_response.raise_for_status()  # This will be caught by _execute_ebay_api_call if there's an error
+        
+        current_offer = get_response.json()
+        logger.debug(f"update_offer: Successfully retrieved current offer details")
+        
+        # Update only the fields that were provided while keeping all existing data
+        if price is not None:
+            if "pricingSummary" not in current_offer:
+                current_offer["pricingSummary"] = {}
+            if "price" not in current_offer["pricingSummary"]:
+                current_offer["pricingSummary"]["price"] = {}
+            
+            current_offer["pricingSummary"]["price"]["value"] = str(price)
+            # Ensure we have a currency
+            if "currency" not in current_offer["pricingSummary"]["price"]:
+                current_offer["pricingSummary"]["price"]["currency"] = "GBP"  # Default to GBP, modify as needed
+        
+        if available_quantity is not None:
+            current_offer["availableQuantity"] = available_quantity
+        
+        # Make the update call
+        update_url = f"https://api.ebay.com/sell/inventory/v1/offer/{offer_id}"
+        logger.debug(f"update_offer: Sending PUT request to: {update_url}")
+        logger.debug(f"update_offer: Request payload: {current_offer}")
+        
+        update_response = await client.put(update_url, headers=headers, json=current_offer)
+        update_response.raise_for_status()
+        
+        logger.info(f"update_offer: Successfully updated offer {offer_id}")
+        return update_response.text
+    
+    async with httpx.AsyncClient() as client:
+        return await _execute_ebay_api_call("update_offer", client, _api_call)
+
+
+@mcp.tool()
+async def withdraw_offer(offer_id: str) -> str:
+    """Withdraw (delete) an existing offer from eBay.
+    
+    Args:
+        offer_id: The unique identifier of the offer to withdraw.
+    """
+    logger.info(f"Executing withdraw_offer MCP tool with offer_id='{offer_id}'")
+
+    async def _api_call(access_token: str, client: httpx.AsyncClient):
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json",
+            "X-EBAY-C-MARKETPLACE-ID": "EBAY_GB",
+            "Accept-Language": "en-GB"
+        }
+        
+        base_url = f"https://api.ebay.com/sell/inventory/v1/offer/{offer_id}/withdraw"
+        logger.debug(f"withdraw_offer: Making POST request to: {base_url}")
+        
+        response = await client.post(base_url, headers=headers)
+        response.raise_for_status()
+        
+        logger.info(f"withdraw_offer: Successfully withdrew offer {offer_id}")
+        return response.text
+    
+    async with httpx.AsyncClient() as client:
+        return await _execute_ebay_api_call("withdraw_offer", client, _api_call)
+
+
+@mcp.tool()
+async def get_listing_fees(offer_ids: list) -> str:
+    """Get listing fees for unpublished offers.
+    
+    Args:
+        offer_ids: List of offer IDs to get fees for (up to 250).
+    """
+    logger.info(f"Executing get_listing_fees MCP tool with {len(offer_ids)} offer IDs.")
+    
+    if not offer_ids:
+        return "Error: At least one offer ID must be provided."
+    
+    if len(offer_ids) > 250:
+        return "Error: Maximum of 250 offer IDs can be processed at once."
+
+    async def _api_call(access_token: str, client: httpx.AsyncClient):
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json",
+            "X-EBAY-C-MARKETPLACE-ID": "EBAY_GB",
+            "Accept-Language": "en-GB"
+        }
+        
+        # Format the payload according to eBay API requirements
+        offer_keys = []
+        for offer_id in offer_ids:
+            offer_keys.append({"offerId": offer_id})
+        
+        payload = {"offers": offer_keys}
+        logger.debug(f"get_listing_fees: Request payload: {payload}")
+        
+        base_url = "https://api.ebay.com/sell/inventory/v1/offer/get_listing_fees"
+        logger.debug(f"get_listing_fees: Making POST request to: {base_url}")
+        
+        response = await client.post(base_url, headers=headers, json=payload)
+        response.raise_for_status()
+        
+        logger.info(f"get_listing_fees: Successfully retrieved listing fees")
+        return response.text
+    
+    async with httpx.AsyncClient() as client:
+        return await _execute_ebay_api_call("get_listing_fees", client, _api_call)
+
+
 if __name__ == "__main__":
     logger.info("Starting FastMCP server with stdio transport...")
     logger.info("To test authentication, use the MCP client to call the 'test_auth' function or other tools.")
