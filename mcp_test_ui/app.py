@@ -354,12 +354,23 @@ async def execute_tool(request: Request, tool_name: str):
         # Convert string parameters to appropriate types based on tool definition
         converted_params = {}
         for param_name, param_value in params.items():
-            # Try to convert numeric types if they're strings
-            if isinstance(param_value, str):
-                if param_value.isdigit():  # Integer
+            # Special handling for known ID fields and query parameters that should remain as strings
+            string_field_names = ['category_id', 'offer_id', 'sku', 'listing_id', 'merchant_location_key', 'query']
+            
+            # Keep IDs and query parameters as strings even if they're numeric
+            if param_name in string_field_names:
+                converted_params[param_name] = str(param_value) if param_value is not None else param_value
+            # Convert other parameters based on their apparent type
+            elif isinstance(param_value, str):
+                # Only convert string params that aren't IDs to numeric types if appropriate
+                if param_value.isdigit() and not any(id_name in param_name.lower() for id_name in ['id', 'sku', 'key']):
                     converted_params[param_name] = int(param_value)
-                elif param_value.replace('.', '', 1).isdigit() and param_value.count('.') <= 1:  # Float
-                    converted_params[param_name] = float(param_value)
+                elif param_value.replace('.', '', 1).isdigit() and param_value.count('.') <= 1:
+                    # Only convert to float if it's explicitly a price or a known numeric field
+                    if 'price' in param_name.lower() or 'quantity' in param_name.lower() or 'amount' in param_name.lower():
+                        converted_params[param_name] = float(param_value)
+                    else:
+                        converted_params[param_name] = param_value
                 else:
                     converted_params[param_name] = param_value
             else:

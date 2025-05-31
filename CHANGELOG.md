@@ -1,3 +1,16 @@
+## Updates in TrajectoryID <pydantic_parameter_type_handling, (cascade_enhancement_011)>, 31052025 - 09:51:03
+
+- **mcp_test_ui/app.py**:
+    - Fixed parameter type conversion issues in the MCP Test UI that affected Pydantic validation
+    - Added special handling for ID fields (category_id, offer_id, sku, etc.) and query parameters to preserve them as strings even when they appear numeric
+    - Implemented smarter type conversion logic that only converts apparent numeric values to numbers for appropriate fields (price, quantity)
+    - This resolves Pydantic validation errors in `get_item_aspects_for_category`, `update_offer`, `withdraw_offer`, and `get_category_suggestions` MCP tools
+
+- **src/models/mcp_tools.py**:
+    - Enhanced field validators in Pydantic models to handle type conversion for ID fields
+    - Added robust type handling for parameters that might be received as different types from the UI or API clients
+    - Improved numeric field validators to handle both string and numeric inputs correctly
+
 ## Updates in TrajectoryID <pydantic_documentation_update, (cascade_enhancement_010)>, 31052025 - 09:04:08
 
 - **README.md**:

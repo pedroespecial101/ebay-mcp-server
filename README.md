@@ -43,7 +43,9 @@ ebay-mcp-server/
 ├── CHANGELOG.md            # Documentation of changes to the project
 ├── README.md               # Project documentation (this file)
 ├── ebay_auth/              # eBay authentication module
-│   └── ebay_auth.py        # OAuth implementation for eBay
+│   ├── __init__.py         # Package initialization
+│   ├── ebay_auth.py        # OAuth implementation for eBay
+│   └── requirements.txt    # Auth module specific dependencies
 ├── ebay_docs/              # eBay API documentation and project reference files
 ├── logs/                   # Server logs directory
 │   └── fastmcp_server.log  # Server log file with rotation
@@ -54,6 +56,13 @@ ebay-mcp-server/
 │   └── templates/          # Jinja2 templates for UI pages
 ├── src/                    # Source code directory
 │   ├── ebay_service.py     # eBay service utilities
+│   ├── models/             # Pydantic models for data validation
+│   │   ├── __init__.py     # Package initialization
+│   │   ├── ebay/           # eBay API specific models
+│   │   │   ├── __init__.py # Package initialization
+│   │   │   ├── inventory.py # Inventory API models
+│   │   │   └── taxonomy.py # Taxonomy API models
+│   │   └── mcp_tools.py    # MCP tool parameter models
 │   └── server.py           # Main MCP server implementation
 ├── start.sh                # MCP server management script
 ├── mcp_test_ui_start.py    # Script to start the MCP Test UI
@@ -161,33 +170,103 @@ The server implements the Model Context Protocol, allowing AI assistants and oth
 To add a new function to the MCP server, follow these steps:
 
 1. Identify the eBay API endpoint you want to expose
-2. Add a new async function to `src/server.py` using the `@mcp.tool()` decorator
-3. Implement the function logic using the `_execute_ebay_api_call` helper for consistent error handling
-4. Follow the existing pattern for API calls:
+2. Create appropriate Pydantic models in `src/models/` for request parameters and responses
+3. Add a new async function to `src/server.py` using the `@mcp.tool()` decorator
+4. Implement the function logic using the `_execute_ebay_api_call` helper for consistent error handling
+5. Follow the existing pattern for API calls with Pydantic validation:
 
 ```python
 @mcp.tool()
 async def your_new_function(param1: str, param2: int = 10) -> str:
     """Your function description"""
-    logger.info(f"Executing your_new_function with param1='{param1}', param2={param2}.")
+    # Validate parameters using Pydantic model
+    params = YourFunctionParams(param1=param1, param2=param2)
+    logger.info(f"Executing your_new_function with params: {params.model_dump()}")
 
     async def _api_call(access_token: str, client: httpx.AsyncClient):
         headers = {
             "Authorization": f"Bearer {access_token}",
             "Content-Type": "application/json",
         }
-        params = {"param1": param1, "param2": param2}
+        # Use model_dump to convert Pydantic model to dict
+        payload = params.model_dump(exclude_none=True)
         url = "https://api.ebay.com/path/to/endpoint"
         
-        response = await client.get(url, headers=headers, params=params)
+        response = await client.get(url, headers=headers, params=payload)
         response.raise_for_status()
         return response.text
 
     async with httpx.AsyncClient() as client:
-        return await _execute_ebay_api_call("your_new_function", client, _api_call)
+        result = await _execute_ebay_api_call("your_new_function", client, _api_call)
+        
+        # Parse and return response using Pydantic model
+        if not result.startswith('Token acquisition failed'):
+            try:
+                result_json = json.loads(result)
+                response_model = YourFunctionResponse(**result_json)
+                # You can perform additional transformations here
+            except Exception as e:
+                logger.error(f"Error parsing response: {e}")
+                
+        return result
 ```
 
-5. Restart the server using `./start.sh` to make the new function available
+6. Restart the server using `./start.sh` to make the new function available
+
+## Pydantic Integration
+
+This project uses Pydantic extensively for data validation, serialization, and documentation of both requests and responses.
+
+### Model Organization
+
+Pydantic models are organized in the following structure:
+
+- `src/models/mcp_tools.py`: Contains parameter models for MCP tools
+- `src/models/ebay/inventory.py`: Models for eBay Inventory API
+- `src/models/ebay/taxonomy.py`: Models for eBay Taxonomy API
+
+### Parameter Validation
+
+All MCP tools use Pydantic models for parameter validation before making API calls. This ensures:
+
+1. Required parameters are provided
+2. Parameters have the correct types
+3. Parameters meet any additional constraints (min/max values, patterns, etc.)
+
+Example parameter model:
+
+```python
+class ItemAspectsParams(EbayBaseModel):
+    """Parameters for the get_item_aspects_for_category tool."""
+    
+    category_id: str = Field(..., description="The category ID to get aspects for.")
+    
+    @field_validator("category_id")
+    @classmethod
+    def validate_category_id(cls, value):
+        """Ensure category_id is a string, even if a numeric value is provided."""
+        if value is not None and not isinstance(value, str):
+            return str(value)
+        return value
+```
+
+### Response Parsing
+
+API responses are parsed into Pydantic models for type safety and easy data access. This allows:
+
+1. Validation of API responses
+2. Structured access to response data
+3. Automatic conversion between JSON and Python objects
+
+Example response model:
+
+```python
+class ListingFeeResponse(EbayBaseModel):
+    """Response model for get_listing_fees."""
+    
+    feeSummaries: List[FeeSummary] = Field(default_factory=list)
+    warnings: Optional[List[Warning]] = None
+```
 
 ## Authentication Flow
 
@@ -331,6 +410,100 @@ async def example_tool(param1: str, param2: int) -> str:
 - **Token Refresh Issues**: If tokens aren't refreshing, try manually re-authenticating with `python ebay_auth/ebay_auth.py login`
 - **Server Won't Start**: Check the logs at `logs/fastmcp_server.log` for detailed error messages
 - **Missing Dependencies**: Ensure all requirements are installed with `pip install -r requirements.txt`
+
+## Development Gotchas and Troubleshooting
+
+### Pydantic Parameter Type Handling
+
+- **ID Fields as Strings**: Many eBay API endpoints expect IDs (like `category_id`, `offer_id`, etc.) as strings, even when they contain only digits. The MCP Test UI and Pydantic models are configured to handle this conversion automatically.
+
+- **Type Conversion in MCP Test UI**: The MCP Test UI performs automatic type conversion of form inputs. For example, a string input that looks numeric ("31388") is automatically converted to an integer before being sent to the MCP server. This can cause Pydantic validation errors when string parameters are expected. The solution is:
+  1. In `mcp_test_ui/app.py`, string fields are preserved using the `string_field_names` list
+  2. In Pydantic models, field validators are added to convert values to strings when needed
+
+- **FastMCP Parameter Validation**: FastMCP performs validation before Pydantic validators run. If a parameter is defined as `str` in an MCP tool function signature but an integer is provided, FastMCP will reject it before the parameter reaches the Pydantic model.
+
+### Server Lifecycle Management
+
+- **Multiple Server Instances**: Be aware that running `./start.sh start` and the IDE's MCP integration create separate instances of the server. Changes to one don't affect the other.
+
+- **Port Conflicts**: If the MCP Test UI fails to start due to port conflicts, use the command `lsof -ti:8000 | xargs kill -9` to clear any processes using port 8000.
+
+- **Environment Variables**: Changes to the `.env` file require restarting the server for them to take effect. This applies to both the standalone server and the IDE's MCP integration.
+
+## Tips for AI Agents
+
+### General Development Practices
+
+- **Commit Early and Often**: Before making significant code changes, remind the user to commit their current state to Git or create a tag.
+
+- **Modular Solutions**: Prefer modular solutions that result in smaller, more maintainable files. If a file exceeds 500 lines, consider refactoring it into smaller components.
+
+- **Clean Code**: Avoid code duplication and check for similar functionality elsewhere in the codebase before implementing new features.
+
+- **Virtual Environment**: Always use the `.venv` virtual environment (not `venv`) for Python operations in this project.
+
+### MCP and Pydantic Development
+
+- **Test-Driven Development**: When implementing new MCP tools or modifying existing ones, first create a test script or use the MCP Test UI to verify functionality.
+
+- **Parameter Type Safety**: Always add Pydantic field validators for any parameter that might receive mixed types, especially ID fields that should be strings but might be provided as integers.
+
+- **Response Models**: Create comprehensive response models that capture the full structure of API responses, using optional fields for elements that might not always be present.
+
+- **Error Handling**: Implement robust error handling with descriptive error messages. Use try-except blocks around JSON parsing and API calls with specific error types.
+
+## AI Agent Autonomous Testing Procedure
+
+This section provides guidance for AI agents on how to autonomously test and debug the eBay MCP Server, based on the successful approach used in this project.
+
+### Testing MCP Tools
+
+1. **Server Setup**:
+   - Start the MCP server using `./start.sh restart`
+   - Start the MCP Test UI with `python mcp_test_ui_start.py`
+   - Create a browser preview for the UI at `http://127.0.0.1:8000`
+
+2. **Direct API Testing**:
+   - Use curl commands to test MCP tools directly via the API endpoint:
+     ```bash
+     curl -X POST -H "Content-Type: application/x-www-form-urlencoded" -d "param1=value1&param2=value2" http://127.0.0.1:8000/execute/tool_name
+     ```
+   - This allows testing with exact parameter values and seeing raw responses
+
+3. **Browser UI Testing**:
+   - Use the browser preview to interact with the MCP Test UI
+   - Fill out the form for the tool you want to test and submit
+   - Inspect the response and any error messages
+
+4. **Debugging Process**:
+   - If a tool fails with a validation error, inspect the error message for specific details
+   - Check the parameter types expected by the tool's Pydantic model
+   - Look for type conversion issues in the MCP Test UI's `app.py` file
+   - Add or modify field validators in the Pydantic models to handle problematic inputs
+   - Restart both servers and test again
+
+5. **Iterative Improvement**:
+   - Start with a working test case and progressively introduce more complex parameters
+   - Document all errors and their solutions in the CHANGELOG.md
+   - After each fix, test all previously problematic tools to ensure they still work
+
+### Logging and Error Inspection
+
+- Monitor server logs: `tail -f logs/fastmcp_server.log`
+- Check MCP Test UI console output for client-side errors
+- Add debug logging statements in the code to track parameter values and types
+
+### Validation and Verification
+
+When validating fixes, verify:
+
+1. The tool accepts all valid parameter types (strings, integers, etc.)
+2. The tool correctly handles edge cases (empty strings, zeros, etc.)
+3. The fix doesn't break other tools or functionality
+4. The solution is robust against future changes
+
+This autonomous testing approach enables AI agents to effectively identify, debug, and fix issues in the MCP server without requiring constant human intervention.
 
 ## Security Considerations
 

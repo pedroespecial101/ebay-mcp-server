@@ -43,12 +43,26 @@ class CategorySuggestionsParams(EbayBaseModel):
     """Parameters for the get_category_suggestions tool."""
     
     query: str = Field(..., description="The query string to find category suggestions for.")
+    
+    @field_validator("query")
+    @classmethod
+    def validate_query(cls, value):
+        """Ensure query is a string, even if a numeric value is provided."""
+        if value is not None and not isinstance(value, str):
+            return str(value)
+        return value
 
 
 class ItemAspectsParams(EbayBaseModel):
-    """Parameters for the get_item_aspects_for_category tool."""
+    """
+Parameters for the get_item_aspects_for_category tool."""
     
     category_id: str = Field(..., description="The eBay category ID to get aspects for.")
+    
+    @field_validator('category_id')
+    def validate_category_id(cls, v):
+        """Convert the category_id to string if it's an integer."""
+        return str(v) if v is not None else v
 
 
 class OfferBySkuParams(EbayBaseModel):
@@ -58,7 +72,8 @@ class OfferBySkuParams(EbayBaseModel):
 
 
 class UpdateOfferParams(EbayBaseModel):
-    """Parameters for the update_offer tool."""
+    """
+Parameters for the update_offer tool."""
     
     offer_id: str = Field(..., description="The unique identifier of the offer to update.")
     sku: str = Field(..., description="The seller-defined SKU of the offer.")
@@ -66,25 +81,41 @@ class UpdateOfferParams(EbayBaseModel):
     price: Optional[float] = Field(None, description="New price for the offer.")
     available_quantity: Optional[int] = Field(None, description="New quantity for the offer.")
     
+    @field_validator('offer_id')
+    def validate_offer_id(cls, v):
+        """Convert the offer_id to string if it's an integer."""
+        return str(v) if v is not None else v
+    
+    @field_validator('sku')
+    def validate_sku(cls, v):
+        """Convert the SKU to string if needed."""
+        return str(v) if v is not None else v
+    
     @field_validator('price')
     def validate_price(cls, v):
         """Validate that price is positive if provided."""
-        if v is not None and v <= 0:
+        if v is not None and float(v) <= 0:
             raise ValueError("Price must be a positive number")
-        return v
+        return float(v) if v is not None else v
     
     @field_validator('available_quantity')
     def validate_quantity(cls, v):
         """Validate that quantity is non-negative if provided."""
-        if v is not None and v < 0:
+        if v is not None and int(v) < 0:
             raise ValueError("Available quantity must be a non-negative integer")
-        return v
+        return int(v) if v is not None else v
 
 
 class WithdrawOfferParams(EbayBaseModel):
-    """Parameters for the withdraw_offer tool."""
+    """
+Parameters for the withdraw_offer tool."""
     
     offer_id: str = Field(..., description="The unique identifier of the offer to withdraw.")
+    
+    @field_validator('offer_id')
+    def validate_offer_id(cls, v):
+        """Convert the offer_id to string if it's an integer."""
+        return str(v) if v is not None else v
 
 
 class ListingFeesParams(EbayBaseModel):
