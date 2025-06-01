@@ -1,3 +1,49 @@
+## Updates in TrajectoryID <openrouter_env_api_key, (cascade_enhancement_014)>, 31052025 - 21:10:45
+
+- **mcp_test_ui/app.py**:
+    - Added automatic loading of OpenRouter API key from .env file when not provided in UI
+    - Integrated python-dotenv to properly load environment variables
+    - Improved user experience by eliminating need to manually enter API key each time
+    - Added conditional API key loading specifically for OpenRouter provider
+
+## Updates in TrajectoryID <openrouter_llm_integration, (cascade_enhancement_013)>, 12052023 - 10:57:25
+
+- **mcp_test_ui/app.py**:
+    - Refactored LLM chat interface to use OpenRouter as the sole LLM provider
+    - Added OpenRouter API implementation with tool calling support
+    - Implemented proper streaming for OpenRouter API responses
+    - Added enhanced error handling for tool execution
+    - Fixed issues with API request parameters
+
+- **mcp_test_ui/templates/chat.html**:
+    - Updated UI to use OpenRouter as the sole provider
+    - Set Google Gemini 2.5 Flash Preview as the default model
+    - Fixed model selection logic in JavaScript
+    - Improved request data handling
+
+## Updates in TrajectoryID <llm_chat_interface_integration, (cascade_enhancement_012)>, 31052025 - 20:38:35
+
+- **mcp_test_ui/app.py**:
+    - Added a lightweight LLM chat interface to the MCP Test UI
+    - Implemented support for multiple LLM providers: OpenAI, Anthropic Claude, and Google Gemini
+    - Added real-time streaming of responses using Server-Sent Events
+    - Integrated MCP tool calling capabilities for the OpenAI provider
+    - Created new Pydantic models for chat messages, requests, and tool calls
+    - Added new routes: GET /chat for the UI, POST /chat for non-streaming requests, and GET /chat/stream for streaming responses
+    - Implemented provider-specific functions for each LLM service
+    - Added error handling and debug logging throughout
+    - Fixed duplicate Tuple import
+
+- **mcp_test_ui/templates/chat.html**:
+    - Created a new responsive chat interface template with Bootstrap UI
+    - Implemented configuration panel for provider, model, API key, and MCP server settings
+    - Added chat message display area with support for both streaming and non-streaming responses
+    - Implemented debug panel for detailed logging
+    - Added JavaScript for handling configuration, message sending, and streaming event handling
+
+- **mcp_test_ui/templates/base.html**:
+    - Added navigation link to the new LLM Chat interface
+
 ## Updates in TrajectoryID <pydantic_parameter_type_handling, (cascade_enhancement_011)>, 31052025 - 09:51:03
 
 - **mcp_test_ui/app.py**:

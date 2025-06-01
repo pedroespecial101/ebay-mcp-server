@@ -1,0 +1,646 @@
+{% extends "base.html" %}
+
+{% block title %}LLM Chat - MCP Test UI{% endblock %}
+
+{% block head %}
+<style>
+  .chat-container {
+    height: calc(100vh - 250px);
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+  }
+  .chat-messages {
+    flex-grow: 1;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    margin-bottom: 1rem;
+  }
+  .chat-input-container {
+    display: flex;
+    flex-direction: column;
+  }
+  .message {
+    margin-bottom: 1rem;
+    max-width: 85%;
+  }
+  .message.user {
+    margin-left: auto;
+    background-color: #007bff;
+    color: white;
+    border-radius: 1rem 1rem 0 1rem;
+    padding: 0.75rem 1rem;
+  }
+  .message.assistant {
+    margin-right: auto;
+    background-color: #f1f3f5;
+    color: #212529;
+    border-radius: 1rem 1rem 1rem 0;
+    padding: 0.75rem 1rem;
+    white-space: pre-wrap;
+  }
+  .message.system {
+    width: 100%;
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+    margin: 0.5rem 0;
+  }
+  .message .timestamp {
+    font-size: 0.75rem;
+    opacity: 0.7;
+    margin-top: 0.25rem;
+  }
+  .mcp-tool-call {
+    background-color: #f0f8ff;
+    border-left: 3px solid #007bff;
+    padding: 0.5rem;
+    margin: 0.5rem 0;
+    border-radius: 0.25rem;
+    font-family: monospace;
+    white-space: pre-wrap;
+  }
+  .mcp-tool-result {
+    background-color: #f0fff0;
+    border-left: 3px solid #28a745;
+    padding: 0.5rem;
+    margin: 0.5rem 0;
+    border-radius: 0.25rem;
+    font-family: monospace;
+    white-space: pre-wrap;
+  }
+  .thinking-indicator {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  .thinking-indicator .dot {
+    height: 8px;
+    width: 8px;
+    margin: 0 2px;
+    background-color: #6c757d;
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+    animation-delay: calc(var(--dot-index) * 0.2s);
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.3; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.2); }
+  }
+  .debug-panel {
+    margin-top: 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    background-color: #f8f9fa;
+    padding: 1rem;
+    max-height: 200px;
+    overflow-y: auto;
+    font-family: monospace;
+    font-size: 0.85rem;
+  }
+  .debug-panel.collapsed {
+    height: 40px;
+  }
+  .collapsible-header {
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .debug-entry {
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 0.5rem;
+  }
+  .debug-entry:last-child {
+    margin-bottom: 0;
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  .debug-timestamp {
+    color: #6c757d;
+    font-size: 0.75rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-3">
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="mb-0">Configuration</h5>
+      </div>
+      <div class="card-body">
+        <form id="configForm">
+          <div class="mb-3">
+            <label for="llmProvider" class="form-label">LLM Provider</label>
+            <select class="form-select" id="llmProvider" name="provider">
+              <option value="openrouter">OpenRouter</option>
+            </select>
+          </div>
+          
+          <div class="mb-3 provider-models" id="openrouterModels">
+            <label for="openrouterModel" class="form-label">Model</label>
+            <select class="form-select" id="openrouterModel" name="openrouter_model">
+              <option value="google/gemini-2.5-flash-preview-05-20" selected>Gemini 2.5 Flash Preview</option>
+              <option value="anthropic/claude-3-opus-20240229">Claude 3 Opus</option>
+              <option value="anthropic/claude-3-sonnet-20240229">Claude 3 Sonnet</option>
+              <option value="openai/gpt-4o">GPT-4o</option>
+              <option value="openai/gpt-4-turbo">GPT-4 Turbo</option>
+              <option value="google/gemini-1.5-pro">Gemini 1.5 Pro</option>
+              <option value="google/gemini-1.5-flash">Gemini 1.5 Flash</option>
+            </select>
+          </div>
+          
+          <div class="mb-3">
+            <label for="apiKey" class="form-label">API Key</label>
+            <input type="password" class="form-control" id="apiKey" name="api_key" placeholder="Enter API key">
+            <div class="form-text">This will be stored in memory only.</div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="mcpServer" class="form-label">MCP Server</label>
+            <input type="text" class="form-control" id="mcpServer" name="mcp_server" value="{{ mcp_server_path }}" placeholder="/path/to/server.py">
+            <div class="form-text">Path to MCP server file.</div>
+          </div>
+          
+          <div class="form-check form-switch mb-3">
+            <input class="form-check-input" type="checkbox" id="streamingEnabled" name="streaming" checked>
+            <label class="form-check-label" for="streamingEnabled">Enable streaming</label>
+          </div>
+          
+          <div class="form-check form-switch mb-3">
+            <input class="form-check-input" type="checkbox" id="debugMode" name="debug">
+            <label class="form-check-label" for="debugMode">Debug mode</label>
+          </div>
+          
+          <div class="d-grid">
+            <button type="button" id="saveConfigBtn" class="btn btn-primary">Save Configuration</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="card-header collapsible-header" data-bs-toggle="collapse" data-bs-target="#systemPromptContainer">
+        <h5 class="mb-0">System Prompt</h5>
+        <i class="fas fa-chevron-down"></i>
+      </div>
+      <div id="systemPromptContainer" class="collapse show">
+        <div class="card-body">
+          <textarea id="systemPrompt" class="form-control" rows="6" placeholder="Enter system prompt...">You are a helpful AI assistant. You can use MCP tools from the eBay API server when appropriate to help with user queries.</textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-9">
+    <div class="card chat-container">
+      <div class="card-header">
+        <h5 class="mb-0">Chat</h5>
+      </div>
+      <div class="card-body d-flex flex-column p-0" style="overflow: hidden;">
+        <div id="chatMessages" class="chat-messages">
+          <!-- Messages will appear here -->
+          <div class="message system">
+            <p>New conversation started</p>
+          </div>
+        </div>
+        <div class="chat-input-container p-3 pt-0">
+          <div class="input-group">
+            <textarea id="userInput" class="form-control" placeholder="Type your message..." rows="3"></textarea>
+            <button id="sendButton" class="btn btn-primary">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="debug-panel collapsed mt-3">
+      <div class="collapsible-header" id="debugToggle">
+        <h6 class="mb-0">Debug Panel</h6>
+        <i class="fas fa-chevron-down"></i>
+      </div>
+      <div id="debugContent" class="mt-2" style="display: none;">
+        <!-- Debug logs will appear here -->
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  let chatHistory = [];
+  let currentSession = {
+    provider: 'openrouter',
+    model: 'google/gemini-2.5-flash-preview-05-20',
+    apiKey: '',
+    mcpServer: '{{ mcp_server_path }}',
+    streaming: true,
+    debug: false
+  };
+  let isProcessing = false;
+  let debugPanelCollapsed = true;
+  
+  $(document).ready(function() {
+    // Provider selection change - simplified since we only have OpenRouter now
+    $('#llmProvider').on('change', function() {
+      const provider = $(this).val();
+      $('.provider-models').hide();
+      $(`#${provider}Models`).show();
+      currentSession.provider = provider;
+    });
+    
+    // Save configuration
+    $('#saveConfigBtn').click(function() {
+      const provider = $('#llmProvider').val();
+      currentSession = {
+        provider: provider,
+        model: $(`#${provider}Model`).val(),
+        apiKey: $('#apiKey').val() || currentSession.apiKey,
+        mcpServer: $('#mcpServer').val(),
+        streaming: $('#streamingEnabled').is(':checked'),
+        debug: $('#debugMode').is(':checked')
+      };
+      
+      logDebug('Configuration updated', currentSession);
+      
+      // Show confirmation toast
+      showToast('Configuration saved');
+    });
+    
+    // Send message on button click
+    $('#sendButton').click(sendMessage);
+    
+    // Send message on Ctrl+Enter
+    $('#userInput').keydown(function(e) {
+      if (e.ctrlKey && e.keyCode === 13) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+    
+    // Toggle debug panel
+    $('#debugToggle').click(function() {
+      debugPanelCollapsed = !debugPanelCollapsed;
+      if (debugPanelCollapsed) {
+        $('#debugContent').hide();
+        $('.debug-panel').addClass('collapsed');
+        $(this).find('i').removeClass('fa-chevron-up').addClass('fa-chevron-down');
+      } else {
+        $('#debugContent').show();
+        $('.debug-panel').removeClass('collapsed');
+        $(this).find('i').removeClass('fa-chevron-down').addClass('fa-chevron-up');
+      }
+    });
+    
+    // Initialize from URL params if present
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('provider')) {
+      const provider = urlParams.get('provider');
+      $('#llmProvider').val(provider).trigger('change');
+      
+      if (urlParams.has(`${provider}_model`)) {
+        $(`#${provider}Model`).val(urlParams.get(`${provider}_model`));
+      }
+      
+      if (urlParams.has('streaming')) {
+        $('#streamingEnabled').prop('checked', urlParams.get('streaming') === 'true');
+      }
+      
+      if (urlParams.has('debug')) {
+        $('#debugMode').prop('checked', urlParams.get('debug') === 'true');
+      }
+      
+      // Don't load API key from URL for security reasons
+      
+      // Save configuration
+      $('#saveConfigBtn').click();
+    }
+  });
+  
+  function sendMessage() {
+    if (isProcessing) return;
+    
+    const userInput = $('#userInput').val().trim();
+    if (!userInput) return;
+    
+    // Add user message to chat
+    addMessage('user', userInput);
+    
+    // Clear input
+    $('#userInput').val('');
+    
+    // Start thinking indicator
+    showThinkingIndicator();
+    
+    // Prepare message history
+    const messages = [];
+    
+    // Add system message if present
+    const systemPrompt = $('#systemPrompt').val().trim();
+    if (systemPrompt) {
+      messages.push({
+        role: 'system',
+        content: systemPrompt
+      });
+    }
+    
+    // Add chat history
+    chatHistory.forEach(msg => {
+      messages.push({
+        role: msg.role,
+        content: msg.content
+      });
+    });
+    
+    // Prepare request data
+    const requestData = {
+      provider: currentSession.provider,
+      model: currentSession.model,
+      messages: messages,
+      stream: currentSession.streaming,
+      mcp_server: currentSession.mcpServer,
+      api_key: currentSession.apiKey
+    };
+    
+    logDebug('Sending request', {
+      provider: requestData.provider,
+      model: requestData.model,
+      messageCount: requestData.messages.length,
+      streaming: requestData.stream
+    });
+    
+    isProcessing = true;
+    
+    if (currentSession.streaming) {
+      // Use server-sent events for streaming
+      const eventSource = new EventSource(`/chat/stream?data=${encodeURIComponent(JSON.stringify(requestData))}`);
+      
+      let assistantMessageId = null;
+      let currentContent = '';
+      
+      eventSource.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        
+        if (data.type === 'start') {
+          // Create a new assistant message
+          assistantMessageId = addMessage('assistant', '');
+          currentContent = '';
+        } else if (data.type === 'content') {
+          // Update the assistant message
+          currentContent += data.chunk;
+          updateMessage(assistantMessageId, currentContent);
+        } else if (data.type === 'tool_call') {
+          // Handle tool call
+          logDebug('Tool call', data.tool_call);
+          appendToMessage(assistantMessageId, renderToolCall(data.tool_call));
+        } else if (data.type === 'tool_result') {
+          // Handle tool result
+          logDebug('Tool result', data.tool_result);
+          appendToMessage(assistantMessageId, renderToolResult(data.tool_result));
+        } else if (data.type === 'end') {
+          // End of response
+          isProcessing = false;
+          hideThinkingIndicator();
+          eventSource.close();
+        } else if (data.type === 'error') {
+          // Handle error
+          hideThinkingIndicator();
+          addMessage('system', `Error: ${data.error}`);
+          isProcessing = false;
+          eventSource.close();
+        }
+      };
+      
+      eventSource.onerror = function() {
+        hideThinkingIndicator();
+        addMessage('system', 'Connection error. Please try again.');
+        isProcessing = false;
+        eventSource.close();
+      };
+    } else {
+      // Use regular AJAX for non-streaming requests
+      $.ajax({
+        url: '/chat',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(requestData),
+        success: function(response) {
+          hideThinkingIndicator();
+          
+          if (response.error) {
+            addMessage('system', `Error: ${response.error}`);
+          } else {
+            const messageId = addMessage('assistant', response.content);
+            
+            // Add any tool calls and results
+            if (response.tool_calls && response.tool_calls.length > 0) {
+              response.tool_calls.forEach(toolCall => {
+                appendToMessage(messageId, renderToolCall(toolCall));
+                
+                if (toolCall.result) {
+                  appendToMessage(messageId, renderToolResult(toolCall.result));
+                }
+              });
+            }
+          }
+          
+          isProcessing = false;
+        },
+        error: function(xhr) {
+          hideThinkingIndicator();
+          
+          try {
+            const response = JSON.parse(xhr.responseText);
+            addMessage('system', `Error: ${response.error}`);
+          } catch (e) {
+            addMessage('system', 'An error occurred. Please try again.');
+          }
+          
+          isProcessing = false;
+        }
+      });
+    }
+  }
+  
+  function addMessage(role, content) {
+    const timestamp = new Date().toLocaleTimeString();
+    const messageId = Date.now().toString();
+    
+    // Create message element
+    const messageHtml = `
+      <div class="message ${role}" id="message-${messageId}">
+        ${content}
+        <div class="timestamp">${timestamp}</div>
+      </div>
+    `;
+    
+    // Add to DOM
+    $('#chatMessages').append(messageHtml);
+    
+    // Scroll to bottom
+    scrollToBottom();
+    
+    // Add to history (except system messages)
+    if (role !== 'system') {
+      chatHistory.push({
+        id: messageId,
+        role: role,
+        content: content,
+        timestamp: timestamp
+      });
+    }
+    
+    return messageId;
+  }
+  
+  function updateMessage(messageId, content) {
+    // Update in DOM
+    $(`#message-${messageId}`).html(content + `<div class="timestamp">${new Date().toLocaleTimeString()}</div>`);
+    
+    // Update in history
+    const messageIndex = chatHistory.findIndex(msg => msg.id === messageId);
+    if (messageIndex !== -1) {
+      chatHistory[messageIndex].content = content;
+    }
+    
+    // Scroll to bottom
+    scrollToBottom();
+  }
+  
+  function appendToMessage(messageId, content) {
+    // Get current content
+    const currentContent = $(`#message-${messageId}`).html();
+    const timestampHtml = `<div class="timestamp">${new Date().toLocaleTimeString()}</div>`;
+    
+    // Remove timestamp from current content
+    const contentWithoutTimestamp = currentContent.replace(/<div class="timestamp">.*<\/div>/, '');
+    
+    // Update in DOM with new content and timestamp
+    $(`#message-${messageId}`).html(contentWithoutTimestamp + content + timestampHtml);
+    
+    // Update in history
+    const messageIndex = chatHistory.findIndex(msg => msg.id === messageId);
+    if (messageIndex !== -1) {
+      chatHistory[messageIndex].content = contentWithoutTimestamp + content;
+    }
+    
+    // Scroll to bottom
+    scrollToBottom();
+  }
+  
+  function renderToolCall(toolCall) {
+    return `
+      <div class="mcp-tool-call">
+        <strong>Tool Call:</strong> ${toolCall.name}
+        <pre>${JSON.stringify(toolCall.args || {}, null, 2)}</pre>
+      </div>
+    `;
+  }
+  
+  function renderToolResult(toolResult) {
+    return `
+      <div class="mcp-tool-result">
+        <strong>Tool Result:</strong>
+        <pre>${typeof toolResult === 'string' ? toolResult : JSON.stringify(toolResult, null, 2)}</pre>
+      </div>
+    `;
+  }
+  
+  function showThinkingIndicator() {
+    // Add thinking indicator
+    const indicator = `
+      <div id="thinking-indicator" class="thinking-indicator">
+        <div class="dot" style="--dot-index: 0;"></div>
+        <div class="dot" style="--dot-index: 1;"></div>
+        <div class="dot" style="--dot-index: 2;"></div>
+      </div>
+    `;
+    $('#chatMessages').append(indicator);
+    scrollToBottom();
+  }
+  
+  function hideThinkingIndicator() {
+    $('#thinking-indicator').remove();
+  }
+  
+  function scrollToBottom() {
+    const chatMessages = document.getElementById('chatMessages');
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+  
+  function logDebug(title, data) {
+    if (!currentSession.debug) return;
+    
+    const timestamp = new Date().toLocaleTimeString();
+    const entryId = Date.now();
+    
+    let debugHtml = `
+      <div class="debug-entry" id="debug-${entryId}">
+        <div class="debug-timestamp">${timestamp}</div>
+        <strong>${title}</strong>
+    `;
+    
+    if (data) {
+      try {
+        debugHtml += `<pre>${typeof data === 'string' ? data : JSON.stringify(data, null, 2)}</pre>`;
+      } catch (e) {
+        debugHtml += `<pre>Unable to stringify data: ${e.message}</pre>`;
+      }
+    }
+    
+    debugHtml += `</div>`;
+    
+    $('#debugContent').append(debugHtml);
+    
+    // Scroll debug panel to bottom
+    const debugContent = document.getElementById('debugContent');
+    debugContent.scrollTop = debugContent.scrollHeight;
+  }
+  
+  function showToast(message) {
+    // Create toast element if it doesn't exist
+    if ($('#toast-container').length === 0) {
+      $('body').append(`
+        <div id="toast-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 1050;"></div>
+      `);
+    }
+    
+    // Create unique ID for this toast
+    const toastId = Date.now();
+    
+    // Create toast
+    const toast = `
+      <div id="toast-${toastId}" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3000">
+        <div class="toast-header">
+          <strong class="me-auto">MCP Test UI</strong>
+          <small>just now</small>
+          <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+          ${message}
+        </div>
+      </div>
+    `;
+    
+    // Add to container
+    $('#toast-container').append(toast);
+    
+    // Initialize and show
+    const toastElement = new bootstrap.Toast(document.getElementById(`toast-${toastId}`));
+    toastElement.show();
+    
+    // Remove after hiding
+    $(`#toast-${toastId}`).on('hidden.bs.toast', function() {
+      $(this).remove();
+    });
+  }
+</script>
+{% endblock %}

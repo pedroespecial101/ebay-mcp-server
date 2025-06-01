@@ -16,3 +16,6 @@ Clearing logs/fastmcp_server.log for fresh start...
 2025-05-29 22:22:58,830 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
 Starting MCP inspector...
 ❌  Proxy Server PORT IS IN USE at port 6277 ❌ 
+🔍 MCP Inspector is up and running at http://127.0.0.1:6274 🚀
+
+Failed with exit code: null
