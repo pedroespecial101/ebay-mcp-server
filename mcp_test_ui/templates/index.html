@@ -193,7 +193,7 @@
             form.find('.execute-btn').html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Executing...').prop('disabled', true);
             
             $.ajax({
-                url: '/execute/' + toolName,
+                url: '/mcp/execute/' + toolName,
                 type: 'POST',
                 data: formData,
                 processData: false,
