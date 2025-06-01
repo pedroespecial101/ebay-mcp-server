@@ -1,7 +1,17 @@
+## Updates in TrajectoryID <mcp_test_ui_start_script, (223)>, <01062025 - 19:16:59>
+
+- Created `start_mcp_test_ui.sh` to manage the MCP Test UI server lifecycle (activate venv, kill port, start app).
+- Fixed `ImportError` in `start_mcp_test_ui.sh` by changing `python mcp_test_ui/app.py` to `python -m mcp_test_ui.app` to correctly handle relative imports.
+
 ## Updates in TrajectoryID <test_auth_successful_env_fix, (223)>, <01062025 - 09:51:51>
 
 - Successfully executed the `test_auth` tool via the refactored MCP UI, confirming the AJAX URL fix and end-to-end functionality.
 - User fixed a parsing issue in `.env` at line 12.
+
+## Updates in TrajectoryID <mcp_test_ui_start_script, (223)>, <01062025 - 19:16:59>
+
+- Created `start_mcp_test_ui.sh` to manage the MCP Test UI server lifecycle (activate venv, kill port, start app).
+- Fixed `ImportError` in `start_mcp_test_ui.sh` by changing `python mcp_test_ui/app.py` to `python -m mcp_test_ui.app` to correctly handle relative imports.
 
 ## Updates in TrajectoryID <fix_ajax_url_index_html, (223)>, <01062025 - 09:49.26>
 
