@@ -1,0 +1,25 @@
+{
+  "name": "ebay-mcp-server",
+  "version": "1.0.0",
+  "description": "## Overview",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pedroespecial101/ebay-mcp-server.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pedroespecial101/ebay-mcp-server/issues"
+  },
+  "homepage": "https://github.com/pedroespecial101/ebay-mcp-server#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.52.0",
+    "@types/node": "^22.15.29"
+  }
+}
