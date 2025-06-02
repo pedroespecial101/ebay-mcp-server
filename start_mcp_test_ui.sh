@@ -29,10 +29,10 @@ else
   echo "No existing processes found on port $PORT."
 fi
 
-# Start the MCP Test UI server
-echo "Starting MCP Test UI server on http://127.0.0.1:$PORT"
+# Start the MCP Test UI server with auto-reload
+echo "Starting MCP Test UI server on http://127.0.0.1:$PORT with auto-reload"
 echo "MCP tools will be available under /mcp/ (e.g., http://127.0.0.1:$PORT/mcp/)"
-python -m mcp_test_ui.app --host 127.0.0.1 --port $PORT
+uvicorn mcp_test_ui.app:app --host 127.0.0.1 --port $PORT --reload
 
 # Deactivate virtual environment upon script exit (optional, usually handled by shell)
 # deactivate

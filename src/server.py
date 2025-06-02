@@ -271,6 +271,7 @@ async def search_ebay_items(query: str, limit: int = 10) -> str:
             logger.debug(f"search_ebay_items: Response status: {response.status_code}")
             response.raise_for_status() # Crucial for _execute_ebay_api_call to handle HTTP errors
             logger.info("search_ebay_items: Successfully fetched items.")
+            logger.debug(f"search_ebay_items: Response text: {response.text}")  # Debugging
             return response.text
         
         async with httpx.AsyncClient() as client:
