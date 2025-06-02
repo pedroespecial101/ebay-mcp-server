@@ -4,33 +4,6 @@ from typing import Any, Dict, List, Union
 from pydantic import BaseModel
 
 
-class Parameter(BaseModel):
-    """Model for a tool parameter."""
-    name: str
-    type: str
-    description: str = ""
-    required: bool = False
-
-    def get_html_input_type(self) -> str:
-        """Get the HTML input type based on the parameter type."""
-        type_mapping = {
-            "integer": "number",
-            "int": "number",
-            "number": "number",
-            "float": "number",
-            "string": "text",
-            "str": "text",
-            "boolean": "checkbox",
-            "bool": "checkbox",
-            "date": "date",
-            "time": "time",
-            "datetime": "datetime-local",
-            "email": "email",
-            "url": "url",
-            "password": "password",
-        }
-        return type_mapping.get(self.type.lower(), "text")
-
 
 class MCPToolParameter(BaseModel):
     """Represents a parameter for an MCP tool."""
@@ -101,33 +74,6 @@ class MCPTool(BaseModel):
     name: str
     description: str
     parameters: List[MCPToolParameter]
-
-
-class Message(BaseModel):
-    """Model for a chat message."""
-    role: str
-    content: str
-
-
-class ChatRequest(BaseModel):
-    """Model for a chat request."""
-    provider: str
-    model: str
-    messages: List[Message]
-    stream: bool = True
-    mcp_server: str # This seems to be the mcp_server_path
-    api_key: str # This might need to be optional or handled differently
-
-
-class ToolCall(BaseModel):
-    """Model for an MCP tool call."""
-    name: str
-    args: Dict[str, Any]
-
-
-class ToolResult(BaseModel):
-    """Model for an MCP tool result."""
-    result: Any
 
 
 class CustomJSONEncoder(json.JSONEncoder):

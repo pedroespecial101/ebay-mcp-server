@@ -1,0 +1,718 @@
+Clearing logs/fastmcp_server.log for fresh start...
+2025-06-01 17:41:21,828 - server_module - INFO - Logging configured with TimedRotatingFileHandler.
+2025-06-01 17:41:21,862 - src.ebay_service - INFO - Attempting to load .env from: /Users/petetreadaway/Projects/ebay-mcp-server/src/../.env
+2025-06-01 17:41:21,863 - src.ebay_service - INFO - .env file loaded successfully.
+2025-06-01 17:41:21,866 - mcp.server.lowlevel.server - DEBUG - Initializing server 'Ebay API'
+2025-06-01 17:41:21,866 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-01 17:41:21,866 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-01 17:41:21,866 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-01 17:41:21,866 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-01 17:41:21,866 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-01 17:41:21,866 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-01 17:41:21,866 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+Starting MCP inspector...
+❌  Proxy Server PORT IS IN USE at port 6277 ❌ 
+2025-06-01 17:41:26,811 - __main__ - INFO - Logging configured with TimedRotatingFileHandler.
+2025-06-01 17:41:26,839 - src.ebay_service - INFO - Attempting to load .env from: /Users/petetreadaway/Projects/ebay-mcp-server/src/../.env
+2025-06-01 17:41:26,840 - src.ebay_service - INFO - .env file loaded successfully.
+2025-06-01 17:41:26,843 - mcp.server.lowlevel.server - DEBUG - Initializing server 'Ebay API'
+2025-06-01 17:41:26,843 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-01 17:41:26,843 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-01 17:41:26,843 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-01 17:41:26,843 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-01 17:41:26,843 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-01 17:41:26,843 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-01 17:41:26,843 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-01 17:41:26,845 - __main__ - INFO - Starting FastMCP server with stdio transport...
+2025-06-01 17:41:26,845 - __main__ - INFO - To test authentication, use the MCP client to call the 'test_auth' function or other tools.
+2025-06-01 17:41:26,845 - __main__ - INFO - Logging to: /Users/petetreadaway/Projects/ebay-mcp-server/logs/fastmcp_server.log
+2025-06-01 17:41:26,845 - __main__ - INFO - Attempting to call mcp.run()...
+2025-06-01 17:41:26,848 - asyncio - DEBUG - Using selector: KqueueSelector
+2025-06-01 17:41:26,848 - FastMCP.fastmcp.server.server - INFO - Starting MCP server 'Ebay API' with transport 'stdio'
+2025-06-01 17:41:26,854 - mcp.server.lowlevel.server - DEBUG - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2025-06-01 17:41:26,854 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x107ef0690>
+2025-06-01 17:41:26,854 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2025-06-01 17:41:26,854 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListToolsRequest
+2025-06-01 17:41:26,855 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-01 17:41:44,903 - __main__ - INFO - mcp.run() completed or exited.
+2025-06-01 17:41:44,913 - __main__ - INFO - mcp.run() completed or exited.
+2025-06-01 17:41:44,914 - __main__ - INFO - mcp.run() completed or exited.
+2025-06-01 17:41:44,914 - __main__ - INFO - mcp.run() completed or exited.
+2025-06-01 17:43:22,912 - __main__ - INFO - Logging configured with TimedRotatingFileHandler.
+2025-06-01 17:43:22,948 - src.ebay_service - INFO - Attempting to load .env from: /Users/petetreadaway/Projects/ebay-mcp-server/src/../.env
+2025-06-01 17:43:22,949 - src.ebay_service - INFO - .env file loaded successfully.
+2025-06-01 17:43:22,952 - mcp.server.lowlevel.server - DEBUG - Initializing server 'Ebay API'
+2025-06-01 17:43:22,952 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-01 17:43:22,952 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-01 17:43:22,952 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-01 17:43:22,952 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-01 17:43:22,952 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-01 17:43:22,952 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-01 17:43:22,952 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-01 17:43:22,954 - __main__ - INFO - Starting FastMCP server with stdio transport...
+2025-06-01 17:43:22,954 - __main__ - INFO - To test authentication, use the MCP client to call the 'test_auth' function or other tools.
+2025-06-01 17:43:22,954 - __main__ - INFO - Logging to: /Users/petetreadaway/Projects/ebay-mcp-server/logs/fastmcp_server.log
+2025-06-01 17:43:22,954 - __main__ - INFO - Attempting to call mcp.run()...
+2025-06-01 17:43:22,956 - asyncio - DEBUG - Using selector: KqueueSelector
+2025-06-01 17:43:22,956 - FastMCP.fastmcp.server.server - INFO - Starting MCP server 'Ebay API' with transport 'stdio'
+2025-06-01 17:43:22,961 - mcp.server.lowlevel.server - DEBUG - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2025-06-01 17:43:22,961 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x1061f0690>
+2025-06-01 17:43:22,961 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2025-06-01 17:43:22,961 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListToolsRequest
+2025-06-01 17:43:22,962 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-01 17:45:34,525 - __main__ - INFO - mcp.run() completed or exited.
+2025-06-01 17:45:52,293 - __main__ - INFO - Logging configured with TimedRotatingFileHandler.
+2025-06-01 17:45:52,326 - src.ebay_service - INFO - Attempting to load .env from: /Users/petetreadaway/Projects/ebay-mcp-server/src/../.env
+2025-06-01 17:45:52,327 - src.ebay_service - INFO - .env file loaded successfully.
+2025-06-01 17:45:52,330 - mcp.server.lowlevel.server - DEBUG - Initializing server 'Ebay API'
+2025-06-01 17:45:52,330 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-01 17:45:52,330 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-01 17:45:52,330 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-01 17:45:52,330 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-01 17:45:52,330 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-01 17:45:52,330 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-01 17:45:52,330 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-01 17:45:52,332 - __main__ - INFO - Starting FastMCP server with stdio transport...
+2025-06-01 17:45:52,332 - __main__ - INFO - To test authentication, use the MCP client to call the 'test_auth' function or other tools.
+2025-06-01 17:45:52,332 - __main__ - INFO - Logging to: /Users/petetreadaway/Projects/ebay-mcp-server/logs/fastmcp_server.log
+2025-06-01 17:45:52,332 - __main__ - INFO - Attempting to call mcp.run()...
+2025-06-01 17:45:52,334 - asyncio - DEBUG - Using selector: KqueueSelector
+2025-06-01 17:45:52,334 - FastMCP.fastmcp.server.server - INFO - Starting MCP server 'Ebay API' with transport 'stdio'
+2025-06-01 17:45:52,339 - mcp.server.lowlevel.server - DEBUG - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2025-06-01 17:45:52,339 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x1062f0690>
+2025-06-01 17:45:52,339 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2025-06-01 17:45:52,339 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListToolsRequest
+2025-06-01 17:45:52,340 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-01 17:46:31,131 - __main__ - INFO - mcp.run() completed or exited.
+2025-06-01 17:46:47,405 - __main__ - INFO - Logging configured with TimedRotatingFileHandler.
+2025-06-01 17:46:47,438 - src.ebay_service - INFO - Attempting to load .env from: /Users/petetreadaway/Projects/ebay-mcp-server/src/../.env
+2025-06-01 17:46:47,439 - src.ebay_service - INFO - .env file loaded successfully.
+2025-06-01 17:46:47,442 - mcp.server.lowlevel.server - DEBUG - Initializing server 'Ebay API'
+2025-06-01 17:46:47,442 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-01 17:46:47,442 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-01 17:46:47,442 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-01 17:46:47,442 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-01 17:46:47,442 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-01 17:46:47,442 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-01 17:46:47,442 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-01 17:46:47,444 - __main__ - INFO - Starting FastMCP server with stdio transport...
+2025-06-01 17:46:47,444 - __main__ - INFO - To test authentication, use the MCP client to call the 'test_auth' function or other tools.
+2025-06-01 17:46:47,444 - __main__ - INFO - Logging to: /Users/petetreadaway/Projects/ebay-mcp-server/logs/fastmcp_server.log
+2025-06-01 17:46:47,444 - __main__ - INFO - Attempting to call mcp.run()...
+2025-06-01 17:46:47,446 - asyncio - DEBUG - Using selector: KqueueSelector
+2025-06-01 17:46:47,446 - FastMCP.fastmcp.server.server - INFO - Starting MCP server 'Ebay API' with transport 'stdio'
+2025-06-01 17:46:47,451 - mcp.server.lowlevel.server - DEBUG - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2025-06-01 17:46:47,451 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x110bf0690>
+2025-06-01 17:46:47,451 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2025-06-01 17:46:47,451 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListToolsRequest
+2025-06-01 17:46:47,452 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-01 17:48:59,623 - __main__ - INFO - mcp.run() completed or exited.
+2025-06-01 17:49:16,486 - __main__ - INFO - Logging configured with TimedRotatingFileHandler.
+2025-06-01 17:49:16,526 - src.ebay_service - INFO - Attempting to load .env from: /Users/petetreadaway/Projects/ebay-mcp-server/src/../.env
+2025-06-01 17:49:16,526 - src.ebay_service - INFO - .env file loaded successfully.
+2025-06-01 17:49:16,529 - mcp.server.lowlevel.server - DEBUG - Initializing server 'Ebay API'
+2025-06-01 17:49:16,529 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-01 17:49:16,530 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-01 17:49:16,530 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-01 17:49:16,530 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-01 17:49:16,530 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-01 17:49:16,530 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-01 17:49:16,530 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-01 17:49:16,532 - __main__ - INFO - Starting FastMCP server with stdio transport...
+2025-06-01 17:49:16,532 - __main__ - INFO - To test authentication, use the MCP client to call the 'test_auth' function or other tools.
+2025-06-01 17:49:16,532 - __main__ - INFO - Logging to: /Users/petetreadaway/Projects/ebay-mcp-server/logs/fastmcp_server.log
+2025-06-01 17:49:16,532 - __main__ - INFO - Attempting to call mcp.run()...
+2025-06-01 17:49:16,534 - asyncio - DEBUG - Using selector: KqueueSelector
+2025-06-01 17:49:16,534 - FastMCP.fastmcp.server.server - INFO - Starting MCP server 'Ebay API' with transport 'stdio'
+2025-06-01 17:49:16,539 - mcp.server.lowlevel.server - DEBUG - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2025-06-01 17:49:16,540 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x1058f0690>
+2025-06-01 17:49:16,540 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2025-06-01 17:49:16,540 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListToolsRequest
+2025-06-01 17:49:16,540 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-01 18:47:04,633 - __main__ - INFO - mcp.run() completed or exited.
+2025-06-01 18:52:00,525 - __main__ - INFO - Logging configured with TimedRotatingFileHandler.
+2025-06-01 18:52:00,561 - src.ebay_service - INFO - Attempting to load .env from: /Users/petetreadaway/Projects/ebay-mcp-server/src/../.env
+2025-06-01 18:52:00,561 - src.ebay_service - INFO - .env file loaded successfully.
+2025-06-01 18:52:00,566 - mcp.server.lowlevel.server - DEBUG - Initializing server 'Ebay API'
+2025-06-01 18:52:00,566 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-01 18:52:00,566 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-01 18:52:00,566 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-01 18:52:00,566 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-01 18:52:00,566 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-01 18:52:00,566 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-01 18:52:00,566 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-01 18:52:00,570 - __main__ - INFO - Starting FastMCP server with stdio transport...
+2025-06-01 18:52:00,570 - __main__ - INFO - To test authentication, use the MCP client to call the 'test_auth' function or other tools.
+2025-06-01 18:52:00,570 - __main__ - INFO - Logging to: /Users/petetreadaway/Projects/ebay-mcp-server/logs/fastmcp_server.log
+2025-06-01 18:52:00,570 - __main__ - INFO - Attempting to call mcp.run()...
+2025-06-01 18:52:00,570 - FastMCP.fastmcp.server.server - INFO - Starting server "Ebay API"...
+2025-06-01 18:52:00,574 - asyncio - DEBUG - Using selector: KqueueSelector
+2025-06-01 18:52:00,579 - mcp.server.lowlevel.server - DEBUG - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2025-06-01 18:52:00,579 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x1053bc910>
+2025-06-01 18:52:00,579 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2025-06-01 18:52:00,579 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListToolsRequest
+2025-06-01 18:52:00,579 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-01 18:52:10,965 - __main__ - INFO - Logging configured with TimedRotatingFileHandler.
+2025-06-01 18:52:10,997 - src.ebay_service - INFO - Attempting to load .env from: /Users/petetreadaway/Projects/ebay-mcp-server/src/../.env
+2025-06-01 18:52:10,998 - src.ebay_service - INFO - .env file loaded successfully.
+2025-06-01 18:52:11,002 - mcp.server.lowlevel.server - DEBUG - Initializing server 'Ebay API'
+2025-06-01 18:52:11,002 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-01 18:52:11,002 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-01 18:52:11,002 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-01 18:52:11,002 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-01 18:52:11,002 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-01 18:52:11,002 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-01 18:52:11,002 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-01 18:52:11,006 - __main__ - INFO - Starting FastMCP server with stdio transport...
+2025-06-01 18:52:11,006 - __main__ - INFO - To test authentication, use the MCP client to call the 'test_auth' function or other tools.
+2025-06-01 18:52:11,006 - __main__ - INFO - Logging to: /Users/petetreadaway/Projects/ebay-mcp-server/logs/fastmcp_server.log
+2025-06-01 18:52:11,006 - __main__ - INFO - Attempting to call mcp.run()...
+2025-06-01 18:52:11,006 - FastMCP.fastmcp.server.server - INFO - Starting server "Ebay API"...
+2025-06-01 18:52:11,010 - asyncio - DEBUG - Using selector: KqueueSelector
+2025-06-01 18:52:11,013 - mcp.server.lowlevel.server - DEBUG - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2025-06-01 18:52:11,013 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x105a44a50>
+2025-06-01 18:52:11,013 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2025-06-01 18:52:11,013 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListToolsRequest
+2025-06-01 18:52:11,013 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-01 18:52:27,571 - __main__ - INFO - Logging configured with TimedRotatingFileHandler.
+2025-06-01 18:52:27,600 - src.ebay_service - INFO - Attempting to load .env from: /Users/petetreadaway/Projects/ebay-mcp-server/src/../.env
+2025-06-01 18:52:27,601 - src.ebay_service - INFO - .env file loaded successfully.
+2025-06-01 18:52:27,605 - mcp.server.lowlevel.server - DEBUG - Initializing server 'Ebay API'
+2025-06-01 18:52:27,605 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-01 18:52:27,605 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-01 18:52:27,605 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-01 18:52:27,605 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-01 18:52:27,605 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-01 18:52:27,605 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-01 18:52:27,605 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-01 18:52:27,608 - __main__ - INFO - Starting FastMCP server with stdio transport...
+2025-06-01 18:52:27,608 - __main__ - INFO - To test authentication, use the MCP client to call the 'test_auth' function or other tools.
+2025-06-01 18:52:27,608 - __main__ - INFO - Logging to: /Users/petetreadaway/Projects/ebay-mcp-server/logs/fastmcp_server.log
+2025-06-01 18:52:27,608 - __main__ - INFO - Attempting to call mcp.run()...
+2025-06-01 18:52:27,608 - FastMCP.fastmcp.server.server - INFO - Starting server "Ebay API"...
+2025-06-01 18:52:27,613 - asyncio - DEBUG - Using selector: KqueueSelector
+2025-06-01 18:52:27,616 - mcp.server.lowlevel.server - DEBUG - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2025-06-01 18:52:27,616 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x1034d4a50>
+2025-06-01 18:52:27,616 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2025-06-01 18:52:27,616 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListToolsRequest
+2025-06-01 18:52:27,616 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-01 18:52:43,555 - __main__ - INFO - Logging configured with TimedRotatingFileHandler.
+2025-06-01 18:52:43,584 - src.ebay_service - INFO - Attempting to load .env from: /Users/petetreadaway/Projects/ebay-mcp-server/src/../.env
+2025-06-01 18:52:43,585 - src.ebay_service - INFO - .env file loaded successfully.
+2025-06-01 18:52:43,589 - mcp.server.lowlevel.server - DEBUG - Initializing server 'Ebay API'
+2025-06-01 18:52:43,589 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-01 18:52:43,589 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-01 18:52:43,589 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-01 18:52:43,589 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-01 18:52:43,589 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-01 18:52:43,589 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-01 18:52:43,589 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-01 18:52:43,593 - __main__ - INFO - Starting FastMCP server with stdio transport...
+2025-06-01 18:52:43,593 - __main__ - INFO - To test authentication, use the MCP client to call the 'test_auth' function or other tools.
+2025-06-01 18:52:43,593 - __main__ - INFO - Logging to: /Users/petetreadaway/Projects/ebay-mcp-server/logs/fastmcp_server.log
+2025-06-01 18:52:43,593 - __main__ - INFO - Attempting to call mcp.run()...
+2025-06-01 18:52:43,593 - FastMCP.fastmcp.server.server - INFO - Starting server "Ebay API"...
+2025-06-01 18:52:43,597 - asyncio - DEBUG - Using selector: KqueueSelector
+2025-06-01 18:52:43,600 - mcp.server.lowlevel.server - DEBUG - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2025-06-01 18:52:43,600 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x103b5ca50>
+2025-06-01 18:52:43,600 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2025-06-01 18:52:43,600 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListToolsRequest
+2025-06-01 18:52:43,600 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-01 18:54:16,134 - __main__ - INFO - Logging configured with TimedRotatingFileHandler.
+2025-06-01 18:54:16,167 - src.ebay_service - INFO - Attempting to load .env from: /Users/petetreadaway/Projects/ebay-mcp-server/src/../.env
+2025-06-01 18:54:16,167 - src.ebay_service - INFO - .env file loaded successfully.
+2025-06-01 18:54:16,171 - mcp.server.lowlevel.server - DEBUG - Initializing server 'Ebay API'
+2025-06-01 18:54:16,171 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-01 18:54:16,171 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-01 18:54:16,171 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-01 18:54:16,171 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-01 18:54:16,171 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-01 18:54:16,171 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-01 18:54:16,171 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-01 18:54:16,175 - __main__ - INFO - Starting FastMCP server with stdio transport...
+2025-06-01 18:54:16,175 - __main__ - INFO - To test authentication, use the MCP client to call the 'test_auth' function or other tools.
+2025-06-01 18:54:16,175 - __main__ - INFO - Logging to: /Users/petetreadaway/Projects/ebay-mcp-server/logs/fastmcp_server.log
+2025-06-01 18:54:16,175 - __main__ - INFO - Attempting to call mcp.run()...
+2025-06-01 18:54:16,175 - FastMCP.fastmcp.server.server - INFO - Starting server "Ebay API"...
+2025-06-01 18:54:16,180 - asyncio - DEBUG - Using selector: KqueueSelector
+2025-06-01 18:54:16,183 - mcp.server.lowlevel.server - DEBUG - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2025-06-01 18:54:16,183 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x1188b8a50>
+2025-06-01 18:54:16,183 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2025-06-01 18:54:16,183 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListToolsRequest
+2025-06-01 18:54:16,184 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-01 19:06:49,182 - __main__ - INFO - Logging configured with TimedRotatingFileHandler.
+2025-06-01 19:06:49,215 - src.ebay_service - INFO - Attempting to load .env from: /Users/petetreadaway/Projects/ebay-mcp-server/src/../.env
+2025-06-01 19:06:49,216 - src.ebay_service - INFO - .env file loaded successfully.
+2025-06-01 19:06:49,220 - mcp.server.lowlevel.server - DEBUG - Initializing server 'Ebay API'
+2025-06-01 19:06:49,220 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-01 19:06:49,220 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-01 19:06:49,220 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-01 19:06:49,220 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-01 19:06:49,220 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-01 19:06:49,220 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-01 19:06:49,220 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-01 19:06:49,224 - __main__ - INFO - Starting FastMCP server with stdio transport...
+2025-06-01 19:06:49,224 - __main__ - INFO - To test authentication, use the MCP client to call the 'test_auth' function or other tools.
+2025-06-01 19:06:49,224 - __main__ - INFO - Logging to: /Users/petetreadaway/Projects/ebay-mcp-server/logs/fastmcp_server.log
+2025-06-01 19:06:49,224 - __main__ - INFO - Attempting to call mcp.run()...
+2025-06-01 19:06:49,224 - FastMCP.fastmcp.server.server - INFO - Starting server "Ebay API"...
+2025-06-01 19:06:49,229 - asyncio - DEBUG - Using selector: KqueueSelector
+2025-06-01 19:06:49,233 - mcp.server.lowlevel.server - DEBUG - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2025-06-01 19:06:49,234 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x1044b8a50>
+2025-06-01 19:06:49,234 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2025-06-01 19:06:49,234 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListToolsRequest
+2025-06-01 19:06:49,234 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-01 19:12:45,500 - __main__ - INFO - Logging configured with TimedRotatingFileHandler.
+2025-06-01 19:12:45,532 - src.ebay_service - INFO - Attempting to load .env from: /Users/petetreadaway/Projects/ebay-mcp-server/src/../.env
+2025-06-01 19:12:45,533 - src.ebay_service - INFO - .env file loaded successfully.
+2025-06-01 19:12:45,537 - mcp.server.lowlevel.server - DEBUG - Initializing server 'Ebay API'
+2025-06-01 19:12:45,537 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-01 19:12:45,537 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-01 19:12:45,537 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-01 19:12:45,537 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-01 19:12:45,537 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-01 19:12:45,537 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-01 19:12:45,537 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-01 19:12:45,541 - __main__ - INFO - Starting FastMCP server with stdio transport...
+2025-06-01 19:12:45,542 - __main__ - INFO - To test authentication, use the MCP client to call the 'test_auth' function or other tools.
+2025-06-01 19:12:45,542 - __main__ - INFO - Logging to: /Users/petetreadaway/Projects/ebay-mcp-server/logs/fastmcp_server.log
+2025-06-01 19:12:45,542 - __main__ - INFO - Attempting to call mcp.run()...
+2025-06-01 19:12:45,542 - FastMCP.fastmcp.server.server - INFO - Starting server "Ebay API"...
+2025-06-01 19:12:45,546 - asyncio - DEBUG - Using selector: KqueueSelector
+2025-06-01 19:12:45,550 - mcp.server.lowlevel.server - DEBUG - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2025-06-01 19:12:45,551 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x1194bc910>
+2025-06-01 19:12:45,551 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2025-06-01 19:12:45,551 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListToolsRequest
+2025-06-01 19:12:45,551 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-01 19:12:49,254 - __main__ - INFO - Logging configured with TimedRotatingFileHandler.
+2025-06-01 19:12:49,284 - src.ebay_service - INFO - Attempting to load .env from: /Users/petetreadaway/Projects/ebay-mcp-server/src/../.env
+2025-06-01 19:12:49,284 - src.ebay_service - INFO - .env file loaded successfully.
+2025-06-01 19:12:49,288 - mcp.server.lowlevel.server - DEBUG - Initializing server 'Ebay API'
+2025-06-01 19:12:49,288 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-01 19:12:49,289 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-01 19:12:49,289 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-01 19:12:49,289 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-01 19:12:49,289 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-01 19:12:49,289 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-01 19:12:49,289 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-01 19:12:49,292 - __main__ - INFO - Starting FastMCP server with stdio transport...
+2025-06-01 19:12:49,292 - __main__ - INFO - To test authentication, use the MCP client to call the 'test_auth' function or other tools.
+2025-06-01 19:12:49,292 - __main__ - INFO - Logging to: /Users/petetreadaway/Projects/ebay-mcp-server/logs/fastmcp_server.log
+2025-06-01 19:12:49,292 - __main__ - INFO - Attempting to call mcp.run()...
+2025-06-01 19:12:49,292 - FastMCP.fastmcp.server.server - INFO - Starting server "Ebay API"...
+2025-06-01 19:12:49,296 - asyncio - DEBUG - Using selector: KqueueSelector
+2025-06-01 19:12:49,299 - mcp.server.lowlevel.server - DEBUG - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2025-06-01 19:12:49,299 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x107bd8a50>
+2025-06-01 19:12:49,299 - mcp.server.lowlevel.server - INFO - Processing request of type CallToolRequest
+2025-06-01 19:12:49,299 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type CallToolRequest
+2025-06-01 19:12:49,299 - __main__ - INFO - Executing trigger_ebay_login MCP tool.
+2025-06-01 19:12:49,300 - root - INFO - Initiating eBay user login process...
+2025-06-01 19:12:49,300 - root - INFO - Generated scope string: 'https://api.ebay.com/oauth/api_scope https://api.ebay.com/oauth/api_scope/sell.inventory https://api.ebay.com/oauth/api_scope/commerce.identity.readonly'
+2025-06-01 19:12:49,301 - root - INFO - Opening browser to: https://auth.ebay.com/oauth2/authorize with query params...
+2025-06-01 19:12:49,453 - root - INFO - Waiting for authorization response from local server...
+2025-06-01 19:12:49,454 - root - INFO - Local HTTP server started on port 9292, listening on all available interfaces (reuse_address enabled).
+2025-06-01 19:12:49,454 - root - INFO - Waiting for eBay to redirect to your configured RuName (which should forward to a local address on port 9292 at path /oauth/callback)...
+2025-06-01 19:13:00,929 - root - INFO - Authorization code received by local server: v^1.1#i^1#...
+2025-06-01 19:13:00,929 - root - INFO - Shutting down local HTTP server...
+2025-06-01 19:13:00,929 - root - INFO - Local HTTP server stopped.
+2025-06-01 19:13:00,929 - root - INFO - Exchanging authorization code for token: v^1.1#i^1#...
+2025-06-01 19:13:00,942 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.ebay.com:443
+2025-06-01 19:13:01,339 - urllib3.connectionpool - DEBUG - https://api.ebay.com:443 "POST /identity/v1/oauth2/token HTTP/1.1" 200 2709
+2025-06-01 19:13:01,340 - root - INFO - Access token received: v^1.1#i^1#...
+2025-06-01 19:13:01,340 - root - INFO - Refresh token received: v^1.1#i^1#...
+2025-06-01 19:13:01,340 - root - INFO - Attempting to fetch eBay user details...
+2025-06-01 19:13:01,340 - root - INFO - Using access token for user details: v^1.1#i^1#...
+2025-06-01 19:13:01,342 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): apiz.ebay.com:443
+2025-06-01 19:13:01,726 - urllib3.connectionpool - DEBUG - https://apiz.ebay.com:443 "GET /commerce/identity/v1/user/ HTTP/1.1" 200 115
+2025-06-01 19:13:01,726 - root - INFO - Fetched user details: UserID=9h3xD5OhS9y, UserName=treadersloft
+2025-06-01 19:13:01,728 - root - INFO - Successfully fetched tokens and user details: UserID=9h3xD5OhS9y, UserName=treadersloft, AccessToken=v^1.1#i^1#..., RefreshToken=v^1.1#i^1#...
+2025-06-01 19:13:01,732 - root - INFO - set_key reported SUCCESS for EBAY_USER_ACCESS_TOKEN. Value (truncated): v^1.1#i^1#f^0#r...
+2025-06-01 19:13:01,732 - root - INFO - set_key reported SUCCESS for EBAY_USER_ID. Value (truncated): 9h3xD5OhS9y...
+2025-06-01 19:13:01,734 - root - INFO - set_key reported SUCCESS for EBAY_USER_NAME. Value (truncated): treadersloft...
+2025-06-01 19:13:01,735 - root - INFO - set_key reported SUCCESS for EBAY_USER_REFRESH_TOKEN. Value (truncated): v^1.1#i^1#p^3#r...
+2025-06-01 19:13:01,735 - root - INFO - All user credentials saved to .env successfully.
+2025-06-01 19:13:01,736 - root - INFO - Successfully obtained tokens and user details: Tokens and user details obtained.
+2025-06-01 19:13:01,736 - __main__ - INFO - trigger_ebay_login: eBay login process completed successfully according to initiate_user_login.
+2025-06-01 19:13:01,737 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-01 19:13:13,302 - __main__ - INFO - Logging configured with TimedRotatingFileHandler.
+2025-06-01 19:13:13,334 - src.ebay_service - INFO - Attempting to load .env from: /Users/petetreadaway/Projects/ebay-mcp-server/src/../.env
+2025-06-01 19:13:13,334 - src.ebay_service - INFO - .env file loaded successfully.
+2025-06-01 19:13:13,338 - mcp.server.lowlevel.server - DEBUG - Initializing server 'Ebay API'
+2025-06-01 19:13:13,338 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-01 19:13:13,338 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-01 19:13:13,338 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-01 19:13:13,338 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-01 19:13:13,338 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-01 19:13:13,339 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-01 19:13:13,339 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-01 19:13:13,342 - __main__ - INFO - Starting FastMCP server with stdio transport...
+2025-06-01 19:13:13,342 - __main__ - INFO - To test authentication, use the MCP client to call the 'test_auth' function or other tools.
+2025-06-01 19:13:13,342 - __main__ - INFO - Logging to: /Users/petetreadaway/Projects/ebay-mcp-server/logs/fastmcp_server.log
+2025-06-01 19:13:13,342 - __main__ - INFO - Attempting to call mcp.run()...
+2025-06-01 19:13:13,342 - FastMCP.fastmcp.server.server - INFO - Starting server "Ebay API"...
+2025-06-01 19:13:13,347 - asyncio - DEBUG - Using selector: KqueueSelector
+2025-06-01 19:13:13,350 - mcp.server.lowlevel.server - DEBUG - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2025-06-01 19:13:13,350 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x1185b8a50>
+2025-06-01 19:13:13,350 - mcp.server.lowlevel.server - INFO - Processing request of type CallToolRequest
+2025-06-01 19:13:13,350 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type CallToolRequest
+2025-06-01 19:13:13,350 - __main__ - INFO - Executing search_ebay_items MCP tool with query='trainers', limit=10.
+2025-06-01 19:13:13,375 - src.ebay_service - INFO - Attempting to retrieve EBAY_USER_ACCESS_TOKEN from .env via ebay_auth module.
+2025-06-01 19:13:13,376 - src.ebay_service - INFO - Successfully retrieved EBAY_USER_ACCESS_TOKEN.
+2025-06-01 19:13:13,376 - src.ebay_service - DEBUG - get_ebay_access_token: EBAY_USER_ACCESS_TOKEN (first 10 chars): v^1.1#i^1#...
+2025-06-01 19:13:13,376 - __main__ - INFO - search_ebay_items: Attempting API call with current token: v^1.1#i^1#...
+2025-06-01 19:13:13,376 - __main__ - DEBUG - search_ebay_items: Requesting URL: https://api.ebay.com/buy/browse/v1/item_summary/search with params: {'q': 'trainers', 'limit': 10} using token v^1.1#i^1#...
+2025-06-01 19:13:13,376 - httpcore.connection - DEBUG - connect_tcp.started host='api.ebay.com' port=443 local_address=None timeout=5.0 socket_options=None
+2025-06-01 19:13:13,416 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x11875dbe0>
+2025-06-01 19:13:13,416 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x1185cbda0> server_hostname='api.ebay.com' timeout=5.0
+2025-06-01 19:13:13,447 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x1185bafd0>
+2025-06-01 19:13:13,447 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-06-01 19:13:13,448 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-06-01 19:13:13,448 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-06-01 19:13:13,448 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-06-01 19:13:13,448 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-06-01 19:13:14,328 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'rlogid', b't6p%60gu%60mgwjfiiw%3F%3Ctfdtdkdvn%60jhs.3e%3E%3B0e2ef%3E*1on%7F4-1972cb2a0f0-0x2331'), (b'x-ebay-svc-tracking-data', b'<a>bs=0&ul=en-US&serviceCorrelationId=01JWPB587KAEG0BBW4CCNAX9J7&uc=1&ciid=sqDzIao*&flgs=AA**</a>'), (b'x-content-type-options', b'nosniff'), (b'x-xss-protection', b'0'), (b'x-frame-options', b'DENY'), (b'Vary', b'accept-encoding'), (b'Content-Encoding', b'gzip'), (b'Content-Type', b'application/json'), (b'x-envoy-upstream-service-time', b'724'), (b'Server', b'ebay-proxy-server'), (b'x-ebay-pop-id', b'UFES2-SLCAZ03-api'), (b'Expires', b'Sun, 01 Jun 2025 18:13:14 GMT'), (b'Cache-Control', b'max-age=0, no-cache, no-store'), (b'Pragma', b'no-cache'), (b'Date', b'Sun, 01 Jun 2025 18:13:14 GMT'), (b'Content-Length', b'3912'), (b'Connection', b'keep-alive'), (b'x-CDN', b'Akamai'), (b'Strict-Transport-Security', b'max-age=31536000')])
+2025-06-01 19:13:14,330 - httpx - INFO - HTTP Request: GET https://api.ebay.com/buy/browse/v1/item_summary/search?q=trainers&limit=10 "HTTP/1.1 200 OK"
+2025-06-01 19:13:14,330 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-06-01 19:13:14,330 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-06-01 19:13:14,331 - httpcore.http11 - DEBUG - response_closed.started
+2025-06-01 19:13:14,331 - httpcore.http11 - DEBUG - response_closed.complete
+2025-06-01 19:13:14,331 - __main__ - DEBUG - search_ebay_items: Response status: 200
+2025-06-01 19:13:14,331 - __main__ - INFO - search_ebay_items: Successfully fetched items.
+2025-06-01 19:13:14,332 - __main__ - WARNING - Failed to parse search results as SearchResult: name 'ItemSummary' is not defined
+2025-06-01 19:13:14,332 - httpcore.connection - DEBUG - close.started
+2025-06-01 19:13:14,332 - httpcore.connection - DEBUG - close.complete
+2025-06-01 19:13:14,333 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-01 19:13:26,117 - __main__ - INFO - Logging configured with TimedRotatingFileHandler.
+2025-06-01 19:13:26,147 - src.ebay_service - INFO - Attempting to load .env from: /Users/petetreadaway/Projects/ebay-mcp-server/src/../.env
+2025-06-01 19:13:26,148 - src.ebay_service - INFO - .env file loaded successfully.
+2025-06-01 19:13:26,152 - mcp.server.lowlevel.server - DEBUG - Initializing server 'Ebay API'
+2025-06-01 19:13:26,152 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-01 19:13:26,152 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-01 19:13:26,152 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-01 19:13:26,152 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-01 19:13:26,152 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-01 19:13:26,152 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-01 19:13:26,152 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-01 19:13:26,156 - __main__ - INFO - Starting FastMCP server with stdio transport...
+2025-06-01 19:13:26,156 - __main__ - INFO - To test authentication, use the MCP client to call the 'test_auth' function or other tools.
+2025-06-01 19:13:26,156 - __main__ - INFO - Logging to: /Users/petetreadaway/Projects/ebay-mcp-server/logs/fastmcp_server.log
+2025-06-01 19:13:26,156 - __main__ - INFO - Attempting to call mcp.run()...
+2025-06-01 19:13:26,156 - FastMCP.fastmcp.server.server - INFO - Starting server "Ebay API"...
+2025-06-01 19:13:26,160 - asyncio - DEBUG - Using selector: KqueueSelector
+2025-06-01 19:13:26,164 - mcp.server.lowlevel.server - DEBUG - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2025-06-01 19:13:26,164 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x10347ca50>
+2025-06-01 19:13:26,164 - mcp.server.lowlevel.server - INFO - Processing request of type CallToolRequest
+2025-06-01 19:13:26,164 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type CallToolRequest
+2025-06-01 19:13:26,164 - __main__ - INFO - Executing get_offer_by_sku MCP tool with SKU='Tank-5'.
+2025-06-01 19:13:26,188 - src.ebay_service - INFO - Attempting to retrieve EBAY_USER_ACCESS_TOKEN from .env via ebay_auth module.
+2025-06-01 19:13:26,189 - src.ebay_service - INFO - Successfully retrieved EBAY_USER_ACCESS_TOKEN.
+2025-06-01 19:13:26,189 - src.ebay_service - DEBUG - get_ebay_access_token: EBAY_USER_ACCESS_TOKEN (first 10 chars): v^1.1#i^1#...
+2025-06-01 19:13:26,189 - __main__ - INFO - get_offer_by_sku: Attempting API call with current token: v^1.1#i^1#...
+2025-06-01 19:13:26,189 - __main__ - DEBUG - get_offer_by_sku: Headers for API call: {'Authorization': 'Bearer v^1.1#i^1#f^0#r^0#p^...<truncated>', 'Content-Type': 'application/json', 'X-EBAY-C-MARKETPLACE-ID': 'EBAY_GB', 'Accept-Language': 'en-GB'}
+2025-06-01 19:13:26,189 - __main__ - DEBUG - get_offer_by_sku: Request URL for direct SKU lookup: https://api.ebay.com/sell/inventory/v1/offer?sku=Tank-5 using token v^1.1#i^1#...
+2025-06-01 19:13:26,189 - httpcore.connection - DEBUG - connect_tcp.started host='api.ebay.com' port=443 local_address=None timeout=5.0 socket_options=None
+2025-06-01 19:13:26,214 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x103521be0>
+2025-06-01 19:13:26,214 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x103493da0> server_hostname='api.ebay.com' timeout=5.0
+2025-06-01 19:13:26,245 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x10347efd0>
+2025-06-01 19:13:26,245 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-06-01 19:13:26,245 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-06-01 19:13:26,245 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-06-01 19:13:26,245 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-06-01 19:13:26,245 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-06-01 19:13:26,626 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'rlogid', b't6pitnmsgwj70dlkr%3D9vjujkpfsl41%60jhs.f007f%3Fdg2%2B%3F%60frd-1972cb2d2e4-0x34a9'), (b'Content-Language', b'en_GB'), (b'x-content-type-options', b'nosniff'), (b'x-xss-protection', b'1; mode=block'), (b'x-frame-options', b'DENY'), (b'Content-Type', b'application/json'), (b'Content-Length', b'1252'), (b'x-envoy-upstream-service-time', b'209'), (b'Server', b'ebay-proxy-server'), (b'x-ebay-pop-id', b'UFES2-SLCAZ03-api'), (b'Expires', b'Sun, 01 Jun 2025 18:13:26 GMT'), (b'Cache-Control', b'max-age=0, no-cache, no-store'), (b'Pragma', b'no-cache'), (b'Date', b'Sun, 01 Jun 2025 18:13:26 GMT'), (b'Connection', b'keep-alive'), (b'x-CDN', b'Akamai'), (b'Strict-Transport-Security', b'max-age=31536000')])
+2025-06-01 19:13:26,628 - httpx - INFO - HTTP Request: GET https://api.ebay.com/sell/inventory/v1/offer?sku=Tank-5 "HTTP/1.1 200 OK"
+2025-06-01 19:13:26,628 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-06-01 19:13:26,629 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-06-01 19:13:26,629 - httpcore.http11 - DEBUG - response_closed.started
+2025-06-01 19:13:26,629 - httpcore.http11 - DEBUG - response_closed.complete
+2025-06-01 19:13:26,629 - __main__ - INFO - get_offer_by_sku: Direct SKU lookup response status: 200
+2025-06-01 19:13:26,629 - __main__ - DEBUG - get_offer_by_sku: Direct SKU lookup response text (first 500 chars): {"total":1,"size":1,"href":"/sell/inventory/v1/offer?offset=0&limit=20","limit":20,"offers":[{"offerId":"756832511016","sku":"Tank-5","marketplaceId":"EBAY_GB","format":"FIXED_PRICE","listingDescription":"This is a vintage Matchbox K-107 Alvis Scorpion/Striker diecast tank made in England. The tank is green with black plastic details.  There is noticeable paint wear and chipping all over the vehicle, particularly on the edges and raised surfaces. The wheels and tracks show accumulation of dust a...
+2025-06-01 19:13:26,630 - __main__ - INFO - get_offer_by_sku: Successfully fetched offer for SKU Tank-5.
+2025-06-01 19:13:26,630 - __main__ - INFO - Parsed offer details for SKU Tank-5: 756832511016
+2025-06-01 19:13:26,630 - httpcore.connection - DEBUG - close.started
+2025-06-01 19:13:26,630 - httpcore.connection - DEBUG - close.complete
+2025-06-01 19:13:26,631 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-01 19:44:13,205 - __main__ - INFO - Logging configured with TimedRotatingFileHandler.
+2025-06-01 19:44:13,239 - src.ebay_service - INFO - Attempting to load .env from: /Users/petetreadaway/Projects/ebay-mcp-server/src/../.env
+2025-06-01 19:44:13,240 - src.ebay_service - INFO - .env file loaded successfully.
+2025-06-01 19:44:13,244 - mcp.server.lowlevel.server - DEBUG - Initializing server 'Ebay API'
+2025-06-01 19:44:13,244 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-01 19:44:13,244 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-01 19:44:13,244 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-01 19:44:13,244 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-01 19:44:13,244 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-01 19:44:13,244 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-01 19:44:13,244 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-01 19:44:13,248 - __main__ - INFO - Starting FastMCP server with stdio transport...
+2025-06-01 19:44:13,248 - __main__ - INFO - To test authentication, use the MCP client to call the 'test_auth' function or other tools.
+2025-06-01 19:44:13,248 - __main__ - INFO - Logging to: /Users/petetreadaway/Projects/ebay-mcp-server/logs/fastmcp_server.log
+2025-06-01 19:44:13,248 - __main__ - INFO - Attempting to call mcp.run()...
+2025-06-01 19:44:13,248 - FastMCP.fastmcp.server.server - INFO - Starting server "Ebay API"...
+2025-06-01 19:44:13,252 - asyncio - DEBUG - Using selector: KqueueSelector
+2025-06-01 19:44:13,256 - mcp.server.lowlevel.server - DEBUG - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2025-06-01 19:44:13,256 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x104024a50>
+2025-06-01 19:44:13,256 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2025-06-01 19:44:13,256 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListToolsRequest
+2025-06-01 19:44:13,256 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-01 19:45:25,564 - __main__ - INFO - Logging configured with TimedRotatingFileHandler.
+2025-06-01 19:45:25,600 - src.ebay_service - INFO - Attempting to load .env from: /Users/petetreadaway/Projects/ebay-mcp-server/src/../.env
+2025-06-01 19:45:25,600 - src.ebay_service - INFO - .env file loaded successfully.
+2025-06-01 19:45:25,605 - mcp.server.lowlevel.server - DEBUG - Initializing server 'Ebay API'
+2025-06-01 19:45:25,605 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-01 19:45:25,605 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-01 19:45:25,605 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-01 19:45:25,605 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-01 19:45:25,605 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-01 19:45:25,605 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-01 19:45:25,605 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-01 19:45:25,609 - __main__ - INFO - Starting FastMCP server with stdio transport...
+2025-06-01 19:45:25,609 - __main__ - INFO - To test authentication, use the MCP client to call the 'test_auth' function or other tools.
+2025-06-01 19:45:25,609 - __main__ - INFO - Logging to: /Users/petetreadaway/Projects/ebay-mcp-server/logs/fastmcp_server.log
+2025-06-01 19:45:25,609 - __main__ - INFO - Attempting to call mcp.run()...
+2025-06-01 19:45:25,609 - FastMCP.fastmcp.server.server - INFO - Starting server "Ebay API"...
+2025-06-01 19:45:25,613 - asyncio - DEBUG - Using selector: KqueueSelector
+2025-06-01 19:45:25,616 - mcp.server.lowlevel.server - DEBUG - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2025-06-01 19:45:25,616 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x1103b8a50>
+2025-06-01 19:45:25,616 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2025-06-01 19:45:25,616 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListToolsRequest
+2025-06-01 19:45:25,616 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-01 19:45:34,664 - __main__ - INFO - Logging configured with TimedRotatingFileHandler.
+2025-06-01 19:45:34,693 - src.ebay_service - INFO - Attempting to load .env from: /Users/petetreadaway/Projects/ebay-mcp-server/src/../.env
+2025-06-01 19:45:34,694 - src.ebay_service - INFO - .env file loaded successfully.
+2025-06-01 19:45:34,698 - mcp.server.lowlevel.server - DEBUG - Initializing server 'Ebay API'
+2025-06-01 19:45:34,698 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-01 19:45:34,698 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-01 19:45:34,698 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-01 19:45:34,698 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-01 19:45:34,698 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-01 19:45:34,698 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-01 19:45:34,698 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-01 19:45:34,701 - __main__ - INFO - Starting FastMCP server with stdio transport...
+2025-06-01 19:45:34,701 - __main__ - INFO - To test authentication, use the MCP client to call the 'test_auth' function or other tools.
+2025-06-01 19:45:34,701 - __main__ - INFO - Logging to: /Users/petetreadaway/Projects/ebay-mcp-server/logs/fastmcp_server.log
+2025-06-01 19:45:34,701 - __main__ - INFO - Attempting to call mcp.run()...
+2025-06-01 19:45:34,701 - FastMCP.fastmcp.server.server - INFO - Starting server "Ebay API"...
+2025-06-01 19:45:34,706 - asyncio - DEBUG - Using selector: KqueueSelector
+2025-06-01 19:45:34,710 - mcp.server.lowlevel.server - DEBUG - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2025-06-01 19:45:34,710 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x1055e8a50>
+2025-06-01 19:45:34,710 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2025-06-01 19:45:34,710 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListToolsRequest
+2025-06-01 19:45:34,710 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-01 19:54:00,174 - __main__ - INFO - Logging configured with TimedRotatingFileHandler.
+2025-06-01 19:54:00,207 - src.ebay_service - INFO - Attempting to load .env from: /Users/petetreadaway/Projects/ebay-mcp-server/src/../.env
+2025-06-01 19:54:00,207 - src.ebay_service - INFO - .env file loaded successfully.
+2025-06-01 19:54:00,211 - mcp.server.lowlevel.server - DEBUG - Initializing server 'Ebay API'
+2025-06-01 19:54:00,211 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-01 19:54:00,211 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-01 19:54:00,211 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-01 19:54:00,211 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-01 19:54:00,211 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-01 19:54:00,211 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-01 19:54:00,211 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-01 19:54:00,215 - __main__ - INFO - Starting FastMCP server with stdio transport...
+2025-06-01 19:54:00,215 - __main__ - INFO - To test authentication, use the MCP client to call the 'test_auth' function or other tools.
+2025-06-01 19:54:00,215 - __main__ - INFO - Logging to: /Users/petetreadaway/Projects/ebay-mcp-server/logs/fastmcp_server.log
+2025-06-01 19:54:00,215 - __main__ - INFO - Attempting to call mcp.run()...
+2025-06-01 19:54:00,215 - FastMCP.fastmcp.server.server - INFO - Starting server "Ebay API"...
+2025-06-01 19:54:00,219 - asyncio - DEBUG - Using selector: KqueueSelector
+2025-06-01 19:54:00,222 - mcp.server.lowlevel.server - DEBUG - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2025-06-01 19:54:00,223 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x107fb8a50>
+2025-06-01 19:54:00,223 - mcp.server.lowlevel.server - INFO - Processing request of type CallToolRequest
+2025-06-01 19:54:00,223 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type CallToolRequest
+2025-06-01 19:54:00,223 - __main__ - INFO - Executing trigger_ebay_login MCP tool.
+2025-06-01 19:54:00,223 - root - INFO - Initiating eBay user login process...
+2025-06-01 19:54:00,223 - root - INFO - Generated scope string: 'https://api.ebay.com/oauth/api_scope https://api.ebay.com/oauth/api_scope/sell.inventory https://api.ebay.com/oauth/api_scope/commerce.identity.readonly'
+2025-06-01 19:54:00,223 - root - INFO - Opening browser to: https://auth.ebay.com/oauth2/authorize with query params...
+2025-06-01 19:54:00,415 - root - INFO - Waiting for authorization response from local server...
+2025-06-01 19:54:00,415 - root - INFO - Local HTTP server started on port 9292, listening on all available interfaces (reuse_address enabled).
+2025-06-01 19:54:00,415 - root - INFO - Waiting for eBay to redirect to your configured RuName (which should forward to a local address on port 9292 at path /oauth/callback)...
+2025-06-01 19:54:08,777 - root - INFO - Authorization code received by local server: v^1.1#i^1#...
+2025-06-01 19:54:08,777 - root - INFO - Shutting down local HTTP server...
+2025-06-01 19:54:08,778 - root - INFO - Local HTTP server stopped.
+2025-06-01 19:54:08,778 - root - INFO - Exchanging authorization code for token: v^1.1#i^1#...
+2025-06-01 19:54:08,789 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.ebay.com:443
+2025-06-01 19:54:09,969 - urllib3.connectionpool - DEBUG - https://api.ebay.com:443 "POST /identity/v1/oauth2/token HTTP/1.1" 200 2713
+2025-06-01 19:54:09,971 - root - INFO - Access token received: v^1.1#i^1#...
+2025-06-01 19:54:09,971 - root - INFO - Refresh token received: v^1.1#i^1#...
+2025-06-01 19:54:09,971 - root - INFO - Attempting to fetch eBay user details...
+2025-06-01 19:54:09,971 - root - INFO - Using access token for user details: v^1.1#i^1#...
+2025-06-01 19:54:09,973 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): apiz.ebay.com:443
+2025-06-01 19:54:10,678 - urllib3.connectionpool - DEBUG - https://apiz.ebay.com:443 "GET /commerce/identity/v1/user/ HTTP/1.1" 200 115
+2025-06-01 19:54:10,679 - root - INFO - Fetched user details: UserID=9h3xD5OhS9y, UserName=treadersloft
+2025-06-01 19:54:10,681 - root - INFO - Successfully fetched tokens and user details: UserID=9h3xD5OhS9y, UserName=treadersloft, AccessToken=v^1.1#i^1#..., RefreshToken=v^1.1#i^1#...
+2025-06-01 19:54:10,688 - root - INFO - set_key reported SUCCESS for EBAY_USER_ACCESS_TOKEN. Value (truncated): v^1.1#i^1#p^3#f...
+2025-06-01 19:54:10,690 - root - INFO - set_key reported SUCCESS for EBAY_USER_ID. Value (truncated): 9h3xD5OhS9y...
+2025-06-01 19:54:10,692 - root - INFO - set_key reported SUCCESS for EBAY_USER_NAME. Value (truncated): treadersloft...
+2025-06-01 19:54:10,693 - root - INFO - set_key reported SUCCESS for EBAY_USER_REFRESH_TOKEN. Value (truncated): v^1.1#i^1#r^1#p...
+2025-06-01 19:54:10,695 - root - INFO - All user credentials saved to .env successfully.
+2025-06-01 19:54:10,696 - root - INFO - Successfully obtained tokens and user details: Tokens and user details obtained.
+2025-06-01 19:54:10,697 - __main__ - INFO - trigger_ebay_login: eBay login process completed successfully according to initiate_user_login.
+2025-06-01 19:54:10,697 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-01 19:54:20,514 - __main__ - INFO - Logging configured with TimedRotatingFileHandler.
+2025-06-01 19:54:20,544 - src.ebay_service - INFO - Attempting to load .env from: /Users/petetreadaway/Projects/ebay-mcp-server/src/../.env
+2025-06-01 19:54:20,544 - src.ebay_service - INFO - .env file loaded successfully.
+2025-06-01 19:54:20,549 - mcp.server.lowlevel.server - DEBUG - Initializing server 'Ebay API'
+2025-06-01 19:54:20,549 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-01 19:54:20,549 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-01 19:54:20,549 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-01 19:54:20,549 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-01 19:54:20,549 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-01 19:54:20,549 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-01 19:54:20,549 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-01 19:54:20,553 - __main__ - INFO - Starting FastMCP server with stdio transport...
+2025-06-01 19:54:20,553 - __main__ - INFO - To test authentication, use the MCP client to call the 'test_auth' function or other tools.
+2025-06-01 19:54:20,553 - __main__ - INFO - Logging to: /Users/petetreadaway/Projects/ebay-mcp-server/logs/fastmcp_server.log
+2025-06-01 19:54:20,553 - __main__ - INFO - Attempting to call mcp.run()...
+2025-06-01 19:54:20,553 - FastMCP.fastmcp.server.server - INFO - Starting server "Ebay API"...
+2025-06-01 19:54:20,557 - asyncio - DEBUG - Using selector: KqueueSelector
+2025-06-01 19:54:20,560 - mcp.server.lowlevel.server - DEBUG - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2025-06-01 19:54:20,560 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x10535ca50>
+2025-06-01 19:54:20,560 - mcp.server.lowlevel.server - INFO - Processing request of type CallToolRequest
+2025-06-01 19:54:20,560 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type CallToolRequest
+2025-06-01 19:54:20,560 - __main__ - INFO - Executing search_ebay_items MCP tool with query='trainers', limit=10.
+2025-06-01 19:54:20,584 - src.ebay_service - INFO - Attempting to retrieve EBAY_USER_ACCESS_TOKEN from .env via ebay_auth module.
+2025-06-01 19:54:20,585 - src.ebay_service - INFO - Successfully retrieved EBAY_USER_ACCESS_TOKEN.
+2025-06-01 19:54:20,585 - src.ebay_service - DEBUG - get_ebay_access_token: EBAY_USER_ACCESS_TOKEN (first 10 chars): v^1.1#i^1#...
+2025-06-01 19:54:20,585 - __main__ - INFO - search_ebay_items: Attempting API call with current token: v^1.1#i^1#...
+2025-06-01 19:54:20,585 - __main__ - DEBUG - search_ebay_items: Requesting URL: https://api.ebay.com/buy/browse/v1/item_summary/search with params: {'q': 'trainers', 'limit': 10} using token v^1.1#i^1#...
+2025-06-01 19:54:20,586 - httpcore.connection - DEBUG - connect_tcp.started host='api.ebay.com' port=443 local_address=None timeout=5.0 socket_options=None
+2025-06-01 19:54:20,610 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x105401be0>
+2025-06-01 19:54:20,610 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x105373da0> server_hostname='api.ebay.com' timeout=5.0
+2025-06-01 19:54:20,631 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x10535efd0>
+2025-06-01 19:54:20,632 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-06-01 19:54:20,632 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-06-01 19:54:20,632 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-06-01 19:54:20,632 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-06-01 19:54:20,632 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-06-01 19:54:21,528 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Connection', b'keep-alive'), (b'pragma', b'no-cache'), (b'x-ebay-pop-id', b'UFES2-SLCAZ03-api'), (b'x-ebay-svc-tracking-data', b'<a>bs=0&ul=en-US&serviceCorrelationId=01JWPDGHK8BZPXGK3K7TWNP323&uc=1&ciid=2EZoJVE*&flgs=AA**</a>'), (b'cache-control', b'no-cache, no-store, max-age=0, must-revalidate'), (b'x-envoy-upstream-service-time', b'611'), (b'content-type', b'application/json'), (b'x-xss-protection', b'0'), (b'expires', b'0'), (b'x-frame-options', b'DENY'), (b'x-content-type-options', b'nosniff'), (b'server', b'ebay-proxy-server'), (b'rlogid', b't6p%60gu%60mgwjfiiw%3F%3Ctfdtdkdvn%60jhs.3e%3E%3B0e2ef%3E*57pao-1972cd84663-0x2353'), (b'content-encoding', b'gzip'), (b'Accept-Ranges', b'bytes'), (b'Date', b'Sun, 01 Jun 2025 18:54:21 GMT'), (b'Via', b'1.1 varnish'), (b'X-Served-By', b'cache-lcy-eglc8600024-LCY, cache-lcy-eglc8600041-LCY'), (b'X-Cache', b'MISS, MISS'), (b'X-Cache-Hits', b'0, 0'), (b'X-Timer', b'S1748804061.654566,VS0,VE879'), (b'Vary', b'accept-encoding'), (b'x-CDN', b'Fastly'), (b'Strict-Transport-Security', b'max-age=31557600'), (b'transfer-encoding', b'chunked')])
+2025-06-01 19:54:21,529 - httpx - INFO - HTTP Request: GET https://api.ebay.com/buy/browse/v1/item_summary/search?q=trainers&limit=10 "HTTP/1.1 200 OK"
+2025-06-01 19:54:21,530 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-06-01 19:54:21,531 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-06-01 19:54:21,532 - httpcore.http11 - DEBUG - response_closed.started
+2025-06-01 19:54:21,532 - httpcore.http11 - DEBUG - response_closed.complete
+2025-06-01 19:54:21,532 - __main__ - DEBUG - search_ebay_items: Response status: 200
+2025-06-01 19:54:21,533 - __main__ - INFO - search_ebay_items: Successfully fetched items.
+2025-06-01 19:54:21,533 - __main__ - WARNING - Failed to parse search results as SearchResult: name 'ItemSummary' is not defined
+2025-06-01 19:54:21,533 - httpcore.connection - DEBUG - close.started
+2025-06-01 19:54:21,534 - httpcore.connection - DEBUG - close.complete
+2025-06-01 19:54:21,534 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-01 19:54:56,720 - __main__ - INFO - Logging configured with TimedRotatingFileHandler.
+2025-06-01 19:54:56,751 - src.ebay_service - INFO - Attempting to load .env from: /Users/petetreadaway/Projects/ebay-mcp-server/src/../.env
+2025-06-01 19:54:56,752 - src.ebay_service - INFO - .env file loaded successfully.
+2025-06-01 19:54:56,756 - mcp.server.lowlevel.server - DEBUG - Initializing server 'Ebay API'
+2025-06-01 19:54:56,756 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-01 19:54:56,756 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-01 19:54:56,756 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-01 19:54:56,756 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-01 19:54:56,756 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-01 19:54:56,756 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-01 19:54:56,756 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-01 19:54:56,759 - __main__ - INFO - Starting FastMCP server with stdio transport...
+2025-06-01 19:54:56,760 - __main__ - INFO - To test authentication, use the MCP client to call the 'test_auth' function or other tools.
+2025-06-01 19:54:56,760 - __main__ - INFO - Logging to: /Users/petetreadaway/Projects/ebay-mcp-server/logs/fastmcp_server.log
+2025-06-01 19:54:56,760 - __main__ - INFO - Attempting to call mcp.run()...
+2025-06-01 19:54:56,760 - FastMCP.fastmcp.server.server - INFO - Starting server "Ebay API"...
+2025-06-01 19:54:56,764 - asyncio - DEBUG - Using selector: KqueueSelector
+2025-06-01 19:54:56,766 - mcp.server.lowlevel.server - DEBUG - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2025-06-01 19:54:56,767 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x103ccca50>
+2025-06-01 19:54:56,767 - mcp.server.lowlevel.server - INFO - Processing request of type CallToolRequest
+2025-06-01 19:54:56,767 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type CallToolRequest
+2025-06-01 19:54:56,767 - __main__ - INFO - Executing get_offer_by_sku MCP tool with SKU='Tank-5'.
+2025-06-01 19:54:56,790 - src.ebay_service - INFO - Attempting to retrieve EBAY_USER_ACCESS_TOKEN from .env via ebay_auth module.
+2025-06-01 19:54:56,790 - src.ebay_service - INFO - Successfully retrieved EBAY_USER_ACCESS_TOKEN.
+2025-06-01 19:54:56,790 - src.ebay_service - DEBUG - get_ebay_access_token: EBAY_USER_ACCESS_TOKEN (first 10 chars): v^1.1#i^1#...
+2025-06-01 19:54:56,790 - __main__ - INFO - get_offer_by_sku: Attempting API call with current token: v^1.1#i^1#...
+2025-06-01 19:54:56,790 - __main__ - DEBUG - get_offer_by_sku: Headers for API call: {'Authorization': 'Bearer v^1.1#i^1#p^3#f^0#I^...<truncated>', 'Content-Type': 'application/json', 'X-EBAY-C-MARKETPLACE-ID': 'EBAY_GB', 'Accept-Language': 'en-GB'}
+2025-06-01 19:54:56,790 - __main__ - DEBUG - get_offer_by_sku: Request URL for direct SKU lookup: https://api.ebay.com/sell/inventory/v1/offer?sku=Tank-5 using token v^1.1#i^1#...
+2025-06-01 19:54:56,791 - httpcore.connection - DEBUG - connect_tcp.started host='api.ebay.com' port=443 local_address=None timeout=5.0 socket_options=None
+2025-06-01 19:54:56,824 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x103d71be0>
+2025-06-01 19:54:56,824 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x103ce3da0> server_hostname='api.ebay.com' timeout=5.0
+2025-06-01 19:54:56,860 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x103ccefd0>
+2025-06-01 19:54:56,861 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-06-01 19:54:56,861 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-06-01 19:54:56,861 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-06-01 19:54:56,861 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-06-01 19:54:56,861 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-06-01 19:54:57,285 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Connection', b'keep-alive'), (b'Content-Length', b'1252'), (b'pragma', b'no-cache'), (b'x-ebay-pop-id', b'UFES2-RNOAZ03-api'), (b'cache-control', b'no-cache, no-store, max-age=0, must-revalidate'), (b'x-envoy-upstream-service-time', b'226'), (b'content-type', b'application/json'), (b'x-xss-protection', b'1; mode=block'), (b'expires', b'0'), (b'x-frame-options', b'DENY'), (b'content-language', b'en_GB'), (b'x-content-type-options', b'nosniff'), (b'server', b'ebay-proxy-server'), (b'rlogid', b't6pitnmsgwj70dlkr%3D9vjujkpfsl41%60jhs.f007f%3Fdg2%2Ba1uu0-1972cd8d3dc-0x2da8'), (b'Accept-Ranges', b'bytes'), (b'Date', b'Sun, 01 Jun 2025 18:54:57 GMT'), (b'Via', b'1.1 varnish'), (b'X-Served-By', b'cache-lcy-eglc8600077-LCY, cache-lcy-eglc8600077-LCY'), (b'X-Cache', b'MISS, MISS'), (b'X-Cache-Hits', b'0, 0'), (b'X-Timer', b'S1748804097.888894,VS0,VE403'), (b'x-CDN', b'Fastly'), (b'Strict-Transport-Security', b'max-age=31557600')])
+2025-06-01 19:54:57,286 - httpx - INFO - HTTP Request: GET https://api.ebay.com/sell/inventory/v1/offer?sku=Tank-5 "HTTP/1.1 200 OK"
+2025-06-01 19:54:57,287 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-06-01 19:54:57,290 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-06-01 19:54:57,291 - httpcore.http11 - DEBUG - response_closed.started
+2025-06-01 19:54:57,293 - httpcore.http11 - DEBUG - response_closed.complete
+2025-06-01 19:54:57,294 - __main__ - INFO - get_offer_by_sku: Direct SKU lookup response status: 200
+2025-06-01 19:54:57,294 - __main__ - DEBUG - get_offer_by_sku: Direct SKU lookup response text (first 500 chars): {"total":1,"size":1,"href":"/sell/inventory/v1/offer?offset=0&limit=20","limit":20,"offers":[{"offerId":"756832511016","sku":"Tank-5","marketplaceId":"EBAY_GB","format":"FIXED_PRICE","listingDescription":"This is a vintage Matchbox K-107 Alvis Scorpion/Striker diecast tank made in England. The tank is green with black plastic details.  There is noticeable paint wear and chipping all over the vehicle, particularly on the edges and raised surfaces. The wheels and tracks show accumulation of dust a...
+2025-06-01 19:54:57,294 - __main__ - INFO - get_offer_by_sku: Successfully fetched offer for SKU Tank-5.
+2025-06-01 19:54:57,294 - __main__ - INFO - Parsed offer details for SKU Tank-5: 756832511016
+2025-06-01 19:54:57,294 - httpcore.connection - DEBUG - close.started
+2025-06-01 19:54:57,295 - httpcore.connection - DEBUG - close.complete
+2025-06-01 19:54:57,296 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-01 19:58:25,087 - __main__ - INFO - Logging configured with TimedRotatingFileHandler.
+2025-06-01 19:58:25,119 - src.ebay_service - INFO - Attempting to load .env from: /Users/petetreadaway/Projects/ebay-mcp-server/src/../.env
+2025-06-01 19:58:25,120 - src.ebay_service - INFO - .env file loaded successfully.
+2025-06-01 19:58:25,124 - mcp.server.lowlevel.server - DEBUG - Initializing server 'Ebay API'
+2025-06-01 19:58:25,124 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-01 19:58:25,124 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-01 19:58:25,124 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-01 19:58:25,124 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-01 19:58:25,124 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-01 19:58:25,124 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-01 19:58:25,124 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-01 19:58:25,128 - __main__ - INFO - Starting FastMCP server with stdio transport...
+2025-06-01 19:58:25,128 - __main__ - INFO - To test authentication, use the MCP client to call the 'test_auth' function or other tools.
+2025-06-01 19:58:25,128 - __main__ - INFO - Logging to: /Users/petetreadaway/Projects/ebay-mcp-server/logs/fastmcp_server.log
+2025-06-01 19:58:25,128 - __main__ - INFO - Attempting to call mcp.run()...
+2025-06-01 19:58:25,128 - FastMCP.fastmcp.server.server - INFO - Starting server "Ebay API"...
+2025-06-01 19:58:25,133 - asyncio - DEBUG - Using selector: KqueueSelector
+2025-06-01 19:58:25,136 - mcp.server.lowlevel.server - DEBUG - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2025-06-01 19:58:25,137 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x119eb8a50>
+2025-06-01 19:58:25,137 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2025-06-01 19:58:25,137 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListToolsRequest
+2025-06-01 19:58:25,137 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-01 20:03:42,074 - __main__ - INFO - Logging configured with TimedRotatingFileHandler.
+2025-06-01 20:03:42,110 - src.ebay_service - INFO - Attempting to load .env from: /Users/petetreadaway/Projects/ebay-mcp-server/src/../.env
+2025-06-01 20:03:42,110 - src.ebay_service - INFO - .env file loaded successfully.
+2025-06-01 20:03:42,114 - mcp.server.lowlevel.server - DEBUG - Initializing server 'Ebay API'
+2025-06-01 20:03:42,114 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-01 20:03:42,114 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-01 20:03:42,114 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-01 20:03:42,114 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-01 20:03:42,114 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-01 20:03:42,114 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-01 20:03:42,114 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-01 20:03:42,118 - __main__ - INFO - Starting FastMCP server with stdio transport...
+2025-06-01 20:03:42,118 - __main__ - INFO - To test authentication, use the MCP client to call the 'test_auth' function or other tools.
+2025-06-01 20:03:42,118 - __main__ - INFO - Logging to: /Users/petetreadaway/Projects/ebay-mcp-server/logs/fastmcp_server.log
+2025-06-01 20:03:42,118 - __main__ - INFO - Attempting to call mcp.run()...
+2025-06-01 20:03:42,118 - FastMCP.fastmcp.server.server - INFO - Starting server "Ebay API"...
+2025-06-01 20:03:42,123 - asyncio - DEBUG - Using selector: KqueueSelector
+2025-06-01 20:03:42,126 - mcp.server.lowlevel.server - DEBUG - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2025-06-01 20:03:42,126 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x1033e4a50>
+2025-06-01 20:03:42,126 - mcp.server.lowlevel.server - INFO - Processing request of type CallToolRequest
+2025-06-01 20:03:42,126 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type CallToolRequest
+2025-06-01 20:03:42,126 - __main__ - INFO - Executing get_item_aspects_for_category MCP tool with category_id='3454'.
+2025-06-01 20:03:42,151 - src.ebay_service - INFO - Attempting to retrieve EBAY_USER_ACCESS_TOKEN from .env via ebay_auth module.
+2025-06-01 20:03:42,152 - src.ebay_service - INFO - Successfully retrieved EBAY_USER_ACCESS_TOKEN.
+2025-06-01 20:03:42,152 - src.ebay_service - DEBUG - get_ebay_access_token: EBAY_USER_ACCESS_TOKEN (first 10 chars): v^1.1#i^1#...
+2025-06-01 20:03:42,152 - __main__ - INFO - get_item_aspects_for_category: Attempting API call with current token: v^1.1#i^1#...
+2025-06-01 20:03:42,152 - __main__ - DEBUG - get_item_aspects_for_category: Requesting URL: https://api.ebay.com/commerce/taxonomy/v1/category_tree/3/get_item_aspects_for_category with category_id: 3454 using token v^1.1#i^1#...
+2025-06-01 20:03:42,152 - httpcore.connection - DEBUG - connect_tcp.started host='api.ebay.com' port=443 local_address=None timeout=5.0 socket_options=None
+2025-06-01 20:03:42,197 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x103489be0>
+2025-06-01 20:03:42,197 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x1033fbda0> server_hostname='api.ebay.com' timeout=5.0
+2025-06-01 20:03:42,261 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x1033e6fd0>
+2025-06-01 20:03:42,261 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-06-01 20:03:42,262 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-06-01 20:03:42,262 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-06-01 20:03:42,262 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-06-01 20:03:42,262 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-06-01 20:03:42,512 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'rlogid', b't6w%7Dhjzdvn%60jhs9%3Fr%7Fmh%7Ffslehmq%2B240%3E%3Faa32%3A%28lmih%3F-1972ce0d828-0x2334'), (b'x-ebay-client-tls-version', b'TLSv1.2'), (b'x-content-type-options', b'nosniff'), (b'x-xss-protection', b'0'), (b'x-frame-options', b'DENY'), (b'Vary', b'accept-encoding'), (b'Content-Encoding', b'gzip'), (b'Content-Type', b'application/json'), (b'x-envoy-upstream-service-time', b'58'), (b'Server', b'ebay-proxy-server'), (b'x-ebay-pop-id', b'UFES2-LVSAZ01-api'), (b'Content-Length', b'2220'), (b'Expires', b'Sun, 01 Jun 2025 19:03:42 GMT'), (b'Cache-Control', b'max-age=0, no-cache, no-store'), (b'Pragma', b'no-cache'), (b'Date', b'Sun, 01 Jun 2025 19:03:42 GMT'), (b'Connection', b'keep-alive'), (b'x-CDN', b'Akamai'), (b'Strict-Transport-Security', b'max-age=31536000')])
+2025-06-01 20:03:42,513 - httpx - INFO - HTTP Request: GET https://api.ebay.com/commerce/taxonomy/v1/category_tree/3/get_item_aspects_for_category?category_id=3454 "HTTP/1.1 200 OK"
+2025-06-01 20:03:42,513 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-06-01 20:03:42,514 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-06-01 20:03:42,514 - httpcore.http11 - DEBUG - response_closed.started
+2025-06-01 20:03:42,514 - httpcore.http11 - DEBUG - response_closed.complete
+2025-06-01 20:03:42,515 - __main__ - DEBUG - get_item_aspects_for_category: Response status: 200
+2025-06-01 20:03:42,515 - __main__ - INFO - get_item_aspects_for_category: Successfully fetched item aspects.
+2025-06-01 20:03:42,516 - __main__ - WARNING - Failed to parse item aspects: 'str' object has no attribute 'get'
+2025-06-01 20:03:42,516 - httpcore.connection - DEBUG - close.started
+2025-06-01 20:03:42,517 - httpcore.connection - DEBUG - close.complete
+2025-06-01 20:03:42,519 - mcp.server.lowlevel.server - DEBUG - Response sent

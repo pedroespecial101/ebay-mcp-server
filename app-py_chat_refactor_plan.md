@@ -1,61 +1,20 @@
-Session Prompt: Refactor LLM Chat Components in MCP Test UI
+Session Prompt: Removal of LLM Chat Components in MCP Test UI
 
 **Objective:**
-The primary goal is to refactor the LLM chat functionality currently residing in `mcp_test_ui/app.py` into more modular components. This will improve code organization, reduce the size of `app.py`, and make the codebase easier to maintain and for AI agents to work with. The refactored application must retain all existing chat functionalities, including support for multiple LLM providers, streaming, and MCP tool calling.
+The primary goal was to refactor the LLM chat functionality currently residing in `mcp_test_ui/app.py` into more modular components. However, the decision has been made to **completely remove** all LLM chat-related functionality from the `mcp_test_ui` application.
 
-**Current State:**
-- `mcp_test_ui/app.py` is approximately 900 lines long, with the majority of its code dedicated to the LLM chat interface.
-- The MCP Test UI parts (tool listing/execution) have already been successfully refactored into `routes_mcp.py`, `mcp_utils.py`, `models.py`, and `config.py`.
-- The application uses FastAPI.
-- The project path is `/Users/petetreadaway/Projects/ebay-mcp-server/`.
-- The virtual environment is `.venv`.
+**Reason for Removal:**
+- Simplify the `mcp_test_ui` application.
+- Focus the application solely on testing MCP tool discovery and execution via the `/mcp/` routes.
+- Reduce complexity and maintenance overhead associated with LLM provider integrations and chat features.
 
-**Refactoring Tasks:**
+**Outcome:**
+- All chat-related Python code (routes, handlers, LLM provider integrations, utility functions) has been removed from `mcp_test_ui/app.py`.
+- Chat-specific Pydantic models (`Message`, `ChatRequest`, `ToolCall`, `ToolResult`) have been removed from `mcp_test_ui/models.py`.
+- The `mcp_test_ui/templates/chat.html` template has been deleted.
+- The application now exclusively serves the MCP tool testing interface available under the `/mcp/` path.
 
-1.  **Create `mcp_test_ui/routes_chat.py`:**
-    *   Move the FastAPI routes `/chat` (renders `chat.html`) and `/chat/stream` (handles streaming chat responses) from `app.py` to this new router.
-    *   Ensure `Jinja2Templates` and any other necessary dependencies are correctly passed to or initialized within this router (similar to `init_router_dependencies` in `routes_mcp.py`).
-
-2.  **Create `mcp_test_ui/llm_handlers/` directory:**
-    *   Inside this directory, create separate Python files for each LLM provider's logic:
-        *   `openai_handler.py`: Move `call_openai()` and `stream_openai()` functions.
-        *   `anthropic_handler.py`: Move `call_anthropic()` and `stream_anthropic()` functions.
-        *   `gemini_handler.py`: Move `call_gemini()` and `stream_gemini()` functions.
-        *   `openrouter_handler.py`: Move `call_openrouter()` and `stream_openrouter()` functions.
-    *   Ensure these handlers can be called from `routes_chat.py`.
-
-3.  **Create/Update `mcp_test_ui/llm_utils.py` (or use existing `mcp_utils.py` if more appropriate):**
-    *   Move shared LLM helper functions. A key candidate is `get_mcp_tools_for_openai()`.
-    *   Consider if any common logic from the `call_*` or `stream_*` functions (e.g., API key handling, error formatting) can be centralized here.
-
-4.  **Update `mcp_test_ui/models.py`:**
-    *   Move LLM-specific Pydantic models from `app.py` to `models.py`. These include `Message`, `ChatRequest`, `ToolCall`, and `ToolResult`. (Alternatively, create a new `llm_models.py` if preferred for separation).
-
-5.  **Modify `mcp_test_ui/app.py`:**
-    *   Remove all the functions, routes, and Pydantic models that have been moved to the new modules.
-    *   Add necessary imports for the new modules and routers.
-    *   Include the new chat router (from `routes_chat.py`) in the main FastAPI `app` instance, potentially with a prefix like `/chat` (e.g., `app.include_router(chat_router, prefix="/chat", tags=["LLM Chat"])`).
-    *   Ensure the `run_server()` function and the `if __name__ == "__main__":` block correctly initialize and run the application with the refactored structure.
-
-**Testing Strategy (using Playwright MCP):**
-
-*   **Prerequisite:** Ensure the refactored UI server can be started (e.g., on `http://127.0.0.1:8001`).
-*   **Chat Page Load:**
-    *   Navigate to the main chat page (e.g., `/mcp/chat` or `/chat` depending on the new router prefix).
-    *   Verify essential UI elements: chat input field, send button, provider selection dropdown, API key input (if visible), MCP server path display.
-*   **Basic Chat Functionality (test for each supported provider, especially OpenRouter):**
-    *   Select a provider from the UI. (Use OpenRouter and Gemini 2.5 Fast for the tests)
-    *   Enter a valid API key if required (or confirm `.env` loading works).
-    *   Send a simple message (e.g., "Hello, who are you?").
-    *   Verify that a response is received from the LLM and displayed in the chat interface.
-    *   If streaming is enabled by default or selected, verify the response appears incrementally.
-*   **MCP Tool Calling via LLM (test with a provider that supports it, e.g., OpenRouter or OpenAI):**
-    *   Ensure the correct MCP server path is configured.
-    *   Use a prompt designed to trigger an MCP tool, for example, "Use the test_auth tool to check eBay authentication."
-    *   Verify the LLM's response indicates a tool call is being made.
-    *   Monitor server logs (`mcp_test_ui` and `fastmcp_server.log`) to confirm the MCP tool (e.g., `test_auth`) is executed by `src/server.py`.
-    *   Verify the tool's result is returned to the LLM.
-    *   Verify the LLM processes the tool result and provides a final, coherent response in the chat UI.
+This document is now for historical reference regarding the previous refactoring plan, which has been superseded by the removal of the feature.
 *   **Error Handling:**
     *   Test with an invalid/missing API key for a selected provider.
     *   Test chat functionality when the MCP server path (for tool calls) is invalid or the server is not running.

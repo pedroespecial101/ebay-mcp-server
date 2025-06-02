@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import sys
 from typing import List, Any, Dict, Optional
 
 from fastmcp import Client
@@ -30,8 +31,8 @@ async def get_mcp_tools(server_path_override: Optional[str] = None) -> List[MCPT
 
     try:
         actual_server_path = server_path_override if server_path_override else current_server_path
-        # Path to the virtual environment's Python interpreter (assuming CWD is project root)
-        python_executable = "venv_mcp_server/bin/python"
+        # Use the Python interpreter from the currently active virtual environment
+        python_executable = sys.executable
         
         # Initialize the transport with the script path and the python command
         custom_transport = PythonStdioTransport(
