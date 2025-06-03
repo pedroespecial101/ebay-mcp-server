@@ -1,0 +1,16 @@
+Clearing logs/fastmcp_server.log for fresh start...
+2025-06-03 17:45:55,977 - server_module - INFO - Logging configured with level DEBUG # OPTIONS ARE: DEBUG, NORMAL (INFO)
+2025-06-03 17:45:55,977 - server_module - INFO - Log file location: /Users/petetreadaway/Projects/ebay-mcp-server/logs/fastmcp_server.log
+2025-06-03 17:45:56,020 - ebay_service - INFO - Attempting to load .env from: /Users/petetreadaway/Projects/ebay-mcp-server/src/../.env
+2025-06-03 17:45:56,021 - ebay_service - INFO - .env file loaded successfully.
+2025-06-03 17:45:56,069 - server_module - INFO - Mounting all sub-servers
+2025-06-03 17:45:56,069 - server_module - INFO - Mounted auth MCP server
+2025-06-03 17:45:56,069 - server_module - INFO - Mounted browse API MCP server
+2025-06-03 17:45:56,069 - server_module - INFO - Mounted taxonomy API MCP server
+2025-06-03 17:45:56,069 - server_module - INFO - Mounted inventory API MCP server
+2025-06-03 17:45:56,069 - server_module - INFO - Mounted tests MCP server
+2025-06-03 17:45:56,069 - server_module - INFO - Mounted database MCP server
+2025-06-03 17:45:56,069 - server_module - INFO - All sub-servers mounted successfully
+Starting MCP inspector...
+❌  Proxy Server PORT IS IN USE at port 6277 ❌ 
+Previous log archived to /Users/petetreadaway/Projects/ebay-mcp-server/logs/fastmcp_server.log.2025-06-03-17:45:55
