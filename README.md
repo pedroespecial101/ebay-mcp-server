@@ -42,6 +42,7 @@ ebay-mcp-server/
 ├── .env                    # Environment variables and tokens (gitignored)
 ├── CHANGELOG.md            # Documentation of changes to the project
 ├── README.md               # Project documentation (this file)
+├── _archive/               # Archived legacy files and documentation
 ├── ebay_auth/              # eBay authentication module
 │   ├── __init__.py         # Package initialization
 │   ├── ebay_auth.py        # OAuth implementation for eBay
@@ -51,6 +52,10 @@ ebay-mcp-server/
 │   └── fastmcp_server.log  # Server log file with rotation
 ├── mcp_test_ui/            # Web UI for testing MCP tools
 │   ├── app.py              # FastAPI application for the UI
+│   ├── config.py           # Shared configuration for MCP UI
+│   ├── mcp_utils.py        # Utility functions for MCP tools integration
+│   ├── models.py           # Pydantic models for MCP UI
+│   ├── routes_mcp.py       # FastAPI routes for MCP tool testing
 │   ├── requirements.txt    # UI-specific dependencies
 │   ├── static/             # Static assets for the UI
 │   └── templates/          # Jinja2 templates for UI pages
@@ -76,16 +81,15 @@ ebay-mcp-server/
 │   │   └── api_utils.py    # Shared API utility functions
 │   ├── ebay_service.py     # eBay service utilities
 │   ├── main_server.py      # Main MCP server that mounts all sub-servers
-│   ├── models/             # Pydantic models for data validation
-│   │   ├── __init__.py     # Package initialization
-│   │   ├── ebay/           # eBay API specific models
-│   │   │   ├── __init__.py # Package initialization
-│   │   │   ├── inventory.py # Inventory API models
-│   │   │   └── taxonomy.py # Taxonomy API models
-│   │   └── mcp_tools.py    # MCP tool parameter models
-│   └── server.py           # Legacy monolithic MCP server implementation
-├── start.sh                # MCP server management script
-├── mcp_test_ui_start.py    # Script to start the MCP Test UI
+│   └── models/             # Pydantic models for data validation
+│       ├── __init__.py     # Package initialization
+│       ├── ebay/           # eBay API specific models
+│       │   ├── __init__.py # Package initialization
+│       │   ├── inventory.py # Inventory API models
+│       │   └── taxonomy.py # Taxonomy API models
+│       └── mcp_tools.py    # MCP tool parameter models
+├── start.sh                # MCP server management script for local testing
+├── start_mcp_test_ui.sh    # Script to start the MCP Test UI server
 ├── requirements.txt        # Python dependencies
 └── tests/                  # Test directory for unit tests
 ```
@@ -155,7 +159,7 @@ For AI assistants and IDEs that support the Model Context Protocol (MCP), the se
   "command": "/path/to/ebay-mcp-server/.venv/bin/fastmcp",
   "args": [
     "run",
-    "/path/to/ebay-mcp-server/src/server.py"
+    "/path/to/ebay-mcp-server/src/main_server.py"
   ],
   "env": {}
 }
@@ -164,7 +168,7 @@ For AI assistants and IDEs that support the Model Context Protocol (MCP), the se
 This configuration tells the IDE to:
 1. Run the FastMCP executable from the project's virtual environment
 2. Use the `run` command (instead of the `dev` command used by `start.sh`)
-3. Point to the server.py file
+3. Point to the `main_server.py` file
 
 **Important Notes:** 
 - Changes to the MCP server **code** will require restarting the MCP server process in your IDE for changes to take effect, which is separate from running the `start.sh` script.
@@ -191,7 +195,7 @@ To add a new function to the MCP server, follow these steps:
 
 1. Identify the eBay API endpoint you want to expose
 2. Create appropriate Pydantic models in `src/models/` for request parameters and responses
-3. Add a new async function to `src/server.py` using the `@mcp.tool()` decorator
+3. Add a new async function to `src/main_server.py` using the `@mcp.tool()` decorator
 4. Implement the function logic using the `_execute_ebay_api_call` helper for consistent error handling
 5. Follow the existing pattern for API calls with Pydantic validation:
 
@@ -330,7 +334,7 @@ The project includes a web-based user interface for testing MCP tools directly i
 
 1. Start the MCP Test UI server:
    ```bash
-   python mcp_test_ui_start.py
+   ./start_mcp_test_ui.sh
    ```
 
 2. Open a browser and navigate to http://127.0.0.1:8000
@@ -481,7 +485,7 @@ This section provides guidance for AI agents on how to autonomously test and deb
 
 1. **Server Setup**:
    - Start the MCP server using `./start.sh restart`
-   - Start the MCP Test UI with `python mcp_test_ui_start.py`
+   - Start the MCP Test UI with `./start_mcp_test_ui.sh`
    - Create a browser preview for the UI at `http://127.0.0.1:8000`
 
 2. **Direct API Testing**:

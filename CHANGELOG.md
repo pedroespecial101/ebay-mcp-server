@@ -1,3 +1,19 @@
+## Updates in Code Cleanup and Unused Files Removal (03062025 - 13:53:33)
+
+- Moved unused/deprecated files to the `_archive` directory:
+  - `src/server_old.py` - Legacy monolithic server implementation replaced by modular architecture
+  - `mcp_test_ui_start.py` - Replaced by `start_mcp_test_ui.sh` script
+- Deleted empty `mcp_test_ui/llm_handlers/` directory that remained after LLM chat functionality removal
+- This cleanup removes redundant code, reduces clutter, and makes the codebase more maintainable
+
+## Updates in Code Cleanup and Unused Files Removal (03062025 - 13:53:33)
+
+- Moved unused/deprecated files to the `_archive` directory:
+  - `src/server_old.py` - Legacy monolithic server implementation replaced by modular architecture
+  - `mcp_test_ui_start.py` - Replaced by `start_mcp_test_ui.sh` script
+- Deleted empty `mcp_test_ui/llm_handlers/` directory that remained after LLM chat functionality removal
+- This cleanup removes redundant code, reduces clutter, and makes the codebase more maintainable
+
 ## Updates in Import Path Fixes (03062025 - 07:20:23)
 
 - Fixed import path issues in all refactored modules
@@ -120,4 +136,3 @@
             - Allow `config.mcp_server_path` to be overridden by a `--server` command-line argument.
             - Change the default port for this refactored application to `8001` to facilitate side-by-side testing with an older version on port `8000`.
 - **Overall Goal**: Improve code organization, reduce the size of `app.py`, and make the MCP Test UI more maintainable, especially for AI agents.
-
