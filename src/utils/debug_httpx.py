@@ -26,16 +26,13 @@ class DebugAsyncClient(httpx.AsyncClient):
         self._last_request = None
         self._last_response = None
         
-    async def request(self, *args, **kwargs) -> httpx.Response:
+    async def request(self, method, url, **kwargs) -> httpx.Response:
         """Override the request method to track requests and responses."""
-        # Store the request
-        request = httpx.Request(*args, **kwargs)
-        self._last_request = request
+        # Execute the request first
+        response = await super().request(method, url, **kwargs)
         
-        # Execute the request
-        response = await super().request(*args, **kwargs)
-        
-        # Store the response
+        # Store the request and response
+        self._last_request = response.request
         self._last_response = response
         
         return response
