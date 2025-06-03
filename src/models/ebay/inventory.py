@@ -88,16 +88,106 @@ class OfferFees(EbayBaseModel):
 
 class ListingFeeResponse(EbayBaseModel):
     """Response model for listing fees."""
-    
+
     fees: List[Dict[str, Any]] = Field(default_factory=list, description="List of fee summaries for each offer.")
     warnings: List[Dict[str, Any]] = Field(default_factory=list, description="Any warnings returned by the API.")
-    
+
     @classmethod
     def success_response(cls, data):
         """Create a success response with fees data."""
         return cls(fees=data, warnings=[])
-    
+
     @classmethod
     def error_response(cls, error_message: str):
         """Create an error response."""
         return cls(fees=[], warnings=[{"message": error_message}])
+
+
+class InventoryItemDetails(EbayBaseModel):
+    """Model for inventory item details."""
+
+    sku: str = Field(..., description="The seller-defined Stock Keeping Unit (SKU).")
+    locale: Optional[str] = Field(None, description="The locale for the inventory item.")
+    condition: Optional[str] = Field(None, description="The condition of the inventory item.")
+    condition_description: Optional[str] = Field(None, description="Additional description of the item condition.")
+    package_weight_and_size: Optional[Dict[str, Any]] = Field(None, description="Package weight and dimensions.")
+    product: Optional[Dict[str, Any]] = Field(None, description="Product details including title, description, aspects, etc.")
+    availability: Optional[Dict[str, Any]] = Field(None, description="Availability information including quantity.")
+    group_ids: Optional[List[str]] = Field(None, description="List of inventory item group IDs this item belongs to.")
+
+
+class InventoryItemResponse(EbayResponse[InventoryItemDetails]):
+    """Response model for inventory item details."""
+    pass
+
+
+class InventoryItemsListResponse(EbayBaseModel):
+    """Response model for inventory items list."""
+
+    inventory_items: List[InventoryItemDetails] = Field(default_factory=list, description="List of inventory items.")
+    total: Optional[int] = Field(None, description="Total number of inventory items.")
+    size: Optional[int] = Field(None, description="Number of items in this response.")
+    offset: Optional[int] = Field(None, description="Offset used for pagination.")
+    limit: Optional[int] = Field(None, description="Limit used for pagination.")
+    href: Optional[str] = Field(None, description="URL for this page of results.")
+    next: Optional[str] = Field(None, description="URL for the next page of results.")
+    prev: Optional[str] = Field(None, description="URL for the previous page of results.")
+
+    @classmethod
+    def success_response(cls, data: Dict[str, Any]):
+        """Create a success response with inventory items data."""
+        inventory_items = []
+        if 'inventoryItems' in data:
+            for item in data['inventoryItems']:
+                inventory_items.append(InventoryItemDetails(
+                    sku=item.get('sku', ''),
+                    locale=item.get('locale'),
+                    condition=item.get('condition'),
+                    condition_description=item.get('conditionDescription'),
+                    package_weight_and_size=item.get('packageWeightAndSize'),
+                    product=item.get('product'),
+                    availability=item.get('availability'),
+                    group_ids=item.get('groupIds', [])
+                ))
+
+        return cls(
+            inventory_items=inventory_items,
+            total=data.get('total'),
+            size=data.get('size'),
+            offset=data.get('offset'),
+            limit=data.get('limit'),
+            href=data.get('href'),
+            next=data.get('next'),
+            prev=data.get('prev')
+        )
+
+    @classmethod
+    def error_response(cls, error_message: str):
+        """Create an error response."""
+        return cls(inventory_items=[], total=0, size=0)
+
+
+class DeleteInventoryItemResponse(EbayBaseModel):
+    """Response model for delete inventory item operation."""
+
+    success: bool = Field(..., description="Whether the deletion was successful.")
+    message: str = Field(..., description="Success or error message.")
+    sku: Optional[str] = Field(None, description="The SKU that was deleted.")
+
+    @classmethod
+    def success_response(cls, sku: str):
+        """Create a success response for deletion."""
+        return cls(
+            success=True,
+            message=f"Inventory item with SKU '{sku}' has been successfully deleted.",
+            sku=sku
+        )
+
+    @classmethod
+    def error_response(cls, error_message: str, sku: str = None):
+        """Create an error response for deletion."""
+        return cls(
+            success=False,
+            message=f"Failed to delete inventory item: {error_message}",
+            sku=sku
+        )

@@ -1,3 +1,56 @@
+## Updates in eBay Inventory API New Tools Implementation (15052025 - 17:45:44)
+
+- **Added three new MCP tools for the eBay Sell Inventory v1 API:**
+  - **get_inventory_item_by_sku**: Retrieve a specific inventory item using its SKU identifier
+    - Endpoint: `GET /sell/inventory/v1/inventory_item/{sku}`
+    - Parameters: `sku` (required) - The seller-defined SKU of the inventory item
+    - Returns: Complete inventory item details including condition, product info, availability, etc.
+  - **get_inventory_items**: Retrieve multiple inventory items with pagination support
+    - Endpoint: `GET /sell/inventory/v1/inventory_item`
+    - Parameters: `limit` (1-200, default: 25), `offset` (default: 0)
+    - Returns: Paginated list of inventory items with navigation links
+  - **delete_inventory_item**: Delete an inventory item by its SKU
+    - Endpoint: `DELETE /sell/inventory/v1/inventory_item/{sku}`
+    - Parameters: `sku` (required) - The seller-defined SKU of the inventory item to delete
+    - Effects: Deletes inventory item, unpublished offers, single-variation listings, and removes from groups
+
+- **Enhanced data models in `src/models/ebay/inventory.py`:**
+  - Added `InventoryItemDetails` model for comprehensive inventory item representation
+  - Added `InventoryItemResponse` model for single item API responses
+  - Added `InventoryItemsListResponse` model for paginated list responses with navigation
+  - Added `DeleteInventoryItemResponse` model for deletion operation feedback
+
+- **Enhanced parameter models in `src/models/mcp_tools.py`:**
+  - Added `GetInventoryItemBySkuParams` with SKU validation (max 50 characters)
+  - Added `GetInventoryItemsParams` with pagination validation (limit 1-200, offset ≥ 0)
+  - Added `DeleteInventoryItemParams` with SKU validation
+
+- **Created modular tool implementations:**
+  - `src/ebay_mcp/inventory/get_inventory_item_by_sku.py` - Single item retrieval
+  - `src/ebay_mcp/inventory/get_inventory_items.py` - Paginated list retrieval
+  - `src/ebay_mcp/inventory/delete_inventory_item.py` - Item deletion with proper 204 handling
+
+- **Updated `src/ebay_mcp/inventory/server.py`:**
+  - Imported and registered all three new tools in the inventory MCP server
+  - Maintained existing authentication and error handling patterns
+  - All tools integrate with existing `execute_ebay_api_call` utility for token management
+
+- **Implementation follows established patterns:**
+  - Proper parameter validation using Pydantic models
+  - Comprehensive error handling and logging
+  - Integration with existing authentication system
+  - Consistent API response formatting
+  - Debug logging support for troubleshooting
+
+- **Updated README.md documentation:**
+  - Added three new inventory tools to the MCP Client Integration section with detailed descriptions
+  - Updated Key Features section to reflect comprehensive inventory management capabilities
+  - Enhanced project structure to show new tool files in inventory directory
+  - Added modular tool implementation pattern documentation explaining the architecture
+  - Added testing guidance for MCP servers emphasizing client-started nature
+  - Organized tool list by API category (Authentication, Browse, Taxonomy, Inventory)
+  - Updated troubleshooting section with MCP server testing best practices
+
 ## Updates in Code Cleanup and Unused Files Removal (03062025 - 13:53:33)
 
 - Moved unused/deprecated files to the `_archive` directory:

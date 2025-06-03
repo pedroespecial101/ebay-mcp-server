@@ -13,8 +13,11 @@ Additionally, the project includes an MCP Test UI that provides a web interface 
 - Multiple MCP functions for interacting with eBay APIs:
   - Browse API for searching items
   - Taxonomy API for category suggestions and item aspects
-  - Inventory API for retrieving offer details by SKU
-  - Inventory management (update offers, withdraw offers, get listing fees)
+  - Inventory API for comprehensive inventory management:
+    - Retrieve inventory items by SKU or with pagination
+    - Retrieve offer details by SKU
+    - Update offers, withdraw offers, get listing fees
+    - Delete inventory items
 - Pydantic models for request/response validation and type safety
 - Robust error handling and token refresh logic
 - Centralized logging system with timed rotation
@@ -67,6 +70,9 @@ ebay-mcp-server/
 │   │   │   └── server.py   # Browse MCP tools implementation
 │   │   ├── inventory/      # Inventory API server
 │   │   │   ├── server.py   # Inventory MCP base implementation
+│   │   │   ├── get_inventory_item_by_sku.py  # Get single inventory item tool
+│   │   │   ├── get_inventory_items.py        # Get inventory items with pagination tool
+│   │   │   ├── delete_inventory_item.py      # Delete inventory item tool
 │   │   │   ├── update_offer.py  # Update offer tool implementation
 │   │   │   ├── withdraw_offer.py # Withdraw offer tool implementation
 │   │   │   └── listing_fees.py  # Listing fees tool implementation
@@ -178,12 +184,22 @@ This configuration tells the IDE to:
 
 The server implements the Model Context Protocol, allowing AI assistants and other MCP clients to call the exposed functions directly. Available functions include:
 
+### Authentication & Testing Tools
 - `test_auth()`: Test authentication and token retrieval
 - `trigger_ebay_login()`: Initiates the eBay OAuth2 login flow directly from the MCP IDE
 - `add(a: int, b: int)`: Simple addition function (useful for testing)
+
+### Browse API Tools
 - `search_ebay_items(query: str, limit: int = 10)`: Search items on eBay
+
+### Taxonomy API Tools
 - `get_category_suggestions(query: str)`: Get category suggestions from eBay Taxonomy API
 - `get_item_aspects_for_category(category_id: str)`: Get item aspects for a specific category
+
+### Inventory API Tools
+- `get_inventory_item_by_sku(sku: str)`: Retrieve a specific inventory item using its SKU identifier
+- `get_inventory_items(limit: int = 25, offset: int = 0)`: Retrieve multiple inventory items with pagination support
+- `delete_inventory_item(sku: str)`: Delete an inventory item by its SKU (also removes associated offers and listings)
 - `get_offer_by_sku(sku: str)`: Get offer details for a specific SKU
 - `update_offer(offer_id: str, sku: str, marketplace_id: str, price: float, available_quantity: int)`: Update an existing offer
 - `withdraw_offer(offer_id: str)`: Withdraw (delete) an existing offer
@@ -191,13 +207,27 @@ The server implements the Model Context Protocol, allowing AI assistants and oth
 
 ## Adding New Functions
 
+This project uses a **modular tool implementation pattern** for organizing MCP tools. Each tool is implemented in its own file and then registered with the appropriate MCP server.
+
+### Modular Tool Pattern
+
+For complex APIs like eBay Inventory, tools are organized as follows:
+
+1. **Individual Tool Files**: Each MCP tool is implemented in its own file (e.g., `get_inventory_item_by_sku.py`)
+2. **Server Registration**: Tools are imported and registered in the main server file (e.g., `inventory/server.py`)
+3. **Shared Utilities**: Common functionality like authentication is handled by shared utilities (`execute_ebay_api_call`)
+
+### Adding a New Tool
+
 To add a new function to the MCP server, follow these steps:
 
-1. Identify the eBay API endpoint you want to expose
-2. Create appropriate Pydantic models in `src/models/` for request parameters and responses
-3. Add a new async function to `src/main_server.py` using the `@mcp.tool()` decorator
-4. Implement the function logic using the `_execute_ebay_api_call` helper for consistent error handling
-5. Follow the existing pattern for API calls with Pydantic validation:
+1. **Identify the eBay API endpoint** you want to expose
+2. **Create appropriate Pydantic models** in `src/models/` for request parameters and responses
+3. **Choose the implementation approach**:
+   - For simple tools: Add directly to the main server file
+   - For complex APIs: Create a separate tool file in the appropriate subdirectory
+4. **Implement the function logic** using the `execute_ebay_api_call` helper for consistent error handling
+5. **Follow the existing pattern** for API calls with Pydantic validation:
 
 ```python
 @mcp.tool()
@@ -427,6 +457,13 @@ async def example_tool(param1: str, param2: int) -> str:
 
 - **Code Changes Not Taking Effect**: After modifying the server code, restart the MCP server process in your IDE. For local testing with `start.sh`, use `./start.sh` to restart the server.
 - **Multiple Authentication Attempts**: If multiple authentication attempts occur in rapid succession, you may encounter port conflicts. Wait a few moments between attempts.
+
+### Testing MCP Servers
+
+- **Important**: MCP servers are client-started, not standalone. Never try to run MCP servers directly with `python src/main_server.py`.
+- **Use the MCP Test UI**: Test new tools using `./start_mcp_test_ui.sh` and navigate to `http://127.0.0.1:8000/mcp/` in your browser.
+- **Parameter Validation**: When tools fail with validation errors, check the Pydantic models for parameter constraints and field validators.
+- **Authentication Testing**: Use the `test_auth()` tool to verify eBay API connectivity before testing other tools.
 
 ### Other Common Issues
 

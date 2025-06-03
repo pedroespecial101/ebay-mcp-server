@@ -160,10 +160,10 @@ class TestAuthResponse(EbayResponse[str]):
 
 class TriggerEbayLoginResponse(EbayResponse[str]):
     """Response for the trigger_ebay_login tool."""
-    
+
     user_name: Optional[str] = Field(None, description="eBay user name if login was successful.")
     error_details: Optional[str] = Field(None, description="Error details if login failed.")
-    
+
     @classmethod
     def success_response(cls, user_name: str):
         """Create a success response with the user name."""
@@ -172,7 +172,7 @@ class TriggerEbayLoginResponse(EbayResponse[str]):
             data=f"eBay login process completed successfully. The user '{user_name}' has been authenticated with eBay and can now use the eBay API tools.",
             user_name=user_name
         )
-    
+
     @classmethod
     def error_response(cls, error_message: str, error_details: str = "No specific error details provided."):
         """Create an error response with error message and details."""
@@ -182,7 +182,7 @@ class TriggerEbayLoginResponse(EbayResponse[str]):
             error_message=error_message,
             error_details=error_details
         )
-    
+
     @classmethod
     def uncertain_response(cls, login_result: Any):
         """Create a response for uncertain login outcome."""
@@ -191,3 +191,52 @@ class TriggerEbayLoginResponse(EbayResponse[str]):
             data="eBay login process finished. The outcome is unclear. Please check server logs.",
             debug_info=str(login_result)
         )
+
+
+class GetInventoryItemBySkuParams(EbayBaseModel):
+    """Parameters for the get_inventory_item_by_sku tool."""
+
+    sku: str = Field(..., description="The seller-defined SKU (Stock Keeping Unit) of the inventory item to retrieve.")
+
+    @field_validator('sku')
+    def validate_sku(cls, v):
+        """Convert the SKU to string if needed and validate length."""
+        sku_str = str(v) if v is not None else v
+        if sku_str and len(sku_str) > 50:
+            raise ValueError("SKU must be 50 characters or less")
+        return sku_str
+
+
+class GetInventoryItemsParams(EbayBaseModel):
+    """Parameters for the get_inventory_items tool."""
+
+    limit: int = Field(25, description="The maximum number of inventory items to return per page (1-200).")
+    offset: int = Field(0, description="The number of inventory items to skip before starting to return results.")
+
+    @field_validator('limit')
+    def validate_limit(cls, v):
+        """Validate that limit is within acceptable range."""
+        if v < 1 or v > 200:
+            raise ValueError("Limit must be between 1 and 200")
+        return v
+
+    @field_validator('offset')
+    def validate_offset(cls, v):
+        """Validate that offset is non-negative."""
+        if v < 0:
+            raise ValueError("Offset must be non-negative")
+        return v
+
+
+class DeleteInventoryItemParams(EbayBaseModel):
+    """Parameters for the delete_inventory_item tool."""
+
+    sku: str = Field(..., description="The seller-defined SKU (Stock Keeping Unit) of the inventory item to delete.")
+
+    @field_validator('sku')
+    def validate_sku(cls, v):
+        """Convert the SKU to string if needed and validate length."""
+        sku_str = str(v) if v is not None else v
+        if sku_str and len(sku_str) > 50:
+            raise ValueError("SKU must be 50 characters or less")
+        return sku_str

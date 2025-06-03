@@ -1,0 +1,12 @@
+2025-06-03 14:25:11,604 - main_server - INFO - Logging configured with level DEBUG # OPTIONS ARE\X3A DEBUG, NORMAL (INFO)
+2025-06-03 14:25:11,604 - main_server - INFO - Log file location: /Users/petetreadaway/Projects/ebay-mcp-server/logs/fastmcp_server.log
+2025-06-03 14:25:11,950 - ebay_service - INFO - Attempting to load .env from: /Users/petetreadaway/Projects/ebay-mcp-server/src/../.env
+2025-06-03 14:25:11,951 - ebay_service - INFO - .env file loaded successfully.
+2025-06-03 14:25:12,002 - main_server - INFO - Mounting all sub-servers
+2025-06-03 14:25:12,002 - main_server - INFO - Mounted auth MCP server
+2025-06-03 14:25:12,002 - main_server - INFO - Mounted browse API MCP server
+2025-06-03 14:25:12,002 - main_server - INFO - Mounted taxonomy API MCP server
+2025-06-03 14:25:12,002 - main_server - INFO - Mounted inventory API MCP server
+2025-06-03 14:25:12,002 - main_server - INFO - Mounted tests MCP server
+2025-06-03 14:25:12,002 - main_server - INFO - Mounted database MCP server
+2025-06-03 14:25:12,002 - main_server - INFO - All sub-servers mounted successfully
