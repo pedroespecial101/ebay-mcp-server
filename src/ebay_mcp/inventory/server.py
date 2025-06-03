@@ -8,6 +8,7 @@ import httpx
 from fastmcp import FastMCP
 import json
 import asyncio
+from dotenv import load_dotenv
 
 # Add the project root directory to the Python path
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
@@ -20,6 +21,13 @@ from models.mcp_tools import OfferBySkuParams, UpdateOfferParams, WithdrawOfferP
 
 # Import the common helper function for eBay API calls
 from utils.api_utils import execute_ebay_api_call, is_token_error
+from utils.debug_httpx import create_debug_client
+
+# Load environment variables
+load_dotenv()
+
+# Determine if we're in DEBUG mode
+DEBUG_MODE = os.getenv('MCP_LOG_LEVEL', 'NORMAL').upper() == 'DEBUG'
 
 # Import tool modules
 from ebay_mcp.inventory.update_offer import update_offer_tool
@@ -114,7 +122,8 @@ async def get_offer_by_sku(sku: str) -> str:
             logger.info(f"get_offer_by_sku: Successfully fetched offer for SKU {params.sku}.")
             return response.text
         
-        async with httpx.AsyncClient() as client:
+        # Use the enhanced debug client
+        async with create_debug_client() as client:
             result = await execute_ebay_api_call("get_offer_by_sku", client, _api_call)
             
             # Try to parse the response as an OfferResponse

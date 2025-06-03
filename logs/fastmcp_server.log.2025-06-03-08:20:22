@@ -1,0 +1,105 @@
+Clearing logs/fastmcp_server.log for fresh start...
+2025-06-03 08:20:22,916 - server_module - INFO - Logging configured with level DEBUG (DEBUG)
+2025-06-03 08:20:22,916 - server_module - INFO - Log file location: /Users/petetreadaway/Projects/ebay-mcp-server/logs/fastmcp_server.log
+2025-06-03 08:20:22,958 - ebay_service - INFO - Attempting to load .env from: /Users/petetreadaway/Projects/ebay-mcp-server/src/../.env
+2025-06-03 08:20:22,958 - ebay_service - INFO - .env file loaded successfully.
+2025-06-03 08:20:22,966 - mcp.server.lowlevel.server - DEBUG - Initializing server 'eBay Auth API'
+2025-06-03 08:20:22,966 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-03 08:20:22,966 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-03 08:20:22,966 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-03 08:20:22,966 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-03 08:20:22,966 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-03 08:20:22,966 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-03 08:20:22,966 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-03 08:20:22,974 - mcp.server.lowlevel.server - DEBUG - Initializing server 'eBay Browse API'
+2025-06-03 08:20:22,974 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-03 08:20:22,974 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-03 08:20:22,974 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-03 08:20:22,974 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-03 08:20:22,974 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-03 08:20:22,974 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-03 08:20:22,974 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-03 08:20:22,983 - mcp.server.lowlevel.server - DEBUG - Initializing server 'eBay Taxonomy API'
+2025-06-03 08:20:22,983 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-03 08:20:22,983 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-03 08:20:22,983 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-03 08:20:22,983 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-03 08:20:22,983 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-03 08:20:22,983 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-03 08:20:22,983 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-03 08:20:22,993 - mcp.server.lowlevel.server - DEBUG - Initializing server 'eBay Inventory API'
+2025-06-03 08:20:22,993 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-03 08:20:22,993 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-03 08:20:22,993 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-03 08:20:22,993 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-03 08:20:22,993 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-03 08:20:22,993 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-03 08:20:22,993 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-03 08:20:22,994 - asyncio - DEBUG - Using selector: KqueueSelector
+2025-06-03 08:20:22,999 - mcp.server.lowlevel.server - DEBUG - Initializing server 'Test Tools API'
+2025-06-03 08:20:22,999 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-03 08:20:22,999 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-03 08:20:22,999 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-03 08:20:22,999 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-03 08:20:22,999 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-03 08:20:22,999 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-03 08:20:22,999 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-03 08:20:23,002 - mcp.server.lowlevel.server - DEBUG - Initializing server 'Database Tools API'
+2025-06-03 08:20:23,002 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-03 08:20:23,002 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-03 08:20:23,002 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-03 08:20:23,002 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-03 08:20:23,002 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-03 08:20:23,002 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-03 08:20:23,002 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-03 08:20:23,005 - mcp.server.lowlevel.server - DEBUG - Initializing server 'eBay API'
+2025-06-03 08:20:23,005 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-03 08:20:23,005 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-03 08:20:23,005 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-03 08:20:23,005 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-03 08:20:23,005 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-03 08:20:23,005 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-03 08:20:23,005 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-03 08:20:23,005 - server_module - INFO - Mounting all sub-servers
+2025-06-03 08:20:23,005 - server_module - INFO - Mounted auth MCP server
+2025-06-03 08:20:23,005 - server_module - INFO - Mounted browse API MCP server
+2025-06-03 08:20:23,005 - server_module - INFO - Mounted taxonomy API MCP server
+2025-06-03 08:20:23,005 - server_module - INFO - Mounted inventory API MCP server
+2025-06-03 08:20:23,005 - server_module - INFO - Mounted tests MCP server
+2025-06-03 08:20:23,005 - server_module - INFO - Mounted database MCP server
+2025-06-03 08:20:23,005 - server_module - INFO - All sub-servers mounted successfully
+Starting MCP inspector...
+❌  Proxy Server PORT IS IN USE at port 6277 ❌ 
+Previous log archived to /Users/petetreadaway/Projects/ebay-mcp-server/logs/fastmcp_server.log.2025-06-03-08:20:22
+2025-06-03 08:20:46,211 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x105bb7ed0>
+2025-06-03 08:20:46,213 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-03 08:20:46,213 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-03 08:20:46,213 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-03 08:20:46,268 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x105a1eb10>
+2025-06-03 08:20:46,268 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-03 08:20:46,268 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-03 08:20:46,268 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-03 08:30:46,192 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x105a1fec0>
+2025-06-03 08:30:46,194 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-03 08:30:46,194 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-03 08:30:46,195 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-03 08:30:46,243 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x105a1fda0>
+2025-06-03 08:30:46,244 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-03 08:30:46,244 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-03 08:30:46,244 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-03 08:40:46,205 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x105a1eb10>
+2025-06-03 08:40:46,206 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-03 08:40:46,206 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-03 08:40:46,208 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-03 08:40:46,211 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x105a1fec0>
+2025-06-03 08:40:46,211 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-03 08:40:46,212 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-03 08:40:46,212 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-03 08:51:00,174 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x105a1fda0>
+2025-06-03 08:51:00,175 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-03 08:51:00,175 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-03 08:51:00,176 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-03 08:51:00,211 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x105a1eb10>
+2025-06-03 08:51:00,212 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-03 08:51:00,212 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-03 08:51:00,212 - mcp.server.lowlevel.server - DEBUG - Response sent

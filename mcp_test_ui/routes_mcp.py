@@ -1,12 +1,14 @@
 import asyncio
 import json
 import logging
+import sys
 from typing import Optional, Dict, Any, List
 
 from fastapi import APIRouter, Request, Form, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastmcp import Client # For execute_tool
+from fastmcp.client.transports import PythonStdioTransport
 
 from . import config
 from .mcp_utils import get_mcp_tools, clear_mcp_tool_cache
@@ -124,7 +126,17 @@ async def execute_tool(request: Request, tool_name: str):
         
         logger.info(f"Executing {tool_name} with converted parameters: {converted_params}")
         
-        async with Client(config.mcp_server_path) as mcp_client:
+        # Use the Python interpreter from the currently active virtual environment
+        python_executable = sys.executable
+        
+        # Initialize the transport with the script path and the python command
+        custom_transport = PythonStdioTransport(
+            script_path=config.mcp_server_path,
+            python_cmd=python_executable
+            # args=[] # Add this if your server.py script needs arguments
+        )
+        
+        async with Client(transport=custom_transport) as mcp_client:
             if hasattr(mcp_client, "call_tool"):
                 result = await mcp_client.call_tool(tool_name, arguments=converted_params)
             elif hasattr(mcp_client, "call_tool_mcp"): # Fallback, if applicable

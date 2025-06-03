@@ -6,6 +6,8 @@ import asyncio
 import httpx
 import os
 import sys
+import json
+from dotenv import load_dotenv
 
 # Add the project root directory to the Python path
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -15,8 +17,14 @@ sys.path.append(project_root)
 from ebay_auth.ebay_auth import refresh_access_token as ebay_auth_refresh_token
 from ebay_service import get_ebay_access_token
 
+# Load environment variables
+load_dotenv()
+
 # Get logger
 logger = logging.getLogger(__name__)
+
+# Determine if we're in DEBUG mode
+DEBUG_MODE = os.getenv('MCP_LOG_LEVEL', 'NORMAL').upper() == 'DEBUG'
 
 # Helper to check if token is an error message from our get_ebay_access_token function
 def is_token_error(token: str) -> bool:
@@ -34,6 +42,37 @@ def is_token_error(token: str) -> bool:
         "EBAY_USER_ACCESS_TOKEN not found" # Added from ebay_service update
     ]
     return any(token.startswith(prefix) for prefix in error_prefixes)
+
+def log_request_response_debug(request=None, response=None, error=None, prefix=''):
+    """Log detailed request and response information when in DEBUG mode"""
+    if not DEBUG_MODE:
+        return
+        
+    if request:
+        try:
+            request_info = {
+                'method': request.method,
+                'url': str(request.url),
+                'headers': dict(request.headers),
+                'content': request.content.decode('utf-8') if request.content else None
+            }
+            logger.debug(f"{prefix} Request: {json.dumps(request_info, indent=2)}")
+        except Exception as e:
+            logger.debug(f"{prefix} Failed to log request details: {e}")
+    
+    if response:
+        try:
+            response_info = {
+                'status_code': response.status_code,
+                'headers': dict(response.headers),
+                'content': response.text if hasattr(response, 'text') else None
+            }
+            logger.debug(f"{prefix} Response: {json.dumps(response_info, indent=2)}")
+        except Exception as e:
+            logger.debug(f"{prefix} Failed to log response details: {e}")
+    
+    if error:
+        logger.debug(f"{prefix} Error: {error}")
 
 async def execute_ebay_api_call(tool_name: str, client: httpx.AsyncClient, api_call_logic: callable):
     """
@@ -55,8 +94,41 @@ async def execute_ebay_api_call(tool_name: str, client: httpx.AsyncClient, api_c
 
     try:
         logger.info(f"{tool_name}: Attempting API call with current token: {access_token[:10]}...")
-        return await api_call_logic(access_token, client)
+        if DEBUG_MODE:
+            logger.debug(f"{tool_name}: Executing API call with full token: {access_token}")
+        
+        # Wrap the api_call_logic to intercept and log requests/responses
+        async def wrapped_api_call(token, client):
+            response_text = None
+            response_obj = None
+            request_obj = None
+            
+            try:
+                # Call the original API logic and capture the response
+                response_text = await api_call_logic(token, client)
+                
+                # If we're in DEBUG mode and the response isn't an error message,
+                # log the request and response details (this can be extended based on the actual implementation)
+                if DEBUG_MODE and hasattr(client, '_last_request') and hasattr(client, '_last_response'):
+                    request_obj = getattr(client, '_last_request', None)
+                    response_obj = getattr(client, '_last_response', None)
+                    log_request_response_debug(request_obj, response_obj, prefix=f"{tool_name}")
+                
+                return response_text
+            except Exception as e:
+                if DEBUG_MODE:
+                    logger.debug(f"{tool_name}: Exception in API call: {e}")
+                    if hasattr(e, 'request'):
+                        log_request_response_debug(request=e.request, prefix=f"{tool_name}")
+                    if hasattr(e, 'response'):
+                        log_request_response_debug(response=e.response, prefix=f"{tool_name}")
+                raise
+                
+        return await wrapped_api_call(access_token, client)
     except httpx.HTTPStatusError as e:
+        if DEBUG_MODE:
+            log_request_response_debug(request=e.request, response=e.response, 
+                                      error=f"HTTP Status Error: {e}", prefix=f"{tool_name}")
         if e.response.status_code == 401:
             logger.warning(f"{tool_name}: API call failed with 401 (Unauthorized). Token {access_token[:10]}... may be expired. Attempting refresh.")
             

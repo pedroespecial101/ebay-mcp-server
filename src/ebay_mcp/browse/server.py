@@ -7,6 +7,7 @@ import sys
 import httpx
 from fastmcp import FastMCP
 import json
+from dotenv import load_dotenv
 
 # Add the project root directory to the Python path
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
@@ -19,6 +20,13 @@ from models.mcp_tools import SearchEbayItemsParams
 # Import the common helper function for eBay API calls
 from ebay_service import get_ebay_access_token
 from utils.api_utils import execute_ebay_api_call, is_token_error
+from utils.debug_httpx import create_debug_client
+
+# Load environment variables
+load_dotenv()
+
+# Determine if we're in DEBUG mode
+DEBUG_MODE = os.getenv('MCP_LOG_LEVEL', 'NORMAL').upper() == 'DEBUG'
 
 # Get logger
 logger = logging.getLogger(__name__)
@@ -48,10 +56,10 @@ async def search_ebay_items(query: str, limit: int = 10) -> str:
             logger.debug(f"search_ebay_items: Response status: {response.status_code}")
             response.raise_for_status() # Crucial for execute_ebay_api_call to handle HTTP errors
             logger.info("search_ebay_items: Successfully fetched items.")
-            logger.debug(f"search_ebay_items: Response text: {response.text}")  # Debugging
-            return response.text
+            return response.text    
         
-        async with httpx.AsyncClient() as client:
+        # Use the enhanced debug client
+        async with create_debug_client() as client:
             result = await execute_ebay_api_call("search_ebay_items", client, _api_call)
             
             # Try to parse the response as a SearchResult

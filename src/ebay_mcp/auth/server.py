@@ -7,6 +7,8 @@ import sys
 import asyncio
 from fastmcp import FastMCP
 import json
+import httpx
+from dotenv import load_dotenv
 
 # Add the project root directory to the Python path
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
@@ -19,6 +21,13 @@ from ebay_auth.ebay_auth import refresh_access_token as ebay_auth_refresh_token
 from ebay_auth.ebay_auth import initiate_user_login
 from ebay_service import get_ebay_access_token
 from utils.api_utils import execute_ebay_api_call, is_token_error
+from utils.debug_httpx import create_debug_client
+
+# Load environment variables
+load_dotenv()
+
+# Determine if we're in DEBUG mode
+DEBUG_MODE = os.getenv('MCP_LOG_LEVEL', 'NORMAL').upper() == 'DEBUG'
 
 # Get logger
 logger = logging.getLogger(__name__)

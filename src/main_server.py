@@ -11,6 +11,12 @@ project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(project_root)
 
 # --- Centralized Logging Configuration --- 
+from dotenv import load_dotenv
+import datetime
+
+# Load environment variables from .env file
+load_dotenv()
+
 LOG_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'logs')
 LOG_FILE_PATH = os.path.join(LOG_DIR, 'fastmcp_server.log')
 
@@ -18,29 +24,50 @@ LOG_FILE_PATH = os.path.join(LOG_DIR, 'fastmcp_server.log')
 if not os.path.exists(LOG_DIR):
     os.makedirs(LOG_DIR)
 
-# Get the root logger
+# Set log level from environment variable, default to INFO if not set or invalid
+log_level_str = os.getenv('MCP_LOG_LEVEL', 'NORMAL').upper()
+if log_level_str == 'DEBUG':
+    log_level = logging.DEBUG
+else:  # NORMAL or any other value
+    log_level = logging.INFO
+
+# Archive existing log file if it exists
+if os.path.exists(LOG_FILE_PATH):
+    timestamp = datetime.datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
+    archive_path = f"{LOG_FILE_PATH}.{timestamp}"
+    try:
+        os.rename(LOG_FILE_PATH, archive_path)
+        print(f"Previous log archived to {archive_path}")
+    except Exception as e:
+        print(f"Failed to archive previous log: {e}")
+
+# Get the root logger and clear any existing handlers
 root_logger = logging.getLogger()
-root_logger.setLevel(logging.DEBUG)  # Set root logger level (can be overridden by handlers)
+for handler in root_logger.handlers[:]:
+    root_logger.removeHandler(handler)
+root_logger.setLevel(logging.DEBUG)  # Base level for root logger
 
 # Formatter
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-# Timed Rotating File Handler
-# Rotates at midnight, keeps 7 backups
-timed_handler = logging.handlers.TimedRotatingFileHandler(
-    LOG_FILE_PATH, 
-    when='midnight', 
-    interval=1, 
-    backupCount=7
-)
-timed_handler.setFormatter(formatter)
-timed_handler.setLevel(logging.DEBUG)  # Set handler level, e.g., DEBUG or INFO
+# File Handler for the main log file
+file_handler = logging.FileHandler(LOG_FILE_PATH)
+file_handler.setFormatter(formatter)
+file_handler.setLevel(log_level)
 
-# Add handler to the root logger
-root_logger.addHandler(timed_handler)
+# Console Handler
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(formatter)
+console_handler.setLevel(log_level)
 
-logger = logging.getLogger(__name__)  # Get a logger for this specific module
-logger.info("Logging configured with TimedRotatingFileHandler.")
+# Add handlers to the root logger
+root_logger.addHandler(file_handler)
+root_logger.addHandler(console_handler)
+
+# Create a module-specific logger
+logger = logging.getLogger(__name__)
+logger.info(f"Logging configured with level {log_level_str} ({logging.getLevelName(log_level)})")
+logger.info(f"Log file location: {LOG_FILE_PATH}")
 # --- End of Centralized Logging Configuration ---
 
 from fastmcp import FastMCP
@@ -94,4 +121,4 @@ mount_servers()
 if __name__ == "__main__":
     logger.info("Starting FastMCP server with stdio transport...")
     logger.info("Server is configured with dynamically mounted sub-servers")
-    main_mcp.run()
+    mcp.run()

@@ -7,6 +7,7 @@ import sys
 import httpx
 from fastmcp import FastMCP
 import json
+from dotenv import load_dotenv
 
 # Add the project root directory to the Python path
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
@@ -19,6 +20,13 @@ from models.mcp_tools import CategorySuggestionsParams, ItemAspectsParams
 
 # Import the common helper function for eBay API calls
 from utils.api_utils import execute_ebay_api_call, is_token_error
+from utils.debug_httpx import create_debug_client
+
+# Load environment variables
+load_dotenv()
+
+# Determine if we're in DEBUG mode
+DEBUG_MODE = os.getenv('MCP_LOG_LEVEL', 'NORMAL').upper() == 'DEBUG'
 
 # Get logger
 logger = logging.getLogger(__name__)
@@ -50,7 +58,8 @@ async def get_category_suggestions(query: str) -> str:
             logger.info("get_category_suggestions: Successfully fetched category suggestions.")
             return response.text
         
-        async with httpx.AsyncClient() as client:
+        # Use the enhanced debug client
+        async with create_debug_client() as client:
             result = await execute_ebay_api_call("get_category_suggestions", client, _api_call)
             
             # Try to parse the response as a CategorySuggestionResponse
@@ -108,7 +117,8 @@ async def get_item_aspects_for_category(category_id: str) -> str:
             logger.info("get_item_aspects_for_category: Successfully fetched item aspects.")
             return response.text
         
-        async with httpx.AsyncClient() as client:
+        # Use the enhanced debug client
+        async with create_debug_client() as client:
             result = await execute_ebay_api_call("get_item_aspects_for_category", client, _api_call)
             
             # Try to parse the response as an ItemAspectsResponse

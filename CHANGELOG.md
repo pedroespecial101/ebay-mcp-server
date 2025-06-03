@@ -7,6 +7,24 @@
 - Updated README.md to reflect the new project structure
 - Successfully tested the dynamic composition architecture with authenticated calls
 
+## Updates in MCP Server UI Integration (03062025 - 07:53.44)
+
+- Fixed variable name in main_server.py run() call, changing main_mcp.run() to mcp.run()
+- Updated MCP_SERVER_PATH in .env to point to new main_server.py instead of server.py
+- Fixed MCP Test UI tool execution by updating the Client initialization to use PythonStdioTransport
+- Added necessary imports (sys, PythonStdioTransport) to routes_mcp.py
+- Created run_test_ui.py script for properly running the MCP Test UI with correct imports
+- Successfully tested the MCP Test UI with the new modular server architecture
+
+## Updates in MCP Server Modularization (03062025 - 07:24.10)
+
+- Fixed Python import paths in all sub-servers to use project root instead of 'src.' prefixes
+- Renamed FastMCP server variable from 'main_mcp' to 'mcp' for consistency
+- Corrected mount method calls to use proper FastMCP API signature (mcp.mount(prefix, server))
+- Updated README.md with detailed architecture overview of the new modular structure
+- Successfully tested dynamic composition architecture with all sub-servers
+- Verified OAuth2 token management works correctly across all components
+
 ## Updates in TrajectoryID <ebay_mcp_server_dynamic_composition, (refactor_001)>, <03062025 - 07:10:38>
 
 - **Major refactoring of MCP server to use dynamic composition:**
