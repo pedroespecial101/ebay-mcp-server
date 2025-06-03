@@ -55,7 +55,27 @@ ebay-mcp-server/
 │   ├── static/             # Static assets for the UI
 │   └── templates/          # Jinja2 templates for UI pages
 ├── src/                    # Source code directory
+│   ├── ebay_mcp/           # Modular MCP servers for eBay APIs
+│   │   ├── auth/           # Authentication API server
+│   │   │   └── server.py   # Auth MCP tools implementation
+│   │   ├── browse/         # Browse API server
+│   │   │   └── server.py   # Browse MCP tools implementation
+│   │   ├── inventory/      # Inventory API server
+│   │   │   ├── server.py   # Inventory MCP base implementation
+│   │   │   ├── update_offer.py  # Update offer tool implementation
+│   │   │   ├── withdraw_offer.py # Withdraw offer tool implementation
+│   │   │   └── listing_fees.py  # Listing fees tool implementation
+│   │   └── taxonomy/       # Taxonomy API server
+│   │       └── server.py   # Taxonomy MCP tools implementation
+│   ├── other_tools_mcp/    # Other utility tool servers
+│   │   ├── database/       # Database utility tools
+│   │   │   └── server.py   # Database MCP tools implementation
+│   │   └── tests/          # Test utility tools
+│   │       └── server.py   # Test MCP tools implementation
+│   ├── utils/              # Shared utility modules
+│   │   └── api_utils.py    # Shared API utility functions
 │   ├── ebay_service.py     # eBay service utilities
+│   ├── main_server.py      # Main MCP server that mounts all sub-servers
 │   ├── models/             # Pydantic models for data validation
 │   │   ├── __init__.py     # Package initialization
 │   │   ├── ebay/           # eBay API specific models
@@ -63,7 +83,7 @@ ebay-mcp-server/
 │   │   │   ├── inventory.py # Inventory API models
 │   │   │   └── taxonomy.py # Taxonomy API models
 │   │   └── mcp_tools.py    # MCP tool parameter models
-│   └── server.py           # Main MCP server implementation
+│   └── server.py           # Legacy monolithic MCP server implementation
 ├── start.sh                # MCP server management script
 ├── mcp_test_ui_start.py    # Script to start the MCP Test UI
 ├── requirements.txt        # Python dependencies

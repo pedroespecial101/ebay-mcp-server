@@ -1,3 +1,32 @@
+## Updates in Import Path Fixes (03062025 - 07:20:23)
+
+- Fixed import path issues in all refactored modules
+- Updated Python module paths to use project root as the base for imports
+- Fixed FastMCP server variable naming in main_server.py to use standard name 'mcp'
+- Fixed mount method syntax in main_server.py
+- Updated README.md to reflect the new project structure
+- Successfully tested the dynamic composition architecture with authenticated calls
+
+## Updates in TrajectoryID <ebay_mcp_server_dynamic_composition, (refactor_001)>, <03062025 - 07:10:38>
+
+- **Major refactoring of MCP server to use dynamic composition:**
+  - Split the monolithic `server.py` into multiple modular sub-servers organized by eBay API domain:
+    - Created `src/ebay_mcp/auth/server.py` for eBay authentication tools (`test_auth`, `trigger_ebay_login`)
+    - Created `src/ebay_mcp/browse/server.py` for eBay Browse API tools (`search_ebay_items`)
+    - Created `src/ebay_mcp/taxonomy/server.py` for eBay Taxonomy API tools (`get_category_suggestions`, `get_item_aspects_for_category`)
+    - Created `src/ebay_mcp/inventory/server.py` for eBay Inventory API base functionality (`get_offer_by_sku`)
+    - Split large inventory API functions into separate modules:
+      - `src/ebay_mcp/inventory/update_offer.py` for offer update functionality
+      - `src/ebay_mcp/inventory/withdraw_offer.py` for offer withdrawal functionality
+      - `src/ebay_mcp/inventory/listing_fees.py` for listing fees functionality
+  - Created additional utility servers in `src/other_tools_mcp/`:
+    - `src/other_tools_mcp/tests/server.py` for testing tools (`add`)
+    - `src/other_tools_mcp/database/server.py` for database utility tools (`mock_db_query`)
+  - Created `src/utils/api_utils.py` for shared API utility functions
+  - Created new main server `src/main_server.py` that dynamically mounts all sub-servers
+  - Updated `start.sh` to use the new `main_server.py` instead of the original `server.py`
+  - Implemented proper Python path handling and module imports across all files
+
 ## Updates in TrajectoryID <ui_fixes_and_chat_menu_removal, (cascade_final_002)>, <01062025 - 19:57:12>
 
 - **mcp_test_ui/mcp_utils.py**:

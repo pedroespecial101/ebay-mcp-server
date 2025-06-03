@@ -3,7 +3,7 @@
 # Configuration
 LOG_FILE="logs/fastmcp_server.log" # Updated log file path
 VENV_PATH=".venv/bin/activate"
-SERVER_SCRIPT="src/server.py"
+SERVER_SCRIPT="src/main_server.py" # Updated to use the new main server with dynamic composition
 
 echo "Ensuring no old FastMCP server instances are running..."
 # Kill any existing server processes by matching the command line
