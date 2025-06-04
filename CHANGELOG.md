@@ -1,3 +1,24 @@
+## Updates in TrajectoryID <cloudflare_tunnel_timeout_fix, (cascade_002)>, <04062025 - 07:10.23>
+
+- **Fixed `start_mcp_test_ui.sh` script for environments without `timeout` command:**
+  - Modified the `check_and_start_cloudflare_tunnel` function to conditionally use the `timeout` command only if it's available.
+  - If `timeout` is not found (e.g., on a default macOS environment without `coreutils`), the `cloudflared tunnel info` commands are run directly without a timeout.
+  - Added an informational message to the console when `timeout` is not found, explaining the behavior and suggesting `coreutils` installation for macOS users.
+  - This makes the script more robust and usable across different system configurations.
+
+## Updates in TrajectoryID <cloudflare_tunnel_integration, (cascade_001)>, <04062025 - 07:05.00>
+
+- **Enhanced `start_mcp_test_ui.sh` script:**
+  - Added a new function `check_and_start_cloudflare_tunnel` to manage the Cloudflare tunnel (`dev-tunnel`).
+  - The function checks if `cloudflared` CLI is available.
+  - It then checks if the `dev-tunnel` is active using `cloudflared tunnel info dev-tunnel` (with a timeout).
+  - If the tunnel is not active, it attempts to start it in the background using `nohup cloudflared tunnel run dev-tunnel &`.
+  - Tunnel output (stdout and stderr) is logged to `cloudflare_tunnel_dev-tunnel.log` in the project root directory.
+  - The script waits for 5 seconds after attempting to start the tunnel and re-checks its status to provide feedback.
+  - This function is called before starting the MCP Test UI server to ensure the tunnel is operational if needed.
+  - The function includes informative echo statements about its progress and the tunnel's status.
+  - Designed to be relatively self-contained for potential reuse.
+
 ## Updates in eBay Inventory API New Tools Implementation (15052025 - 17:45:44)
 
 - **Added three new MCP tools for the eBay Sell Inventory v1 API:**

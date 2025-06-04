@@ -116,6 +116,10 @@ cloudflared tunnel delete dev-tunnel
 
 ### 2.5. Troubleshooting
 
+- To check the status of the tunnel, run:
+  ```bash
+cloudflared tunnel info dev-tunnel
+```
 - Ensure your local dev servers are running on the ports specified in `config.yml`.
 - Check the terminal output for errors when starting the tunnel.
 - Verify DNS records in the Cloudflare dashboard if subdomains do not resolve.
