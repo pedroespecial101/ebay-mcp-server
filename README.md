@@ -197,6 +197,7 @@ The server implements the Model Context Protocol, allowing AI assistants and oth
 - `get_item_aspects_for_category(category_id: str)`: Get item aspects for a specific category
 
 ### Inventory API Tools
+- `create_or_replace_inventory_item(sku: str, condition: str, product_title: str, product_description: str, ...)`: Create or replace an inventory item with comprehensive product details, availability, and packaging information
 - `get_inventory_item_by_sku(sku: str)`: Retrieve a specific inventory item using its SKU identifier
 - `get_inventory_items(limit: int = 25, offset: int = 0)`: Retrieve multiple inventory items with pagination support
 - `delete_inventory_item(sku: str)`: Delete an inventory item by its SKU (also removes associated offers and listings)

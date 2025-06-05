@@ -1,3 +1,63 @@
+## Updates in TrajectoryID <create_or_replace_inventory_item_header_debugging, (inventory_004)>, <04062025 - 12:45.00>
+
+- **Debugging Content-Language header issue:**
+  - Identified that eBay API is rejecting the `Content-Language` header with error: "Invalid value for header Content-Language"
+  - Tested multiple header values: `en-US`, `en-GB`, `en_GB` - all rejected by eBay API
+  - According to eBay API documentation, `Content-Language` header is required for createOrReplaceInventoryItem endpoint
+  - Issue appears to be with eBay API validation or authentication scope limitations
+  - Tool implementation is complete and functional except for this header validation issue
+
+- **Current status:**
+  - Tool is fully implemented with comprehensive parameter validation
+  - All Pydantic models are working correctly
+  - Request body construction is proper
+  - Authentication and token refresh working
+  - Only blocking issue is the Content-Language header rejection by eBay API
+  - May require eBay developer support or different authentication scope
+
+## Updates in TrajectoryID <create_or_replace_inventory_item_implementation, (inventory_003)>, <04062025 - 08:15.30>
+
+- **Added new MCP tool for eBay Sell Inventory v1 API:**
+  - **create_or_replace_inventory_item**: Create or replace an inventory item using PUT /sell/inventory/v1/inventory_item/{sku}
+    - Supports both create (201) and update (204) operations in a single tool
+    - Comprehensive parameter validation with Pydantic models
+    - Full API field support including product details, availability, packaging, and condition descriptors
+    - LLM-friendly parameter structure with flattened field names for ease of use
+
+- **Enhanced parameter models in `src/models/mcp_tools.py`:**
+  - Added `CreateOrReplaceInventoryItemParams` with extensive validation:
+    - SKU validation (max 50 characters, non-empty)
+    - Condition validation against eBay's 17 allowed enum values
+    - Required fields: product_title, product_description
+    - Optional fields: product aspects, images, brand, MPN, EAN/UPC/ISBN codes
+    - Package weight and dimensions with unit validation
+    - Availability distributions and pickup availability support
+    - URL format validation for image URLs
+
+- **Enhanced inventory models in `src/models/ebay/inventory.py`:**
+  - Added `CreateOrReplaceInventoryItemRequest` model with smart parameter mapping
+  - Added `CreateOrReplaceInventoryItemResponse` model for operation feedback
+  - Implemented `from_params()` class method to build complex nested API request structure
+  - Proper handling of optional fields and nested objects (availability, packageWeightAndSize, product)
+
+- **Created modular tool implementation:**
+  - `src/ebay_mcp/inventory/create_or_replace_inventory_item.py` - Main tool implementation
+  - Follows established patterns with `execute_ebay_api_call` utility integration
+  - Comprehensive error handling and logging
+  - Support for all documented API fields while maintaining usability
+
+- **Updated `src/ebay_mcp/inventory/server.py`:**
+  - Imported and registered the new create_or_replace_inventory_item_tool
+  - Maintains consistency with existing tool registration pattern
+
+- **Implementation features:**
+  - PUT method to eBay API endpoint with SKU as path parameter
+  - Handles both 201 (created) and 204 (updated) response scenarios
+  - Comprehensive field validation including condition enums and URL formats
+  - LLM-friendly parameter names (e.g., product_title instead of nested product.title)
+  - Automatic request body construction from flattened parameters
+  - Proper authentication and token refresh handling via existing utilities
+
 ## Updates in TrajectoryID <cloudflare_tunnel_timeout_fix, (cascade_002)>, <04062025 - 07:10.23>
 
 - **Fixed `start_mcp_test_ui.sh` script for environments without `timeout` command:**

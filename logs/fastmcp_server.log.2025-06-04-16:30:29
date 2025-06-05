@@ -1,0 +1,562 @@
+2025-06-04 16:25:52,366 - server_module - INFO - Logging configured with level DEBUG (DEBUG)
+2025-06-04 16:25:52,367 - server_module - INFO - Log file location: /Users/petetreadaway/Projects/ebay-mcp-server/logs/fastmcp_server.log
+2025-06-04 16:25:52,439 - ebay_service - INFO - Attempting to load .env from: /Users/petetreadaway/Projects/ebay-mcp-server/src/../.env
+2025-06-04 16:25:52,440 - ebay_service - INFO - .env file loaded successfully.
+2025-06-04 16:25:52,444 - mcp.server.lowlevel.server - DEBUG - Initializing server 'eBay Auth API'
+2025-06-04 16:25:52,444 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-04 16:25:52,444 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-04 16:25:52,444 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-04 16:25:52,444 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-04 16:25:52,444 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-04 16:25:52,444 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-04 16:25:52,444 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-04 16:25:52,451 - mcp.server.lowlevel.server - DEBUG - Initializing server 'eBay Browse API'
+2025-06-04 16:25:52,451 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-04 16:25:52,451 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-04 16:25:52,451 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-04 16:25:52,451 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-04 16:25:52,451 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-04 16:25:52,451 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-04 16:25:52,451 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-04 16:25:52,458 - mcp.server.lowlevel.server - DEBUG - Initializing server 'eBay Taxonomy API'
+2025-06-04 16:25:52,458 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-04 16:25:52,459 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-04 16:25:52,459 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-04 16:25:52,459 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-04 16:25:52,459 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-04 16:25:52,459 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-04 16:25:52,459 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-04 16:25:52,477 - mcp.server.lowlevel.server - DEBUG - Initializing server 'eBay Inventory API'
+2025-06-04 16:25:52,477 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-04 16:25:52,477 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-04 16:25:52,477 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-04 16:25:52,477 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-04 16:25:52,477 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-04 16:25:52,477 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-04 16:25:52,477 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-04 16:25:52,477 - asyncio - DEBUG - Using selector: KqueueSelector
+2025-06-04 16:25:52,486 - mcp.server.lowlevel.server - DEBUG - Initializing server 'Test Tools API'
+2025-06-04 16:25:52,486 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-04 16:25:52,486 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-04 16:25:52,486 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-04 16:25:52,486 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-04 16:25:52,486 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-04 16:25:52,486 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-04 16:25:52,486 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-04 16:25:52,487 - mcp.server.lowlevel.server - DEBUG - Initializing server 'Database Tools API'
+2025-06-04 16:25:52,488 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-04 16:25:52,488 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-04 16:25:52,488 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-04 16:25:52,488 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-04 16:25:52,488 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-04 16:25:52,488 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-04 16:25:52,488 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-04 16:25:52,488 - mcp.server.lowlevel.server - DEBUG - Initializing server 'eBay API'
+2025-06-04 16:25:52,488 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-04 16:25:52,488 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-04 16:25:52,488 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-04 16:25:52,488 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-04 16:25:52,488 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-04 16:25:52,488 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-04 16:25:52,488 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-04 16:25:52,488 - server_module - INFO - Mounting all sub-servers
+2025-06-04 16:25:52,489 - server_module - INFO - Mounted auth MCP server
+2025-06-04 16:25:52,489 - server_module - INFO - Mounted browse API MCP server
+2025-06-04 16:25:52,489 - server_module - INFO - Mounted taxonomy API MCP server
+2025-06-04 16:25:52,489 - server_module - INFO - Mounted inventory API MCP server
+2025-06-04 16:25:52,489 - server_module - INFO - Mounted tests MCP server
+2025-06-04 16:25:52,489 - server_module - INFO - Mounted database MCP server
+2025-06-04 16:25:52,489 - server_module - INFO - All sub-servers mounted successfully
+2025-06-04 16:25:52,489 - FastMCP.cli - INFO - Found server "eBay API" in /Users/petetreadaway/Projects/ebay-mcp-server/src/main_server.py
+2025-06-04 16:25:52,491 - FastMCP.fastmcp.server.server - INFO - Starting server "eBay API"...
+2025-06-04 16:25:52,494 - asyncio - DEBUG - Using selector: KqueueSelector
+2025-06-04 16:25:52,498 - mcp.server.lowlevel.server - DEBUG - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2025-06-04 16:25:52,502 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106b1c7d0>
+2025-06-04 16:25:52,502 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2025-06-04 16:25:52,502 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListToolsRequest
+2025-06-04 16:25:52,503 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 16:25:52,503 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106b1d1d0>
+2025-06-04 16:25:52,503 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2025-06-04 16:25:52,503 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListToolsRequest
+2025-06-04 16:25:52,504 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106916b10>
+2025-06-04 16:25:52,504 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-04 16:25:52,504 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-04 16:25:52,504 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 16:25:52,504 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 16:25:52,512 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106917e10>
+2025-06-04 16:25:52,512 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-04 16:25:52,512 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-04 16:25:52,512 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 16:25:52,909 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ae17f0>
+2025-06-04 16:25:52,910 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2025-06-04 16:25:52,910 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListToolsRequest
+2025-06-04 16:25:52,911 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 16:25:52,912 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ac8d10>
+2025-06-04 16:25:52,912 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2025-06-04 16:25:52,912 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListToolsRequest
+2025-06-04 16:25:52,914 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ac8c00>
+2025-06-04 16:25:52,914 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-04 16:25:52,914 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-04 16:25:52,914 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 16:25:52,915 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 16:25:52,922 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106a88c50>
+2025-06-04 16:25:52,922 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-04 16:25:52,922 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-04 16:25:52,923 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 16:25:53,063 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106aec250>
+2025-06-04 16:25:53,063 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2025-06-04 16:25:53,063 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListToolsRequest
+2025-06-04 16:25:53,063 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 16:25:53,064 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106977020>
+2025-06-04 16:25:53,064 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2025-06-04 16:25:53,064 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListToolsRequest
+2025-06-04 16:25:53,064 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106977110>
+2025-06-04 16:25:53,064 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-04 16:25:53,064 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-04 16:25:53,065 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 16:25:53,065 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 16:25:53,071 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106aff930>
+2025-06-04 16:25:53,072 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-04 16:25:53,072 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-04 16:25:53,072 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 16:25:54,258 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106afe890>
+2025-06-04 16:25:54,259 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2025-06-04 16:25:54,259 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListToolsRequest
+2025-06-04 16:25:54,260 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 16:25:54,261 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106a37930>
+2025-06-04 16:25:54,261 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2025-06-04 16:25:54,261 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListToolsRequest
+2025-06-04 16:25:54,262 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x1068bff50>
+2025-06-04 16:25:54,262 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-04 16:25:54,263 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-04 16:25:54,263 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 16:25:54,263 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 16:25:54,273 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ac4890>
+2025-06-04 16:25:54,273 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-04 16:25:54,273 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-04 16:25:54,273 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 16:27:07,729 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x10692bc20>
+2025-06-04 16:27:07,730 - mcp.server.lowlevel.server - INFO - Processing request of type CallToolRequest
+2025-06-04 16:27:07,730 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type CallToolRequest
+2025-06-04 16:27:07,731 - ebay_mcp.inventory.get_inventory_item_by_sku - INFO - Executing get_inventory_item_by_sku MCP tool with SKU='Tank-5'.
+2025-06-04 16:27:07,761 - ebay_service - INFO - Attempting to retrieve EBAY_USER_ACCESS_TOKEN from .env via ebay_auth module.
+2025-06-04 16:27:07,762 - ebay_service - INFO - Successfully retrieved EBAY_USER_ACCESS_TOKEN.
+2025-06-04 16:27:07,762 - ebay_service - DEBUG - get_ebay_access_token: EBAY_USER_ACCESS_TOKEN (first 10 chars): v^1.1#i^1#...
+2025-06-04 16:27:07,762 - utils.api_utils - INFO - get_inventory_item_by_sku: Attempting API call with current token: v^1.1#i^1#...
+2025-06-04 16:27:07,762 - utils.api_utils - DEBUG - get_inventory_item_by_sku: Executing API call with full token: v^1.1#i^1#p^3#f^0#r^0#I^3#t^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
+2025-06-04 16:27:07,762 - ebay_mcp.inventory.get_inventory_item_by_sku - DEBUG - get_inventory_item_by_sku: Headers for API call: {'Authorization': 'Bearer v^1.1#i^1#p^3#f^0#r^...<truncated>', 'Content-Type': 'application/json', 'X-EBAY-C-MARKETPLACE-ID': 'EBAY_GB', 'Accept-Language': 'en-GB'}
+2025-06-04 16:27:07,762 - ebay_mcp.inventory.get_inventory_item_by_sku - DEBUG - get_inventory_item_by_sku: Request URL: https://api.ebay.com/sell/inventory/v1/inventory_item/Tank-5 using token v^1.1#i^1#...
+2025-06-04 16:27:07,762 - httpcore.connection - DEBUG - connect_tcp.started host='api.ebay.com' port=443 local_address=None timeout=5.0 socket_options=None
+2025-06-04 16:27:07,813 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ad7540>
+2025-06-04 16:27:07,814 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2025-06-04 16:27:07,814 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListToolsRequest
+2025-06-04 16:27:07,819 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 16:27:07,832 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106be0730>
+2025-06-04 16:27:07,832 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2025-06-04 16:27:07,832 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListToolsRequest
+2025-06-04 16:27:07,833 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106be0f50>
+2025-06-04 16:27:07,835 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-04 16:27:07,835 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-04 16:27:07,849 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x106bb2120>
+2025-06-04 16:27:07,854 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x106b89e20> server_hostname='api.ebay.com' timeout=5.0
+2025-06-04 16:27:07,855 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 16:27:07,857 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 16:27:07,878 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab49e0>
+2025-06-04 16:27:07,878 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-04 16:27:07,878 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-04 16:27:07,879 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 16:27:07,880 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x106b1e990>
+2025-06-04 16:27:07,887 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-06-04 16:27:07,887 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-06-04 16:27:07,887 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-06-04 16:27:07,887 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-06-04 16:27:07,887 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-06-04 16:27:08,082 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 401, b'Unauthorized', [(b'rlogid', b't6pitnmsgwj70dlkr%3D9vjujkpfsl41%60jhs.f007f%3Fdg2%2Bt%60%3C%7C5-1973b8da4e3-0x2962'), (b'x-ebay-client-tls-version', b'TLSv1.2'), (b'x-content-type-options', b'nosniff'), (b'x-xss-protection', b'1; mode=block'), (b'x-frame-options', b'DENY'), (b'Content-Type', b'application/json'), (b'Content-Length', b'254'), (b'x-envoy-upstream-service-time', b'15'), (b'Server', b'ebay-proxy-server'), (b'x-ebay-pop-id', b'UFES2-LVSAZ01-api'), (b'Expires', b'Wed, 04 Jun 2025 15:27:08 GMT'), (b'Cache-Control', b'max-age=0, no-cache, no-store'), (b'Pragma', b'no-cache'), (b'Date', b'Wed, 04 Jun 2025 15:27:08 GMT'), (b'Connection', b'keep-alive'), (b'x-CDN', b'Akamai'), (b'Strict-Transport-Security', b'max-age=31536000')])
+2025-06-04 16:27:08,083 - httpx - INFO - HTTP Request: GET https://api.ebay.com/sell/inventory/v1/inventory_item/Tank-5 "HTTP/1.1 401 Unauthorized"
+2025-06-04 16:27:08,083 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-06-04 16:27:08,083 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-06-04 16:27:08,083 - httpcore.http11 - DEBUG - response_closed.started
+2025-06-04 16:27:08,083 - httpcore.http11 - DEBUG - response_closed.complete
+2025-06-04 16:27:08,083 - ebay_mcp.inventory.get_inventory_item_by_sku - INFO - get_inventory_item_by_sku: API response status: 401
+2025-06-04 16:27:08,083 - ebay_mcp.inventory.get_inventory_item_by_sku - DEBUG - get_inventory_item_by_sku: API response text (first 500 chars): {
+  "errors": [
+    {
+      "errorId": 1001,
+      "domain": "OAuth",
+      "category": "REQUEST",
+      "message": "Invalid access token",
+      "longMessage": "Invalid access token. Check the value of the Authorization HTTP request header."
+    }
+  ]
+}...
+2025-06-04 16:27:08,083 - utils.api_utils - DEBUG - get_inventory_item_by_sku: Exception in API call: Client error '401 Unauthorized' for url 'https://api.ebay.com/sell/inventory/v1/inventory_item/Tank-5'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-06-04 16:27:08,084 - utils.api_utils - DEBUG - get_inventory_item_by_sku Request: {
+  "method": "GET",
+  "url": "https://api.ebay.com/sell/inventory/v1/inventory_item/Tank-5",
+  "headers": {
+    "host": "api.ebay.com",
+    "accept": "*/*",
+    "accept-encoding": "gzip, deflate",
+    "connection": "keep-alive",
+    "user-agent": "python-httpx/0.28.1",
+    "authorization": "Bearer v^1.1#i^1#p^3#f^0#r^0#I^3#t^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",
+    "content-type": "application/json",
+    "x-ebay-c-marketplace-id": "EBAY_GB",
+    "accept-language": "en-GB"
+  },
+  "content": null
+}
+2025-06-04 16:27:08,084 - utils.api_utils - DEBUG - get_inventory_item_by_sku Response: {
+  "status_code": 401,
+  "headers": {
+    "rlogid": "t6pitnmsgwj70dlkr%3D9vjujkpfsl41%60jhs.f007f%3Fdg2%2Bt%60%3C%7C5-1973b8da4e3-0x2962",
+    "x-ebay-client-tls-version": "TLSv1.2",
+    "x-content-type-options": "nosniff",
+    "x-xss-protection": "1; mode=block",
+    "x-frame-options": "DENY",
+    "content-type": "application/json",
+    "content-length": "254",
+    "x-envoy-upstream-service-time": "15",
+    "server": "ebay-proxy-server",
+    "x-ebay-pop-id": "UFES2-LVSAZ01-api",
+    "expires": "Wed, 04 Jun 2025 15:27:08 GMT",
+    "cache-control": "max-age=0, no-cache, no-store",
+    "pragma": "no-cache",
+    "date": "Wed, 04 Jun 2025 15:27:08 GMT",
+    "connection": "keep-alive",
+    "x-cdn": "Akamai",
+    "strict-transport-security": "max-age=31536000"
+  },
+  "content": "{\n  \"errors\": [\n    {\n      \"errorId\": 1001,\n      \"domain\": \"OAuth\",\n      \"category\": \"REQUEST\",\n      \"message\": \"Invalid access token\",\n      \"longMessage\": \"Invalid access token. Check the value of the Authorization HTTP request header.\"\n    }\n  ]\n}"
+}
+2025-06-04 16:27:08,084 - utils.api_utils - DEBUG - get_inventory_item_by_sku Request: {
+  "method": "GET",
+  "url": "https://api.ebay.com/sell/inventory/v1/inventory_item/Tank-5",
+  "headers": {
+    "host": "api.ebay.com",
+    "accept": "*/*",
+    "accept-encoding": "gzip, deflate",
+    "connection": "keep-alive",
+    "user-agent": "python-httpx/0.28.1",
+    "authorization": "Bearer v^1.1#i^1#p^3#f^0#r^0#I^3#t^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",
+    "content-type": "application/json",
+    "x-ebay-c-marketplace-id": "EBAY_GB",
+    "accept-language": "en-GB"
+  },
+  "content": null
+}
+2025-06-04 16:27:08,084 - utils.api_utils - DEBUG - get_inventory_item_by_sku Response: {
+  "status_code": 401,
+  "headers": {
+    "rlogid": "t6pitnmsgwj70dlkr%3D9vjujkpfsl41%60jhs.f007f%3Fdg2%2Bt%60%3C%7C5-1973b8da4e3-0x2962",
+    "x-ebay-client-tls-version": "TLSv1.2",
+    "x-content-type-options": "nosniff",
+    "x-xss-protection": "1; mode=block",
+    "x-frame-options": "DENY",
+    "content-type": "application/json",
+    "content-length": "254",
+    "x-envoy-upstream-service-time": "15",
+    "server": "ebay-proxy-server",
+    "x-ebay-pop-id": "UFES2-LVSAZ01-api",
+    "expires": "Wed, 04 Jun 2025 15:27:08 GMT",
+    "cache-control": "max-age=0, no-cache, no-store",
+    "pragma": "no-cache",
+    "date": "Wed, 04 Jun 2025 15:27:08 GMT",
+    "connection": "keep-alive",
+    "x-cdn": "Akamai",
+    "strict-transport-security": "max-age=31536000"
+  },
+  "content": "{\n  \"errors\": [\n    {\n      \"errorId\": 1001,\n      \"domain\": \"OAuth\",\n      \"category\": \"REQUEST\",\n      \"message\": \"Invalid access token\",\n      \"longMessage\": \"Invalid access token. Check the value of the Authorization HTTP request header.\"\n    }\n  ]\n}"
+}
+2025-06-04 16:27:08,084 - utils.api_utils - DEBUG - get_inventory_item_by_sku Error: HTTP Status Error: Client error '401 Unauthorized' for url 'https://api.ebay.com/sell/inventory/v1/inventory_item/Tank-5'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-06-04 16:27:08,084 - utils.api_utils - WARNING - get_inventory_item_by_sku: API call failed with 401 (Unauthorized). Token v^1.1#i^1#... may be expired. Attempting refresh.
+2025-06-04 16:27:08,084 - root - INFO - Attempting to refresh eBay access token...
+2025-06-04 16:27:08,084 - root - INFO - Requesting new access token from https://api.ebay.com/identity/v1/oauth2/token using refresh token: v^1.1#i^1#...
+2025-06-04 16:27:08,090 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.ebay.com:443
+2025-06-04 16:27:08,423 - urllib3.connectionpool - DEBUG - https://api.ebay.com:443 "POST /identity/v1/oauth2/token HTTP/1.1" 200 2546
+2025-06-04 16:27:08,424 - root - INFO - Successfully refreshed access token: v^1.1#i^1#...
+2025-06-04 16:27:08,424 - root - INFO - Refresh token was not re-issued during this refresh cycle.
+2025-06-04 16:27:08,430 - root - INFO - set_key reported SUCCESS for EBAY_USER_ACCESS_TOKEN. Value (truncated): v^1.1#i^1#r^0#I...
+2025-06-04 16:27:08,433 - utils.api_utils - INFO - get_inventory_item_by_sku: Token refresh process completed. New token value: v^1.1#i^1#... Attempting to retrieve and retry API call.
+2025-06-04 16:27:08,433 - ebay_service - INFO - Attempting to retrieve EBAY_USER_ACCESS_TOKEN from .env via ebay_auth module.
+2025-06-04 16:27:08,434 - ebay_service - INFO - Successfully retrieved EBAY_USER_ACCESS_TOKEN.
+2025-06-04 16:27:08,434 - ebay_service - DEBUG - get_ebay_access_token: EBAY_USER_ACCESS_TOKEN (first 10 chars): v^1.1#i^1#...
+2025-06-04 16:27:08,434 - utils.api_utils - INFO - get_inventory_item_by_sku: Retrying API call with refreshed token: v^1.1#i^1#...
+2025-06-04 16:27:08,434 - ebay_mcp.inventory.get_inventory_item_by_sku - DEBUG - get_inventory_item_by_sku: Headers for API call: {'Authorization': 'Bearer v^1.1#i^1#r^0#I^3#p^...<truncated>', 'Content-Type': 'application/json', 'X-EBAY-C-MARKETPLACE-ID': 'EBAY_GB', 'Accept-Language': 'en-GB'}
+2025-06-04 16:27:08,434 - ebay_mcp.inventory.get_inventory_item_by_sku - DEBUG - get_inventory_item_by_sku: Request URL: https://api.ebay.com/sell/inventory/v1/inventory_item/Tank-5 using token v^1.1#i^1#...
+2025-06-04 16:27:08,435 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-06-04 16:27:08,435 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-06-04 16:27:08,435 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-06-04 16:27:08,436 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-06-04 16:27:08,436 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-06-04 16:27:08,964 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'rlogid', b't6pitnmsgwj70dlkr%3D9vjujkpfsl41%60jhs.f007f%3Fdg2%2Bvk2ec-1973b8da6f6-0x2cde'), (b'Content-Language', b'en_GB'), (b'x-ebay-client-tls-version', b'TLSv1.2'), (b'x-content-type-options', b'nosniff'), (b'x-xss-protection', b'1; mode=block'), (b'x-frame-options', b'DENY'), (b'Content-Type', b'application/json'), (b'Content-Length', b'1485'), (b'x-envoy-upstream-service-time', b'371'), (b'Server', b'ebay-proxy-server'), (b'x-ebay-pop-id', b'UFES2-LVSAZ01-api'), (b'Expires', b'Wed, 04 Jun 2025 15:27:08 GMT'), (b'Cache-Control', b'max-age=0, no-cache, no-store'), (b'Pragma', b'no-cache'), (b'Date', b'Wed, 04 Jun 2025 15:27:08 GMT'), (b'Connection', b'keep-alive'), (b'x-CDN', b'Akamai'), (b'Strict-Transport-Security', b'max-age=31536000')])
+2025-06-04 16:27:08,964 - httpx - INFO - HTTP Request: GET https://api.ebay.com/sell/inventory/v1/inventory_item/Tank-5 "HTTP/1.1 200 OK"
+2025-06-04 16:27:08,964 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-06-04 16:27:08,965 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-06-04 16:27:08,965 - httpcore.http11 - DEBUG - response_closed.started
+2025-06-04 16:27:08,965 - httpcore.http11 - DEBUG - response_closed.complete
+2025-06-04 16:27:08,965 - ebay_mcp.inventory.get_inventory_item_by_sku - INFO - get_inventory_item_by_sku: API response status: 200
+2025-06-04 16:27:08,965 - ebay_mcp.inventory.get_inventory_item_by_sku - DEBUG - get_inventory_item_by_sku: API response text (first 500 chars): {"sku":"Tank-5","locale":"en_GB","product":{"title":"Vintage Matchbox K-107 Alvis Striker Scorpion Tank Diecast Toy ENGLAND","aspects":{"Brand":["Vintage"]},"description":"This is a vintage Matchbox K-107 Alvis Scorpion/Striker diecast tank made in England. The tank is green with black plastic details.  There is noticeable paint wear and chipping all over the vehicle, particularly on the edges and raised surfaces. The wheels and tracks show accumulation of dust and dirt. The turret is black plas...
+2025-06-04 16:27:08,965 - ebay_mcp.inventory.get_inventory_item_by_sku - INFO - get_inventory_item_by_sku: Successfully retrieved inventory item for SKU Tank-5.
+2025-06-04 16:27:08,966 - ebay_mcp.inventory.get_inventory_item_by_sku - INFO - Parsed inventory item details for SKU Tank-5
+2025-06-04 16:27:08,966 - httpcore.connection - DEBUG - close.started
+2025-06-04 16:27:08,966 - httpcore.connection - DEBUG - close.complete
+2025-06-04 16:27:08,967 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 16:37:08,288 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab4440>
+2025-06-04 16:37:08,290 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-04 16:37:08,290 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-04 16:37:08,291 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 16:37:08,343 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x10675dfd0>
+2025-06-04 16:37:08,344 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-04 16:37:08,344 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-04 16:37:08,344 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 16:47:08,302 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab49e0>
+2025-06-04 16:47:08,306 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-04 16:47:08,307 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-04 16:47:08,307 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 16:47:08,396 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab4440>
+2025-06-04 16:47:08,396 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-04 16:47:08,396 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-04 16:47:08,396 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 16:57:08,284 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x10675dfd0>
+2025-06-04 16:57:08,286 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-04 16:57:08,286 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-04 16:57:08,287 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 16:57:08,362 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab49e0>
+2025-06-04 16:57:08,362 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-04 16:57:08,362 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-04 16:57:08,362 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 17:07:08,281 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab4440>
+2025-06-04 17:07:08,283 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-04 17:07:08,283 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-04 17:07:08,284 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 17:07:08,338 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x10675dfd0>
+2025-06-04 17:07:08,338 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-04 17:07:08,338 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-04 17:07:08,338 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 17:17:08,246 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab49e0>
+2025-06-04 17:17:08,248 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-04 17:17:08,248 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-04 17:17:08,248 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 17:17:08,311 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab4440>
+2025-06-04 17:17:08,311 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-04 17:17:08,311 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-04 17:17:08,311 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 17:27:59,329 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x10675dfd0>
+2025-06-04 17:27:59,336 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-04 17:27:59,337 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-04 17:27:59,339 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 17:27:59,359 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab49e0>
+2025-06-04 17:27:59,359 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-04 17:27:59,360 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-04 17:27:59,360 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 17:37:59,330 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab4440>
+2025-06-04 17:37:59,335 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-04 17:37:59,335 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-04 17:37:59,336 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 17:37:59,339 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x10675dfd0>
+2025-06-04 17:37:59,339 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-04 17:37:59,339 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-04 17:37:59,342 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 17:47:59,346 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab49e0>
+2025-06-04 17:47:59,348 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-04 17:47:59,348 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-04 17:47:59,349 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 17:47:59,351 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab4440>
+2025-06-04 17:47:59,351 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-04 17:47:59,351 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-04 17:47:59,351 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 17:57:59,293 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x10675dfd0>
+2025-06-04 17:57:59,296 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-04 17:57:59,297 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-04 17:57:59,303 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 17:57:59,337 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab49e0>
+2025-06-04 17:57:59,337 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-04 17:57:59,337 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-04 17:57:59,337 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 18:07:59,300 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab4440>
+2025-06-04 18:07:59,302 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-04 18:07:59,302 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-04 18:07:59,303 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 18:07:59,313 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x10675dfd0>
+2025-06-04 18:07:59,314 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-04 18:07:59,314 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-04 18:07:59,314 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 18:17:59,316 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab49e0>
+2025-06-04 18:17:59,317 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-04 18:17:59,317 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-04 18:17:59,317 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 18:17:59,328 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab4440>
+2025-06-04 18:17:59,328 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-04 18:17:59,328 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-04 18:17:59,328 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 18:27:59,319 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x10675dfd0>
+2025-06-04 18:27:59,326 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-04 18:27:59,326 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-04 18:27:59,327 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 18:27:59,347 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab49e0>
+2025-06-04 18:27:59,347 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-04 18:27:59,347 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-04 18:27:59,347 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 18:37:59,299 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab4440>
+2025-06-04 18:37:59,300 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-04 18:37:59,300 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-04 18:37:59,300 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 18:37:59,312 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x10675dfd0>
+2025-06-04 18:37:59,313 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-04 18:37:59,313 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-04 18:37:59,313 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 18:47:59,269 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab49e0>
+2025-06-04 18:47:59,271 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-04 18:47:59,271 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-04 18:47:59,271 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 18:47:59,297 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab4440>
+2025-06-04 18:47:59,297 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-04 18:47:59,297 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-04 18:47:59,297 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 18:57:59,301 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x10675dfd0>
+2025-06-04 18:57:59,306 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-04 18:57:59,306 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-04 18:57:59,307 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 18:57:59,329 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab49e0>
+2025-06-04 18:57:59,329 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-04 18:57:59,329 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-04 18:57:59,330 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 19:07:59,265 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab4440>
+2025-06-04 19:07:59,270 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-04 19:07:59,270 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-04 19:07:59,271 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 19:07:59,295 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x10675dfd0>
+2025-06-04 19:07:59,295 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-04 19:07:59,296 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-04 19:07:59,296 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 19:17:59,266 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab49e0>
+2025-06-04 19:17:59,268 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-04 19:17:59,268 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-04 19:17:59,268 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 19:17:59,282 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab4440>
+2025-06-04 19:17:59,283 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-04 19:17:59,283 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-04 19:17:59,283 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 19:27:59,275 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x10675dfd0>
+2025-06-04 19:27:59,276 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-04 19:27:59,276 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-04 19:27:59,277 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 19:27:59,292 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab49e0>
+2025-06-04 19:27:59,292 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-04 19:27:59,292 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-04 19:27:59,292 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 19:37:59,256 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab4440>
+2025-06-04 19:37:59,260 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-04 19:37:59,262 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-04 19:37:59,264 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 19:37:59,271 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x10675dfd0>
+2025-06-04 19:37:59,271 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-04 19:37:59,271 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-04 19:37:59,272 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 19:47:59,197 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab49e0>
+2025-06-04 19:47:59,198 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-04 19:47:59,198 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-04 19:47:59,199 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 19:47:59,221 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab4440>
+2025-06-04 19:47:59,221 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-04 19:47:59,221 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-04 19:47:59,221 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 19:57:59,300 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x10675dfd0>
+2025-06-04 19:57:59,302 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-04 19:57:59,302 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-04 19:57:59,303 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 19:57:59,422 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab49e0>
+2025-06-04 19:57:59,422 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-04 19:57:59,422 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-04 19:57:59,422 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 20:07:59,237 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab4440>
+2025-06-04 20:07:59,239 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-04 20:07:59,239 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-04 20:07:59,240 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 20:07:59,291 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x10675dfd0>
+2025-06-04 20:07:59,291 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-04 20:07:59,291 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-04 20:07:59,291 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 20:17:59,318 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab49e0>
+2025-06-04 20:17:59,320 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-04 20:17:59,320 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-04 20:17:59,321 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 20:17:59,377 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab4440>
+2025-06-04 20:17:59,377 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-04 20:17:59,377 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-04 20:17:59,377 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 20:27:59,303 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x10675dfd0>
+2025-06-04 20:27:59,304 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-04 20:27:59,305 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-04 20:27:59,308 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 20:27:59,330 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab49e0>
+2025-06-04 20:27:59,331 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-04 20:27:59,331 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-04 20:27:59,331 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 20:37:59,282 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab4440>
+2025-06-04 20:37:59,283 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-04 20:37:59,283 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-04 20:37:59,284 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 20:37:59,312 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x10675dfd0>
+2025-06-04 20:37:59,312 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-04 20:37:59,312 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-04 20:37:59,312 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 20:47:59,439 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab49e0>
+2025-06-04 20:47:59,454 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-04 20:47:59,455 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-04 20:47:59,465 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 20:47:59,843 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab4440>
+2025-06-04 20:47:59,844 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-04 20:47:59,844 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-04 20:47:59,846 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 20:57:59,437 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x10675dfd0>
+2025-06-04 20:57:59,445 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-04 20:57:59,446 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-04 20:57:59,469 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 20:57:59,899 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab49e0>
+2025-06-04 20:57:59,900 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-04 20:57:59,900 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-04 20:57:59,901 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 21:07:59,519 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab4440>
+2025-06-04 21:07:59,525 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-04 21:07:59,525 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-04 21:07:59,529 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 21:08:00,599 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x10675dfd0>
+2025-06-04 21:08:00,613 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-04 21:08:00,613 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-04 21:08:00,620 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 21:17:59,628 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab49e0>
+2025-06-04 21:17:59,639 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-04 21:17:59,645 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-04 21:17:59,651 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 21:18:00,314 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab4440>
+2025-06-04 21:18:00,317 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-04 21:18:00,318 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-04 21:18:00,322 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 21:27:59,354 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x10675dfd0>
+2025-06-04 21:27:59,443 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-04 21:27:59,444 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-04 21:27:59,447 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 21:27:59,827 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab49e0>
+2025-06-04 21:27:59,828 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-04 21:27:59,828 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-04 21:27:59,832 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 21:37:59,426 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab4440>
+2025-06-04 21:37:59,574 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-04 21:37:59,574 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-04 21:37:59,577 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 21:38:00,283 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x10675dfd0>
+2025-06-04 21:38:00,286 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-04 21:38:00,286 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-04 21:38:00,288 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 21:47:59,343 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab49e0>
+2025-06-04 21:47:59,345 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-04 21:47:59,346 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-04 21:47:59,347 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 21:47:59,419 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x106ab4440>
+2025-06-04 21:47:59,419 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-04 21:47:59,419 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-04 21:47:59,420 - mcp.server.lowlevel.server - DEBUG - Response sent

@@ -1,0 +1,221 @@
+2025-06-04 16:43:31,177 - server_module - INFO - Logging configured with level DEBUG (DEBUG)
+2025-06-04 16:43:31,177 - server_module - INFO - Log file location: /Users/petetreadaway/Projects/ebay-mcp-server/logs/fastmcp_server.log
+2025-06-04 16:43:31,225 - ebay_service - INFO - Attempting to load .env from: /Users/petetreadaway/Projects/ebay-mcp-server/src/../.env
+2025-06-04 16:43:31,226 - ebay_service - INFO - .env file loaded successfully.
+2025-06-04 16:43:31,230 - mcp.server.lowlevel.server - DEBUG - Initializing server 'eBay Auth API'
+2025-06-04 16:43:31,231 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-04 16:43:31,231 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-04 16:43:31,231 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-04 16:43:31,231 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-04 16:43:31,231 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-04 16:43:31,231 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-04 16:43:31,231 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-04 16:43:31,236 - mcp.server.lowlevel.server - DEBUG - Initializing server 'eBay Browse API'
+2025-06-04 16:43:31,236 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-04 16:43:31,236 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-04 16:43:31,236 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-04 16:43:31,236 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-04 16:43:31,236 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-04 16:43:31,236 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-04 16:43:31,236 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-04 16:43:31,242 - mcp.server.lowlevel.server - DEBUG - Initializing server 'eBay Taxonomy API'
+2025-06-04 16:43:31,243 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-04 16:43:31,243 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-04 16:43:31,243 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-04 16:43:31,243 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-04 16:43:31,243 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-04 16:43:31,243 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-04 16:43:31,243 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-04 16:43:31,256 - mcp.server.lowlevel.server - DEBUG - Initializing server 'eBay Inventory API'
+2025-06-04 16:43:31,256 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-04 16:43:31,256 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-04 16:43:31,256 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-04 16:43:31,256 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-04 16:43:31,256 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-04 16:43:31,256 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-04 16:43:31,256 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-04 16:43:31,257 - asyncio - DEBUG - Using selector: KqueueSelector
+2025-06-04 16:43:31,264 - mcp.server.lowlevel.server - DEBUG - Initializing server 'Test Tools API'
+2025-06-04 16:43:31,264 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-04 16:43:31,264 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-04 16:43:31,265 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-04 16:43:31,265 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-04 16:43:31,265 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-04 16:43:31,265 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-04 16:43:31,265 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-04 16:43:31,266 - mcp.server.lowlevel.server - DEBUG - Initializing server 'Database Tools API'
+2025-06-04 16:43:31,266 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-04 16:43:31,266 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-04 16:43:31,266 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-04 16:43:31,266 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-04 16:43:31,266 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-04 16:43:31,266 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-04 16:43:31,266 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-04 16:43:31,267 - mcp.server.lowlevel.server - DEBUG - Initializing server 'eBay API'
+2025-06-04 16:43:31,267 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-04 16:43:31,267 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-04 16:43:31,267 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-04 16:43:31,267 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-04 16:43:31,267 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-04 16:43:31,267 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-04 16:43:31,267 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-04 16:43:31,267 - server_module - INFO - Mounting all sub-servers
+2025-06-04 16:43:31,267 - server_module - INFO - Mounted auth MCP server
+2025-06-04 16:43:31,267 - server_module - INFO - Mounted browse API MCP server
+2025-06-04 16:43:31,267 - server_module - INFO - Mounted taxonomy API MCP server
+2025-06-04 16:43:31,267 - server_module - INFO - Mounted inventory API MCP server
+2025-06-04 16:43:31,267 - server_module - INFO - Mounted tests MCP server
+2025-06-04 16:43:31,267 - server_module - INFO - Mounted database MCP server
+2025-06-04 16:43:31,267 - server_module - INFO - All sub-servers mounted successfully
+2025-06-04 16:43:31,267 - FastMCP.cli - INFO - Found server "eBay API" in /Users/petetreadaway/Projects/ebay-mcp-server/src/main_server.py
+2025-06-04 16:43:31,269 - FastMCP.fastmcp.server.server - INFO - Starting server "eBay API"...
+2025-06-04 16:43:31,272 - asyncio - DEBUG - Using selector: KqueueSelector
+2025-06-04 16:43:31,277 - mcp.server.lowlevel.server - DEBUG - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2025-06-04 16:43:31,277 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x11201c7d0>
+2025-06-04 16:43:31,277 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2025-06-04 16:43:31,277 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListToolsRequest
+2025-06-04 16:43:31,278 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 16:43:31,279 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x11201d1d0>
+2025-06-04 16:43:31,279 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2025-06-04 16:43:31,280 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListToolsRequest
+2025-06-04 16:43:31,280 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 16:44:15,952 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x110317e10>
+2025-06-04 16:44:15,954 - mcp.server.lowlevel.server - INFO - Processing request of type CallToolRequest
+2025-06-04 16:44:15,954 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type CallToolRequest
+2025-06-04 16:44:15,955 - ebay_mcp.inventory.get_inventory_item_by_sku - INFO - Executing get_inventory_item_by_sku MCP tool with SKU='Tank-5'.
+2025-06-04 16:44:16,000 - ebay_service - INFO - Attempting to retrieve EBAY_USER_ACCESS_TOKEN from .env via ebay_auth module.
+2025-06-04 16:44:16,002 - ebay_service - INFO - Successfully retrieved EBAY_USER_ACCESS_TOKEN.
+2025-06-04 16:44:16,002 - ebay_service - DEBUG - get_ebay_access_token: EBAY_USER_ACCESS_TOKEN (first 10 chars): v^1.1#i^1#...
+2025-06-04 16:44:16,002 - utils.api_utils - INFO - get_inventory_item_by_sku: Attempting API call with current token: v^1.1#i^1#...
+2025-06-04 16:44:16,002 - utils.api_utils - DEBUG - get_inventory_item_by_sku: Executing API call with full token: v^1.1#i^1#r^0#I^3#p^3#f^0#t^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
+2025-06-04 16:44:16,002 - ebay_mcp.inventory.get_inventory_item_by_sku - DEBUG - get_inventory_item_by_sku: Headers for API call: {'Authorization': 'Bearer v^1.1#i^1#r^0#I^3#p^...<truncated>', 'Content-Type': 'application/json', 'X-EBAY-C-MARKETPLACE-ID': 'EBAY_GB', 'Accept-Language': 'en-GB'}
+2025-06-04 16:44:16,002 - ebay_mcp.inventory.get_inventory_item_by_sku - DEBUG - get_inventory_item_by_sku: Request URL: https://api.ebay.com/sell/inventory/v1/inventory_item/Tank-5 using token v^1.1#i^1#...
+2025-06-04 16:44:16,003 - httpcore.connection - DEBUG - connect_tcp.started host='api.ebay.com' port=443 local_address=None timeout=5.0 socket_options=None
+2025-06-04 16:44:16,051 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x1120b2120>
+2025-06-04 16:44:16,051 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x112081eb0> server_hostname='api.ebay.com' timeout=5.0
+2025-06-04 16:44:16,081 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x11201ead0>
+2025-06-04 16:44:16,081 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-06-04 16:44:16,082 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-06-04 16:44:16,082 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-06-04 16:44:16,082 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-06-04 16:44:16,082 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-06-04 16:44:16,430 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'rlogid', b't6pitnmsgwj70dlkr%3D9vjujkpfsl41%60jhs.f007f%3Fdg2%2Bp%60nts-1973b9d5541-0x2f12'), (b'Content-Language', b'en_GB'), (b'x-content-type-options', b'nosniff'), (b'x-xss-protection', b'1; mode=block'), (b'x-frame-options', b'DENY'), (b'Content-Type', b'application/json'), (b'Content-Length', b'1485'), (b'x-envoy-upstream-service-time', b'183'), (b'Server', b'ebay-proxy-server'), (b'x-ebay-pop-id', b'UFES2-SLCAZ01-api'), (b'Expires', b'Wed, 04 Jun 2025 15:44:16 GMT'), (b'Cache-Control', b'max-age=0, no-cache, no-store'), (b'Pragma', b'no-cache'), (b'Date', b'Wed, 04 Jun 2025 15:44:16 GMT'), (b'Connection', b'keep-alive'), (b'x-CDN', b'Akamai'), (b'Strict-Transport-Security', b'max-age=31536000')])
+2025-06-04 16:44:16,432 - httpx - INFO - HTTP Request: GET https://api.ebay.com/sell/inventory/v1/inventory_item/Tank-5 "HTTP/1.1 200 OK"
+2025-06-04 16:44:16,432 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-06-04 16:44:16,433 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-06-04 16:44:16,433 - httpcore.http11 - DEBUG - response_closed.started
+2025-06-04 16:44:16,433 - httpcore.http11 - DEBUG - response_closed.complete
+2025-06-04 16:44:16,433 - ebay_mcp.inventory.get_inventory_item_by_sku - INFO - get_inventory_item_by_sku: API response status: 200
+2025-06-04 16:44:16,434 - ebay_mcp.inventory.get_inventory_item_by_sku - DEBUG - get_inventory_item_by_sku: API response text (first 500 chars): {"sku":"Tank-5","locale":"en_GB","product":{"title":"Vintage Matchbox K-107 Alvis Striker Scorpion Tank Diecast Toy ENGLAND","aspects":{"Brand":["Vintage"]},"description":"This is a vintage Matchbox K-107 Alvis Scorpion/Striker diecast tank made in England. The tank is green with black plastic details.  There is noticeable paint wear and chipping all over the vehicle, particularly on the edges and raised surfaces. The wheels and tracks show accumulation of dust and dirt. The turret is black plas...
+2025-06-04 16:44:16,434 - ebay_mcp.inventory.get_inventory_item_by_sku - INFO - get_inventory_item_by_sku: Successfully retrieved inventory item for SKU Tank-5.
+2025-06-04 16:44:16,434 - utils.api_utils - DEBUG - get_inventory_item_by_sku Request: {
+  "method": "GET",
+  "url": "https://api.ebay.com/sell/inventory/v1/inventory_item/Tank-5",
+  "headers": {
+    "host": "api.ebay.com",
+    "accept": "*/*",
+    "accept-encoding": "gzip, deflate",
+    "connection": "keep-alive",
+    "user-agent": "python-httpx/0.28.1",
+    "authorization": "Bearer v^1.1#i^1#r^0#I^3#p^3#f^0#t^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",
+    "content-type": "application/json",
+    "x-ebay-c-marketplace-id": "EBAY_GB",
+    "accept-language": "en-GB"
+  },
+  "content": null
+}
+2025-06-04 16:44:16,435 - utils.api_utils - DEBUG - get_inventory_item_by_sku Response: {
+  "status_code": 200,
+  "headers": {
+    "rlogid": "t6pitnmsgwj70dlkr%3D9vjujkpfsl41%60jhs.f007f%3Fdg2%2Bp%60nts-1973b9d5541-0x2f12",
+    "content-language": "en_GB",
+    "x-content-type-options": "nosniff",
+    "x-xss-protection": "1; mode=block",
+    "x-frame-options": "DENY",
+    "content-type": "application/json",
+    "content-length": "1485",
+    "x-envoy-upstream-service-time": "183",
+    "server": "ebay-proxy-server",
+    "x-ebay-pop-id": "UFES2-SLCAZ01-api",
+    "expires": "Wed, 04 Jun 2025 15:44:16 GMT",
+    "cache-control": "max-age=0, no-cache, no-store",
+    "pragma": "no-cache",
+    "date": "Wed, 04 Jun 2025 15:44:16 GMT",
+    "connection": "keep-alive",
+    "x-cdn": "Akamai",
+    "strict-transport-security": "max-age=31536000"
+  },
+  "content": "{\"sku\":\"Tank-5\",\"locale\":\"en_GB\",\"product\":{\"title\":\"Vintage Matchbox K-107 Alvis Striker Scorpion Tank Diecast Toy ENGLAND\",\"aspects\":{\"Brand\":[\"Vintage\"]},\"description\":\"This is a vintage Matchbox K-107 Alvis Scorpion/Striker diecast tank made in England. The tank is green with black plastic details.  There is noticeable paint wear and chipping all over the vehicle, particularly on the edges and raised surfaces. The wheels and tracks show accumulation of dust and dirt. The turret is black plastic.  The base is stamped \\\"MATCHBOX\\\" TOYS / MADE IN ENGLAND / ALVIS / SCORPION / & STRIKER.\\nThe rear of the tank has visible details of exhausts. The side has a yellow printed decal which is partially worn.  The front of the tank is marked with a number plate showing '02 CN 39'.\",\"imageUrls\":[\"https://eBayImages.s3.us-east-005.backblazeb2.com/ebay_images/Tank-5/Tank-5-1_69.jpg\",\"https://eBayImages.s3.us-east-005.backblazeb2.com/ebay_images/Tank-5/Tank-5-1_65.jpg\",\"https://eBayImages.s3.us-east-005.backblazeb2.com/ebay_images/Tank-5/Tank-5-1_66.jpg\",\"https://eBayImages.s3.us-east-005.backblazeb2.com/ebay_images/Tank-5/Tank-5-1_68.jpg\",\"https://eBayImages.s3.us-east-005.backblazeb2.com/ebay_images/Tank-5/Tank-5-1_67.jpg\"]},\"condition\":\"USED_EXCELLENT\",\"conditionDescription\":\"Used vintage condition with significant paint wear and accumulation of dirt and dust.\",\"availability\":{\"shipToLocationAvailability\":{\"quantity\":1,\"allocationByFormat\":{\"auction\":0,\"fixedPrice\":1}}}}"
+}
+2025-06-04 16:44:16,435 - ebay_mcp.inventory.get_inventory_item_by_sku - INFO - Parsed inventory item details for SKU Tank-5
+2025-06-04 16:44:16,435 - httpcore.connection - DEBUG - close.started
+2025-06-04 16:44:16,436 - httpcore.connection - DEBUG - close.complete
+2025-06-04 16:44:16,437 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-04 16:44:35,936 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x1104d4510>
+2025-06-04 16:44:35,937 - mcp.server.lowlevel.server - INFO - Processing request of type CallToolRequest
+2025-06-04 16:44:35,937 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type CallToolRequest
+2025-06-04 16:44:35,938 - ebay_mcp.inventory.create_or_replace_inventory_item - INFO - Executing create_or_replace_inventory_item MCP tool with SKU='Tank-5'.
+2025-06-04 16:44:35,955 - ebay_service - INFO - Attempting to retrieve EBAY_USER_ACCESS_TOKEN from .env via ebay_auth module.
+2025-06-04 16:44:35,957 - ebay_service - INFO - Successfully retrieved EBAY_USER_ACCESS_TOKEN.
+2025-06-04 16:44:35,957 - ebay_service - DEBUG - get_ebay_access_token: EBAY_USER_ACCESS_TOKEN (first 10 chars): v^1.1#i^1#...
+2025-06-04 16:44:35,957 - utils.api_utils - INFO - create_or_replace_inventory_item: Attempting API call with current token: v^1.1#i^1#...
+2025-06-04 16:44:35,957 - utils.api_utils - DEBUG - create_or_replace_inventory_item: Executing API call with full token: v^1.1#i^1#r^0#I^3#p^3#f^0#t^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
+2025-06-04 16:44:35,957 - ebay_mcp.inventory.create_or_replace_inventory_item - DEBUG - create_or_replace_inventory_item: Headers for API call: {'Authorization': 'Bearer v^1.1#i^1#r^0#I^3#p^...<truncated>', 'Content-Type': 'application/json', 'X-EBAY-C-MARKETPLACE-ID': 'EBAY_GB', 'Content-Language': 'en-US'}
+2025-06-04 16:44:35,957 - ebay_mcp.inventory.create_or_replace_inventory_item - DEBUG - create_or_replace_inventory_item: Request URL: https://api.ebay.com/sell/inventory/v1/inventory_item/Tank-5
+2025-06-04 16:44:35,957 - ebay_mcp.inventory.create_or_replace_inventory_item - DEBUG - create_or_replace_inventory_item: Request body: {'availability': {'shipToLocationAvailability': {'quantity': 1}}, 'condition': 'USED_EXCELLENT', 'condition_description': 'Used vintage condition with significant paint wear and accumulation of dirt and dust.', 'product': {'title': 'Vintage Matchbox K-107 Alvis Striker Scorpion Tank Diecast Toy ENGLAND', 'description': "This is a vintage Matchbox K-107 Alvis Scorpion/Striker diecast tank made in England. The tank is green with black plastic details. There is noticeable paint wear and chipping all over the vehicle, particularly on the edges and raised surfaces. The wheels and tracks show accumulation of dust and dirt. The turret is black plastic. The base is stamped 'MATCHBOX' TOYS / MADE IN ENGLAND / ALVIS / SCORPION / & STRIKER.\nThe rear of the tank has visible details of exhausts. The side has a yellow printed decal which is partially worn. The front of the tank is marked with a number plate showing '02 CN 39'.", 'aspects': {'Brand': ['Vintage']}, 'imageUrls': ['https://eBayImages.s3.us-east-005.backblazeb2.com/ebay_images/Tank-5/Tank-5-1_69.jpg', 'https://eBayImages.s3.us-east-005.backblazeb2.com/ebay_images/Tank-5/Tank-5-1_65.jpg', 'https://eBayImages.s3.us-east-005.backblazeb2.com/ebay_images/Tank-5/Tank-5-1_66.jpg', 'https://eBayImages.s3.us-east-005.backblazeb2.com/ebay_images/Tank-5/Tank-5-1_68.jpg', 'https://eBayImages.s3.us-east-005.backblazeb2.com/ebay_images/Tank-5/Tank-5-1_67.jpg']}}
+2025-06-04 16:44:35,958 - httpcore.connection - DEBUG - connect_tcp.started host='api.ebay.com' port=443 local_address=None timeout=5.0 socket_options=None
+2025-06-04 16:44:36,116 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x1120f4410>
+2025-06-04 16:44:36,116 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x112082180> server_hostname='api.ebay.com' timeout=5.0
+2025-06-04 16:44:36,143 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x1120f8180>
+2025-06-04 16:44:36,144 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'PUT']>
+2025-06-04 16:44:36,144 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-06-04 16:44:36,144 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'PUT']>
+2025-06-04 16:44:36,144 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-06-04 16:44:36,144 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'PUT']>
+2025-06-04 16:44:36,609 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 204, b'No Content', [(b'rlogid', b't6pitnmsgwj70dlkr%3D9vjujkpfsl41%60jhs.f007f%3Fdg2%2Bjpqav-1973b9da39d-0x24e1'), (b'Content-Language', b'en-US'), (b'x-envoy-upstream-service-time', b'303'), (b'Server', b'ebay-proxy-server'), (b'x-ebay-pop-id', b'UFES2-SLCAZ01-api'), (b'Expires', b'Wed, 04 Jun 2025 15:44:36 GMT'), (b'Cache-Control', b'max-age=0, no-cache, no-store'), (b'Pragma', b'no-cache'), (b'Date', b'Wed, 04 Jun 2025 15:44:36 GMT'), (b'Connection', b'keep-alive'), (b'x-CDN', b'Akamai'), (b'Strict-Transport-Security', b'max-age=31536000')])
+2025-06-04 16:44:36,611 - httpx - INFO - HTTP Request: PUT https://api.ebay.com/sell/inventory/v1/inventory_item/Tank-5 "HTTP/1.1 204 No Content"
+2025-06-04 16:44:36,611 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'PUT']>
+2025-06-04 16:44:36,611 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-06-04 16:44:36,611 - httpcore.http11 - DEBUG - response_closed.started
+2025-06-04 16:44:36,611 - httpcore.http11 - DEBUG - response_closed.complete
+2025-06-04 16:44:36,612 - ebay_mcp.inventory.create_or_replace_inventory_item - DEBUG - create_or_replace_inventory_item: Response status: 204
+2025-06-04 16:44:36,612 - ebay_mcp.inventory.create_or_replace_inventory_item - DEBUG - create_or_replace_inventory_item: Response headers: {'rlogid': 't6pitnmsgwj70dlkr%3D9vjujkpfsl41%60jhs.f007f%3Fdg2%2Bjpqav-1973b9da39d-0x24e1', 'content-language': 'en-US', 'x-envoy-upstream-service-time': '303', 'server': 'ebay-proxy-server', 'x-ebay-pop-id': 'UFES2-SLCAZ01-api', 'expires': 'Wed, 04 Jun 2025 15:44:36 GMT', 'cache-control': 'max-age=0, no-cache, no-store', 'pragma': 'no-cache', 'date': 'Wed, 04 Jun 2025 15:44:36 GMT', 'connection': 'keep-alive', 'x-cdn': 'Akamai', 'strict-transport-security': 'max-age=31536000'}
+2025-06-04 16:44:36,612 - ebay_mcp.inventory.create_or_replace_inventory_item - INFO - create_or_replace_inventory_item: Successfully processed inventory item with SKU 'Tank-5' (status: 204)
+2025-06-04 16:44:36,612 - utils.api_utils - DEBUG - create_or_replace_inventory_item Request: {
+  "method": "PUT",
+  "url": "https://api.ebay.com/sell/inventory/v1/inventory_item/Tank-5",
+  "headers": {
+    "host": "api.ebay.com",
+    "accept": "*/*",
+    "accept-encoding": "gzip, deflate",
+    "connection": "keep-alive",
+    "user-agent": "python-httpx/0.28.1",
+    "authorization": "Bearer v^1.1#i^1#r^0#I^3#p^3#f^0#t^H4sIAAAAAAAA/+VZf2wbVx2P86u0I0OCboyqbOa2drBw9jv7fjcxOPalthLHrs9p1kDlvbt7Z19yvvPu3iU2GlIaoU6dtNEhpq4ToE7a1FRoQtqkTggRpO6P/TEqEJ2YQIgxbQM0DWmCsqK1f3DnJG2aQdvNWbGE/7Heu+977/v5fH+873sPLPRvve9w5vCFgdCW7hMLYKE7FKJuAVv7+wZv7ene0dcF1gmETizcs9C72PPXIRfWzLpYRG7dtlwUbtRMyxVbncOE51iiDV3DFS1YQ66IVVFO5sbFWASIdcfGtmqbRDibHiZYGnIxTonHYqrCKgz0e621OUv2MMFRtADiHKQonoKcGve/u66HspaLoYWHiRiIMSRgSUCXKEaMcSLgI3GanibC+5HjGrbli0QAkWipK7bGOut0vbaq0HWRg/1JiEQ2OSrnk9m0NFEaiq6bK7HKg4wh9tyrWylbQ+H90PTQtZdxW9Ki7Kkqcl0imlhZ4epJxeSaMh9D/RbVHEvTAqULHMsjAUBmU6gctZ0axNfWI+gxNFJviYrIwgZuXo9Rnw1lBql4tTXhT5FNh4O/fR40Dd1AzjAhjSQPTMpSkQjLhYJjzxka0gKkFB2LMXw8xjJEAjsIar7+pq3j1XVWJltlecNCKdvSjIAzNzxh4xHkK402UkOto8YXylt5J6njQKH1ctwahXFhOrDpihE9XLUCs6Kaz0O41by+AdY84ooPbJZPUIKqUCoLdJbiOFYTPuwTQax/dL9IBKZJFgrRQBekwCZZg84swnUTqohUfXq9GnIMTYwzeizO64jUWEEnaUHXSYXRWJLSEQIIKYoq8P9H7oGxYygeRpddZOOHFsZhQlbtOirYpqE2iY0irYyz6hANd5ioYlwXo9H5+fnIfDxiO5VoDAAqen9uXFarqOan3DVZ4/rCpNFyDRX5o1xDxM26r03D9zx/catCJOKOVoAObsrINP2ONb+9SrfExt7/AjJlGj4DJX+JzsKYsV2MtLagaWjOUFHZ0DoKWRDrCT82gBDjGI72h7YF0rQrhpVDuGp3FsxEkBSy6baw+TkU4s5CRXF+qUTxDMO0hQxWHNRKPSvVR2dhTKZSUqEktWe7ZL2erdU8DBUTZTvMNWmO5eL05hhQWq20/iO+INb/RxiDfbmcyudyUjEllSfHyuOl9gxa97wOy6QJoRpvpJl8VRaabUELaifRgLqI7Vlkdd5eWJRGi5KcKZfyY9JEW0iLSHeQWy0FODstKpP7kmNJ/5cbj8+kKlNRT63MoAm+2BhtMPOZSrFo6PlBbcTCc9WGnKkr6UFpRuar9+P9Sj5Ls2rDmZ4cb1JVa354uC2SZKQ66CPvO0Gsf7IEsQon8LGU4e0FWbM4u88RptyRKgBpqVHgGRwdt7JTg5OUgKak9gjIVTot0jevXip1Zog7K4FZbmWgst9qC6RU6bhcHac0lqI4gRI4AKFCQV7TKJ3xz6K6rvJQaLvYuJl4g1i/AcwFhFHJP/uSE2hehiZKkoVimkQU4hmEeEgKUBU0yIM29+VOM/VmbcuXa6yg2VkQC8kDOWmiJMfKoBwcdMrJvUVJyl25Zvt4iN3gxqGzkAbjXX8CWDciQZ0UUe1a1IYergZd5ZbG4RsRirrINCOGNecb1HaaNzbG76shR0URQ1u50owEV0m2ZbbnWZpdM1TDvCGqg1i/eXTvHWnvxIw0w0EqLnuO0Vl+FOTCcpAMNTgPm+SG1Eg21Flzpr1s4XtOJ96DjGbT+XIhKctj0gG5LYRpNNdpNTsfp5m4KqikwgCGpHmKJSEQWJKnKJpnaD0OQXsXJTf3Aqj30NFP5A5oQ8e6i+cPPTlEr37yS3S1ftRi6AxYDC13h0JgCOyi7gZf6u+Z7O359A7XwH52hHrENSoWxJ6DIrOoWYeG0/25rl/dOq4dyoz/c0HxXpw6/zW+a2Ddi+OJg+COy2+OW3uoW9Y9QIKdV770UZ/5/IBff7OAppgYB/hpcPeVr73U7b3bX1ne8vtfPPT89DNzd56bOIW8T+2K/AwMXBYKhfq6ehdDXT+58OSRI2dPM4fvvOPxo0sf/O616Df+tGRkvvj1Xul4/JH6U++eO3X0C4mB8/flD/75wePettNDmQMfPLT7zWOj31u2n3Uy+eWTF+dev2vPE2MPVo+Ldz3+46e+/+03+3Y8F3nhmSHv2CzhVf9FPfHyVwt7Tr70zqHS09+67ZfLP7h08LePqbMvv/fwT9/4TuqtS9LztcGLz3a9/4cd1pmdg9RUeE/6R9o/vvvZI/deem354Z1ffv8srTyQ3e6cW+z/5utLzW3GW0//eun2t+Gxlx4TktYbS+ff3cKwD8xc/GOOeAf8cFv/vUdPjf5maeCV55o/f+HVF6VH/36BEP4mHvqLtfu2s5GvnDx99u2Zk7tffe/Mxe27Hj28Yst/AzOMpG8LHgAA",
+    "content-type": "application/json",
+    "x-ebay-c-marketplace-id": "EBAY_GB",
+    "content-language": "en-US",
+    "content-length": "1399"
+  },
+  "content": "{\"availability\":{\"shipToLocationAvailability\":{\"quantity\":1}},\"condition\":\"USED_EXCELLENT\",\"condition_description\":\"Used vintage condition with significant paint wear and accumulation of dirt and dust.\",\"product\":{\"title\":\"Vintage Matchbox K-107 Alvis Striker Scorpion Tank Diecast Toy ENGLAND\",\"description\":\"This is a vintage Matchbox K-107 Alvis Scorpion/Striker diecast tank made in England. The tank is green with black plastic details. There is noticeable paint wear and chipping all over the vehicle, particularly on the edges and raised surfaces. The wheels and tracks show accumulation of dust and dirt. The turret is black plastic. The base is stamped 'MATCHBOX' TOYS / MADE IN ENGLAND / ALVIS / SCORPION / & STRIKER.\\nThe rear of the tank has visible details of exhausts. The side has a yellow printed decal which is partially worn. The front of the tank is marked with a number plate showing '02 CN 39'.\",\"aspects\":{\"Brand\":[\"Vintage\"]},\"imageUrls\":[\"https://eBayImages.s3.us-east-005.backblazeb2.com/ebay_images/Tank-5/Tank-5-1_69.jpg\",\"https://eBayImages.s3.us-east-005.backblazeb2.com/ebay_images/Tank-5/Tank-5-1_65.jpg\",\"https://eBayImages.s3.us-east-005.backblazeb2.com/ebay_images/Tank-5/Tank-5-1_66.jpg\",\"https://eBayImages.s3.us-east-005.backblazeb2.com/ebay_images/Tank-5/Tank-5-1_68.jpg\",\"https://eBayImages.s3.us-east-005.backblazeb2.com/ebay_images/Tank-5/Tank-5-1_67.jpg\"]}}"
+}
+2025-06-04 16:44:36,613 - utils.api_utils - DEBUG - create_or_replace_inventory_item Response: {
+  "status_code": 204,
+  "headers": {
+    "rlogid": "t6pitnmsgwj70dlkr%3D9vjujkpfsl41%60jhs.f007f%3Fdg2%2Bjpqav-1973b9da39d-0x24e1",
+    "content-language": "en-US",
+    "x-envoy-upstream-service-time": "303",
+    "server": "ebay-proxy-server",
+    "x-ebay-pop-id": "UFES2-SLCAZ01-api",
+    "expires": "Wed, 04 Jun 2025 15:44:36 GMT",
+    "cache-control": "max-age=0, no-cache, no-store",
+    "pragma": "no-cache",
+    "date": "Wed, 04 Jun 2025 15:44:36 GMT",
+    "connection": "keep-alive",
+    "x-cdn": "Akamai",
+    "strict-transport-security": "max-age=31536000"
+  },
+  "content": ""
+}
+2025-06-04 16:44:36,613 - httpcore.connection - DEBUG - close.started
+2025-06-04 16:44:36,613 - httpcore.connection - DEBUG - close.complete
+2025-06-04 16:44:36,614 - mcp.server.lowlevel.server - DEBUG - Response sent

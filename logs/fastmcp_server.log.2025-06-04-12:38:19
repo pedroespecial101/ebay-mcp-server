@@ -1,0 +1,218 @@
+2025-06-04 12:35:56,558 - __main__ - INFO - Logging configured with level DEBUG (DEBUG)
+2025-06-04 12:35:56,558 - __main__ - INFO - Log file location: /Users/petetreadaway/Projects/ebay-mcp-server/logs/fastmcp_server.log
+2025-06-04 12:35:56,951 - ebay_service - INFO - Attempting to load .env from: /Users/petetreadaway/Projects/ebay-mcp-server/src/../.env
+2025-06-04 12:35:56,951 - ebay_service - INFO - .env file loaded successfully.
+2025-06-04 12:35:56,956 - mcp.server.lowlevel.server - DEBUG - Initializing server 'eBay Auth API'
+2025-06-04 12:35:56,957 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-04 12:35:56,957 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-04 12:35:56,957 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-04 12:35:56,957 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-04 12:35:56,957 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-04 12:35:56,957 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-04 12:35:56,957 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-04 12:35:56,963 - mcp.server.lowlevel.server - DEBUG - Initializing server 'eBay Browse API'
+2025-06-04 12:35:56,963 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-04 12:35:56,963 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-04 12:35:56,963 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-04 12:35:56,963 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-04 12:35:56,963 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-04 12:35:56,963 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-04 12:35:56,963 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-04 12:35:56,970 - mcp.server.lowlevel.server - DEBUG - Initializing server 'eBay Taxonomy API'
+2025-06-04 12:35:56,970 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-04 12:35:56,970 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-04 12:35:56,970 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-04 12:35:56,970 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-04 12:35:56,970 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-04 12:35:56,970 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-04 12:35:56,970 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-04 12:35:56,988 - mcp.server.lowlevel.server - DEBUG - Initializing server 'eBay Inventory API'
+2025-06-04 12:35:56,988 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-04 12:35:56,988 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-04 12:35:56,988 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-04 12:35:56,988 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-04 12:35:56,988 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-04 12:35:56,988 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-04 12:35:56,988 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-04 12:35:56,988 - asyncio - DEBUG - Using selector: KqueueSelector
+2025-06-04 12:35:56,997 - mcp.server.lowlevel.server - DEBUG - Initializing server 'Test Tools API'
+2025-06-04 12:35:56,997 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-04 12:35:56,997 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-04 12:35:56,997 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-04 12:35:56,997 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-04 12:35:56,997 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-04 12:35:56,997 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-04 12:35:56,997 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-04 12:35:57,000 - mcp.server.lowlevel.server - DEBUG - Initializing server 'Database Tools API'
+2025-06-04 12:35:57,000 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-04 12:35:57,000 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-04 12:35:57,000 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-04 12:35:57,000 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-04 12:35:57,000 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-04 12:35:57,000 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-04 12:35:57,000 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-04 12:35:57,003 - mcp.server.lowlevel.server - DEBUG - Initializing server 'eBay API'
+2025-06-04 12:35:57,003 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListToolsRequest
+2025-06-04 12:35:57,003 - mcp.server.lowlevel.server - DEBUG - Registering handler for CallToolRequest
+2025-06-04 12:35:57,003 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourcesRequest
+2025-06-04 12:35:57,003 - mcp.server.lowlevel.server - DEBUG - Registering handler for ReadResourceRequest
+2025-06-04 12:35:57,003 - mcp.server.lowlevel.server - DEBUG - Registering handler for PromptListRequest
+2025-06-04 12:35:57,003 - mcp.server.lowlevel.server - DEBUG - Registering handler for GetPromptRequest
+2025-06-04 12:35:57,003 - mcp.server.lowlevel.server - DEBUG - Registering handler for ListResourceTemplatesRequest
+2025-06-04 12:35:57,003 - __main__ - INFO - Mounting all sub-servers
+2025-06-04 12:35:57,003 - __main__ - INFO - Mounted auth MCP server
+2025-06-04 12:35:57,003 - __main__ - INFO - Mounted browse API MCP server
+2025-06-04 12:35:57,003 - __main__ - INFO - Mounted taxonomy API MCP server
+2025-06-04 12:35:57,003 - __main__ - INFO - Mounted inventory API MCP server
+2025-06-04 12:35:57,003 - __main__ - INFO - Mounted tests MCP server
+2025-06-04 12:35:57,003 - __main__ - INFO - Mounted database MCP server
+2025-06-04 12:35:57,003 - __main__ - INFO - All sub-servers mounted successfully
+2025-06-04 12:35:57,003 - __main__ - INFO - Starting FastMCP server with stdio transport...
+2025-06-04 12:35:57,003 - __main__ - INFO - Server is configured with dynamically mounted sub-servers
+2025-06-04 12:35:57,003 - FastMCP.fastmcp.server.server - INFO - Starting server "eBay API"...
+2025-06-04 12:35:57,007 - asyncio - DEBUG - Using selector: KqueueSelector
+2025-06-04 12:35:57,010 - mcp.server.lowlevel.server - DEBUG - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2025-06-04 12:35:57,011 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x105fdad50>
+2025-06-04 12:35:57,011 - mcp.server.lowlevel.server - INFO - Processing request of type CallToolRequest
+2025-06-04 12:35:57,011 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type CallToolRequest
+2025-06-04 12:35:57,011 - ebay_mcp.inventory.create_or_replace_inventory_item - INFO - Executing create_or_replace_inventory_item MCP tool with SKU='TEST-011'.
+2025-06-04 12:35:57,039 - ebay_service - INFO - Attempting to retrieve EBAY_USER_ACCESS_TOKEN from .env via ebay_auth module.
+2025-06-04 12:35:57,040 - ebay_service - INFO - Successfully retrieved EBAY_USER_ACCESS_TOKEN.
+2025-06-04 12:35:57,040 - ebay_service - DEBUG - get_ebay_access_token: EBAY_USER_ACCESS_TOKEN (first 10 chars): v^1.1#i^1#...
+2025-06-04 12:35:57,040 - utils.api_utils - INFO - create_or_replace_inventory_item: Attempting API call with current token: v^1.1#i^1#...
+2025-06-04 12:35:57,040 - utils.api_utils - DEBUG - create_or_replace_inventory_item: Executing API call with full token: v^1.1#i^1#I^3#f^0#r^0#p^3#t^H4sIAAAAAAAA/+VZbYwbRxk+310ShZDQBkRCFMB1GhVxWnv207ur2MF33su5sc+O15fLnUSt2d1Ze+/Wu9bu7J0Nfy4nUSoq0apFSO0POAW1CqmChGiVINQWRUDVSKgNID5aNQh+RKQoFYKGlLZR2PV95HKUJMRXWAn/sWbmnZn3ed6PeXcGzG3c/PkHRx68sjWyqXdhDsz1RiLkFrB544aBbX29uzb0gFUCkYW5e+f65/v+tM+FDbMplpHbtC0XRVsN03LFTmcq5jmWaEPXcEULNpArYlWUM4W8SMWB2HRsbKu2GYvmsqmYoDBQgSxS1CRL6Qzwe63lNSu2P04xnJ5UaY4CGsMJij/uuh7KWS6GFk7FKECxBOAIwFQAJ1KCSHJxjhYmY9HDyHEN2/JF4iCW7qgrduY6q3S9uarQdZGD/UVi6VxmWC5mcllptLIvsWqt9BIPMobYc29sDdkaih6Gpoduvo3bkRZlT1WR68YS6cUdblxUzCwrcwfqd6hWkirLKYLGsRRPMsy6MDlsOw2Ib65G0GNohN4RFZGFDdy+FaE+GcoUUvFSa9RfIpeNBn+HPGgauoGcVEwazEyMyVI5FpVLJceeMTSkBUBJhqJYnqY4NpbGDoKar79p63hpn8XFlkhes9GQbWlGQJkbHbXxIPKVRmupIVdR4wsVraKT0XGg0Go5foVCMBmYdNGGHq5bgVVRw+ch2mne2gDLDnHdBdbLJUgaIFbldEpjga4r8AN8Ioj1/9gv0oFpMqVSItAFKbBNNKAzjXDThCoiVJ9er4EcQxNpVqdoXkeExgk6wQi6TiisxhGkjhBASFFUgf8/cg+MHUPxMFpxkbUDHYypmKzaTVSyTUNtx9aKdBLOkkO03FSsjnFTTCRmZ2fjs3TcdmoJCgAycaSQl9U6avg2X5Y1bi1MGB3XUJE/yzVE3G762rR8z/M3t2qxNO1oJejgtoxM0+9Y9tsbdEuv7f03IIdMw2eg4m8RLowjtouR1hU0Dc0YKqoaWriQBbHuxwYQqCSbZPypXYE07ZphFRCu2yGDGSSFXLYrbH4OhThcqFayC12h6KUsxAoCAZIiAF2BhTUHdbLRYj0SLtiZoSGpVJG6M2em2cw1Gh6GiolyIfNWJsklaWZ9DCgtFV++WBDrocEYHNXVoWKhIJWHpOrYwWq+0p1Bm54XtuQq1OlWli3WZaHdFbSgnBINqIvYnkZW+I7HsjRcluSRaqV4UBrtCmkZ6Q5y65UAZ9iiMnMoczDj/wp5emqoNp7w1NoUGuXLreEWOztSK5cNvTigDVp4pt6SR5pKdkCakvn6EXxYKeYYTm05k2P5Nlm3ZlOprkiSkeqgWxxFQaz/twnilKTAU0OGdwDkzPL0IUcYdwfrAGSlVolncSJv5cYHxkgBjUvdEVCohS3S16+EqoQzxJ3FwKx2MlDVb3UFUqqFLlfTpMaRZFIghSSAUCEhr2mkzvqfp7qu8lDoutj48PAGsX5HmEsIo4r/OUyMolkZmihDlMpZApGIZxHiISFAVdAg310p2QydqdfrWF6psYJmuCCWMhMFabQiU1VQDb59qpkDZUkqXL95uzPEbnAJES6kwXzXXwA2jXhQJ8VVu5GwoYfrQVe1o3H0doQSLjLNuGHN+Aa1nfbtzfH7GshRUdzQFm8548Htkm2Z3XmWZjcM1TA/gOog1v+XdB8Y7O4jGmmGg1Rc9RwjXH4U5MJqkAw1OAvbxJrUSLTUaXOqu2zhe04Yr0aGc9litZSR5YPShNwVwiyaCVvNztMMS6uCSigsYAmGJzkCAoEjeJJkeJbRaQjYrjB/mHdC/UeP3RFoMskIgORZ9rahrelYdRf9L68QiRsfAdM9nR85HzkD5iMv9EYiYB/YS+4B92zsG+vv++gu18B+doR63DVqFsSeg+LTqN2EhtP78Z5XtuW1oyP5y3OKd2r87f18z9ZVb5ALXwQ7V14hN/eRW1Y9SYLd10c2kB/bsdWvvznAAI4SSG4S7Lk+2k9+sv8TDzT+/sNK+Sf3D+4/fvW3vPscbn/rYbB1RSgS2dDTPx/pkf780MWnf//2s8LP3ldR6pe/ueaefGN+7+tff+AH2WsDv3rhPuPV5z813kNcEs9eqBdfHul5gj29XX8ou+krF9mrX7j03bMz3/7L5LXT7vG7Xn9SuNyY3MR95IRy/kdXTp24OFb92vv74bnmz/+YPMG/M9Cv4N0vHvjyyR27P7PNe+q5H4/k9568ct9Tu/TyQPrky1te/dzO3nfObk/8YfK9x2N//cU3pt88fuGzx/uOnHlX/Mdj4PmFowOXHr1r209fObeg/O6rj/xt+6Pvfuexb9Knj10ov3Z+R4N9/Il70YtvPTPKvHX/xXnr3Evv7ZnJf3/ize/d8/Ddx67SZ542dp4aPyIuHOVm3zj/pZc+3Xit79eXn30ETzy5aMt/ArKzGj8dHgAA
+2025-06-04 12:35:57,040 - ebay_mcp.inventory.create_or_replace_inventory_item - DEBUG - create_or_replace_inventory_item: Headers for API call: {'Authorization': 'Bearer v^1.1#i^1#I^3#f^0#r^...<truncated>', 'Content-Type': 'application/json', 'X-EBAY-C-MARKETPLACE-ID': 'EBAY_GB', 'Accept-Language': 'en-GB'}
+2025-06-04 12:35:57,040 - ebay_mcp.inventory.create_or_replace_inventory_item - DEBUG - create_or_replace_inventory_item: Request URL: https://api.ebay.com/sell/inventory/v1/inventory_item/TEST-011
+2025-06-04 12:35:57,040 - ebay_mcp.inventory.create_or_replace_inventory_item - DEBUG - create_or_replace_inventory_item: Request body: {'availability': {'shipToLocationAvailability': {'quantity': 1}}, 'condition': 'USED_EXCELLENT', 'product': {'title': 'My new test product', 'description': 'A lovely test product which is awesome'}}
+2025-06-04 12:35:57,041 - httpcore.connection - DEBUG - connect_tcp.started host='api.ebay.com' port=443 local_address=None timeout=5.0 socket_options=None
+2025-06-04 12:35:57,080 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x10619da90>
+2025-06-04 12:35:57,080 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x106198440> server_hostname='api.ebay.com' timeout=5.0
+2025-06-04 12:35:57,102 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x106109450>
+2025-06-04 12:35:57,103 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'PUT']>
+2025-06-04 12:35:57,103 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-06-04 12:35:57,103 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'PUT']>
+2025-06-04 12:35:57,103 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-06-04 12:35:57,103 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'PUT']>
+2025-06-04 12:35:57,319 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 401, b'Unauthorized', [(b'Connection', b'keep-alive'), (b'Content-Length', b'254'), (b'rlogid', b't6pitnmsgwj70dlkr%3D9vjujkpfsl41%60jhs.f007f%3Fdg2%2Bugo1l-1973ab9fe3d-0x2eb0'), (b'content-type', b'application/json'), (b'server', b'ebay-proxy-server'), (b'x-ebay-pop-id', b'UFES2-LVSAZ04-api'), (b'x-envoy-upstream-service-time', b'26'), (b'Accept-Ranges', b'bytes'), (b'Date', b'Wed, 04 Jun 2025 11:35:57 GMT'), (b'Via', b'1.1 varnish'), (b'X-Served-By', b'cache-lcy-eglc8600073-LCY, cache-lcy-eglc8600073-LCY'), (b'X-Cache', b'MISS, MISS'), (b'X-Cache-Hits', b'0, 0'), (b'X-Timer', b'S1749036957.147323,VS0,VE194'), (b'x-CDN', b'Fastly'), (b'Strict-Transport-Security', b'max-age=31557600')])
+2025-06-04 12:35:57,321 - httpx - INFO - HTTP Request: PUT https://api.ebay.com/sell/inventory/v1/inventory_item/TEST-011 "HTTP/1.1 401 Unauthorized"
+2025-06-04 12:35:57,321 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'PUT']>
+2025-06-04 12:35:57,321 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-06-04 12:35:57,322 - httpcore.http11 - DEBUG - response_closed.started
+2025-06-04 12:35:57,322 - httpcore.http11 - DEBUG - response_closed.complete
+2025-06-04 12:35:57,322 - ebay_mcp.inventory.create_or_replace_inventory_item - DEBUG - create_or_replace_inventory_item: Response status: 401
+2025-06-04 12:35:57,322 - ebay_mcp.inventory.create_or_replace_inventory_item - DEBUG - create_or_replace_inventory_item: Response headers: {'connection': 'keep-alive', 'content-length': '254', 'rlogid': 't6pitnmsgwj70dlkr%3D9vjujkpfsl41%60jhs.f007f%3Fdg2%2Bugo1l-1973ab9fe3d-0x2eb0', 'content-type': 'application/json', 'server': 'ebay-proxy-server', 'x-ebay-pop-id': 'UFES2-LVSAZ04-api', 'x-envoy-upstream-service-time': '26', 'accept-ranges': 'bytes', 'date': 'Wed, 04 Jun 2025 11:35:57 GMT', 'via': '1.1 varnish', 'x-served-by': 'cache-lcy-eglc8600073-LCY, cache-lcy-eglc8600073-LCY', 'x-cache': 'MISS, MISS', 'x-cache-hits': '0, 0', 'x-timer': 'S1749036957.147323,VS0,VE194', 'x-cdn': 'Fastly', 'strict-transport-security': 'max-age=31557600'}
+2025-06-04 12:35:57,322 - utils.api_utils - DEBUG - create_or_replace_inventory_item: Exception in API call: Client error '401 Unauthorized' for url 'https://api.ebay.com/sell/inventory/v1/inventory_item/TEST-011'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-06-04 12:35:57,322 - utils.api_utils - DEBUG - create_or_replace_inventory_item Request: {
+  "method": "PUT",
+  "url": "https://api.ebay.com/sell/inventory/v1/inventory_item/TEST-011",
+  "headers": {
+    "host": "api.ebay.com",
+    "accept": "*/*",
+    "accept-encoding": "gzip, deflate",
+    "connection": "keep-alive",
+    "user-agent": "python-httpx/0.28.1",
+    "authorization": "Bearer v^1.1#i^1#I^3#f^0#r^0#p^3#t^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",
+    "content-type": "application/json",
+    "x-ebay-c-marketplace-id": "EBAY_GB",
+    "accept-language": "en-GB",
+    "content-length": "188"
+  },
+  "content": "{\"availability\":{\"shipToLocationAvailability\":{\"quantity\":1}},\"condition\":\"USED_EXCELLENT\",\"product\":{\"title\":\"My new test product\",\"description\":\"A lovely test product which is awesome\"}}"
+}
+2025-06-04 12:35:57,323 - utils.api_utils - DEBUG - create_or_replace_inventory_item Response: {
+  "status_code": 401,
+  "headers": {
+    "connection": "keep-alive",
+    "content-length": "254",
+    "rlogid": "t6pitnmsgwj70dlkr%3D9vjujkpfsl41%60jhs.f007f%3Fdg2%2Bugo1l-1973ab9fe3d-0x2eb0",
+    "content-type": "application/json",
+    "server": "ebay-proxy-server",
+    "x-ebay-pop-id": "UFES2-LVSAZ04-api",
+    "x-envoy-upstream-service-time": "26",
+    "accept-ranges": "bytes",
+    "date": "Wed, 04 Jun 2025 11:35:57 GMT",
+    "via": "1.1 varnish",
+    "x-served-by": "cache-lcy-eglc8600073-LCY, cache-lcy-eglc8600073-LCY",
+    "x-cache": "MISS, MISS",
+    "x-cache-hits": "0, 0",
+    "x-timer": "S1749036957.147323,VS0,VE194",
+    "x-cdn": "Fastly",
+    "strict-transport-security": "max-age=31557600"
+  },
+  "content": "{\n  \"errors\": [\n    {\n      \"errorId\": 1001,\n      \"domain\": \"OAuth\",\n      \"category\": \"REQUEST\",\n      \"message\": \"Invalid access token\",\n      \"longMessage\": \"Invalid access token. Check the value of the Authorization HTTP request header.\"\n    }\n  ]\n}"
+}
+2025-06-04 12:35:57,323 - utils.api_utils - DEBUG - create_or_replace_inventory_item Request: {
+  "method": "PUT",
+  "url": "https://api.ebay.com/sell/inventory/v1/inventory_item/TEST-011",
+  "headers": {
+    "host": "api.ebay.com",
+    "accept": "*/*",
+    "accept-encoding": "gzip, deflate",
+    "connection": "keep-alive",
+    "user-agent": "python-httpx/0.28.1",
+    "authorization": "Bearer v^1.1#i^1#I^3#f^0#r^0#p^3#t^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",
+    "content-type": "application/json",
+    "x-ebay-c-marketplace-id": "EBAY_GB",
+    "accept-language": "en-GB",
+    "content-length": "188"
+  },
+  "content": "{\"availability\":{\"shipToLocationAvailability\":{\"quantity\":1}},\"condition\":\"USED_EXCELLENT\",\"product\":{\"title\":\"My new test product\",\"description\":\"A lovely test product which is awesome\"}}"
+}
+2025-06-04 12:35:57,324 - utils.api_utils - DEBUG - create_or_replace_inventory_item Response: {
+  "status_code": 401,
+  "headers": {
+    "connection": "keep-alive",
+    "content-length": "254",
+    "rlogid": "t6pitnmsgwj70dlkr%3D9vjujkpfsl41%60jhs.f007f%3Fdg2%2Bugo1l-1973ab9fe3d-0x2eb0",
+    "content-type": "application/json",
+    "server": "ebay-proxy-server",
+    "x-ebay-pop-id": "UFES2-LVSAZ04-api",
+    "x-envoy-upstream-service-time": "26",
+    "accept-ranges": "bytes",
+    "date": "Wed, 04 Jun 2025 11:35:57 GMT",
+    "via": "1.1 varnish",
+    "x-served-by": "cache-lcy-eglc8600073-LCY, cache-lcy-eglc8600073-LCY",
+    "x-cache": "MISS, MISS",
+    "x-cache-hits": "0, 0",
+    "x-timer": "S1749036957.147323,VS0,VE194",
+    "x-cdn": "Fastly",
+    "strict-transport-security": "max-age=31557600"
+  },
+  "content": "{\n  \"errors\": [\n    {\n      \"errorId\": 1001,\n      \"domain\": \"OAuth\",\n      \"category\": \"REQUEST\",\n      \"message\": \"Invalid access token\",\n      \"longMessage\": \"Invalid access token. Check the value of the Authorization HTTP request header.\"\n    }\n  ]\n}"
+}
+2025-06-04 12:35:57,324 - utils.api_utils - DEBUG - create_or_replace_inventory_item Error: HTTP Status Error: Client error '401 Unauthorized' for url 'https://api.ebay.com/sell/inventory/v1/inventory_item/TEST-011'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-06-04 12:35:57,324 - utils.api_utils - WARNING - create_or_replace_inventory_item: API call failed with 401 (Unauthorized). Token v^1.1#i^1#... may be expired. Attempting refresh.
+2025-06-04 12:35:57,324 - root - INFO - Attempting to refresh eBay access token...
+2025-06-04 12:35:57,324 - root - INFO - Requesting new access token from https://api.ebay.com/identity/v1/oauth2/token using refresh token: v^1.1#i^1#...
+2025-06-04 12:35:57,329 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.ebay.com:443
+2025-06-04 12:35:57,697 - urllib3.connectionpool - DEBUG - https://api.ebay.com:443 "POST /identity/v1/oauth2/token HTTP/1.1" 200 2550
+2025-06-04 12:35:57,698 - root - INFO - Successfully refreshed access token: v^1.1#i^1#...
+2025-06-04 12:35:57,698 - root - INFO - Refresh token was not re-issued during this refresh cycle.
+2025-06-04 12:35:57,700 - root - INFO - set_key reported SUCCESS for EBAY_USER_ACCESS_TOKEN. Value (truncated): v^1.1#i^1#p^3#f...
+2025-06-04 12:35:57,703 - utils.api_utils - INFO - create_or_replace_inventory_item: Token refresh process completed. New token value: v^1.1#i^1#... Attempting to retrieve and retry API call.
+2025-06-04 12:35:57,703 - ebay_service - INFO - Attempting to retrieve EBAY_USER_ACCESS_TOKEN from .env via ebay_auth module.
+2025-06-04 12:35:57,704 - ebay_service - INFO - Successfully retrieved EBAY_USER_ACCESS_TOKEN.
+2025-06-04 12:35:57,704 - ebay_service - DEBUG - get_ebay_access_token: EBAY_USER_ACCESS_TOKEN (first 10 chars): v^1.1#i^1#...
+2025-06-04 12:35:57,704 - utils.api_utils - INFO - create_or_replace_inventory_item: Retrying API call with refreshed token: v^1.1#i^1#...
+2025-06-04 12:35:57,704 - ebay_mcp.inventory.create_or_replace_inventory_item - DEBUG - create_or_replace_inventory_item: Headers for API call: {'Authorization': 'Bearer v^1.1#i^1#p^3#f^0#r^...<truncated>', 'Content-Type': 'application/json', 'X-EBAY-C-MARKETPLACE-ID': 'EBAY_GB', 'Accept-Language': 'en-GB'}
+2025-06-04 12:35:57,704 - ebay_mcp.inventory.create_or_replace_inventory_item - DEBUG - create_or_replace_inventory_item: Request URL: https://api.ebay.com/sell/inventory/v1/inventory_item/TEST-011
+2025-06-04 12:35:57,704 - ebay_mcp.inventory.create_or_replace_inventory_item - DEBUG - create_or_replace_inventory_item: Request body: {'availability': {'shipToLocationAvailability': {'quantity': 1}}, 'condition': 'USED_EXCELLENT', 'product': {'title': 'My new test product', 'description': 'A lovely test product which is awesome'}}
+2025-06-04 12:35:57,705 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'PUT']>
+2025-06-04 12:35:57,705 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-06-04 12:35:57,705 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'PUT']>
+2025-06-04 12:35:57,706 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-06-04 12:35:57,706 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'PUT']>
+2025-06-04 12:35:57,935 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 400, b'Bad Request', [(b'Connection', b'keep-alive'), (b'Content-Length', b'153'), (b'rlogid', b't6pitnmsgwj70dlkr%3D9vjujkpfsl41%60jhs.f007f%3Fdg2%2B%7Drou1-1973aba008e-0x3374'), (b'content-type', b'application/json'), (b'server', b'ebay-proxy-server'), (b'x-ebay-pop-id', b'UFES2-LVSAZ04-api'), (b'x-envoy-upstream-service-time', b'50'), (b'Accept-Ranges', b'bytes'), (b'Date', b'Wed, 04 Jun 2025 11:35:57 GMT'), (b'Via', b'1.1 varnish'), (b'X-Served-By', b'cache-lcy-eglc8600073-LCY, cache-lcy-eglc8600073-LCY'), (b'X-Cache', b'MISS, MISS'), (b'X-Cache-Hits', b'0, 0'), (b'X-Timer', b'S1749036958.746788,VS0,VE214'), (b'x-CDN', b'Fastly'), (b'Strict-Transport-Security', b'max-age=31557600')])
+2025-06-04 12:35:57,936 - httpx - INFO - HTTP Request: PUT https://api.ebay.com/sell/inventory/v1/inventory_item/TEST-011 "HTTP/1.1 400 Bad Request"
+2025-06-04 12:35:57,936 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'PUT']>
+2025-06-04 12:35:57,936 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-06-04 12:35:57,936 - httpcore.http11 - DEBUG - response_closed.started
+2025-06-04 12:35:57,936 - httpcore.http11 - DEBUG - response_closed.complete
+2025-06-04 12:35:57,936 - ebay_mcp.inventory.create_or_replace_inventory_item - DEBUG - create_or_replace_inventory_item: Response status: 400
+2025-06-04 12:35:57,936 - ebay_mcp.inventory.create_or_replace_inventory_item - DEBUG - create_or_replace_inventory_item: Response headers: {'connection': 'keep-alive', 'content-length': '153', 'rlogid': 't6pitnmsgwj70dlkr%3D9vjujkpfsl41%60jhs.f007f%3Fdg2%2B%7Drou1-1973aba008e-0x3374', 'content-type': 'application/json', 'server': 'ebay-proxy-server', 'x-ebay-pop-id': 'UFES2-LVSAZ04-api', 'x-envoy-upstream-service-time': '50', 'accept-ranges': 'bytes', 'date': 'Wed, 04 Jun 2025 11:35:57 GMT', 'via': '1.1 varnish', 'x-served-by': 'cache-lcy-eglc8600073-LCY, cache-lcy-eglc8600073-LCY', 'x-cache': 'MISS, MISS', 'x-cache-hits': '0, 0', 'x-timer': 'S1749036958.746788,VS0,VE214', 'x-cdn': 'Fastly', 'strict-transport-security': 'max-age=31557600'}
+2025-06-04 12:35:57,936 - utils.api_utils - ERROR - create_or_replace_inventory_item: API call failed again after token refresh with status 400: {"errors":[{"errorId":25709,"domain":"API_INVENTORY","subdomain":"Selling","category":"Request","message":"Invalid value for header Content-Language."}]}
+2025-06-04 12:35:57,936 - httpcore.connection - DEBUG - close.started
+2025-06-04 12:35:57,936 - httpcore.connection - DEBUG - close.complete
+2025-06-04 12:35:57,937 - mcp.server.lowlevel.server - DEBUG - Response sent
