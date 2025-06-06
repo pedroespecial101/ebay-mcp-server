@@ -19,7 +19,7 @@ from models.ebay.taxonomy import ItemAspectsRequest, Aspect, ItemAspectsResponse
 from models.mcp_tools import CategorySuggestionsParams, ItemAspectsParams
 
 # Import the common helper function for eBay API calls
-from utils.api_utils import execute_ebay_api_call, is_token_error
+from utils.api_utils import execute_ebay_api_call, get_standard_ebay_headers
 from utils.debug_httpx import create_debug_client
 
 # Load environment variables
@@ -44,10 +44,8 @@ async def get_category_suggestions(query: str) -> str:
         params = CategorySuggestionsParams(query=query)
         
         async def _api_call(access_token: str, client: httpx.AsyncClient):
-            headers = {
-                "Authorization": f"Bearer {access_token}",
-                "Content-Type": "application/json",
-            }
+            # Use standardized eBay API headers
+            headers = get_standard_ebay_headers(access_token)
             api_params = {"q": params.query}
             url = "https://api.ebay.com/commerce/taxonomy/v1/category_tree/3/get_category_suggestions"
             logger.debug(f"get_category_suggestions: Requesting URL: {url} with params: {api_params} using token {access_token[:10]}...")
@@ -104,10 +102,8 @@ async def get_item_aspects_for_category(category_id: str) -> str:
         params = ItemAspectsParams(category_id=category_id)
         
         async def _api_call(access_token: str, client: httpx.AsyncClient):
-            headers = {
-                "Authorization": f"Bearer {access_token}",
-                "Content-Type": "application/json",
-            }
+            # Use standardized eBay API headers
+            headers = get_standard_ebay_headers(access_token)
             url = f"https://api.ebay.com/commerce/taxonomy/v1/category_tree/3/get_item_aspects_for_category"
             logger.debug(f"get_item_aspects_for_category: Requesting URL: {url} with category_id: {params.category_id} using token {access_token[:10]}...")
             

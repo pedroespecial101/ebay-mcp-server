@@ -17,7 +17,7 @@ from models.ebay.inventory import WithdrawOfferRequest
 from models.mcp_tools import WithdrawOfferParams
 
 # Import the common helper function for eBay API calls
-from utils.api_utils import execute_ebay_api_call, is_token_error
+from utils.api_utils import execute_ebay_api_call, get_standard_ebay_headers
 
 # Get logger
 logger = logging.getLogger(__name__)
@@ -38,11 +38,8 @@ async def withdraw_offer_tool(inventory_mcp):
             params = WithdrawOfferParams(offer_id=offer_id)
             
             async def _api_call(access_token: str, client: httpx.AsyncClient):
-                headers = {
-                    "Authorization": f"Bearer {access_token}",
-                    "Content-Type": "application/json",
-                    "X-EBAY-C-MARKETPLACE-ID": "EBAY_GB",  # Default to UK
-                }
+                # Use standardized eBay API headers
+                headers = get_standard_ebay_headers(access_token)
                 
                 url = f"https://api.ebay.com/sell/inventory/v1/offer/{params.offer_id}/withdraw"
                 logger.debug(f"withdraw_offer: Making API call to {url} using token {access_token[:10]}...")

@@ -74,9 +74,46 @@ def log_request_response_debug(request=None, response=None, error=None, prefix='
     if error:
         logger.debug(f"{prefix} Error: {error}")
 
+def get_standard_ebay_headers(access_token: str, additional_headers: dict = None) -> dict:
+    """
+    Get standardized eBay API headers that should be used for ALL eBay API requests.
+
+    DEFINITIVE EBAY API HEADER STANDARDS:
+    - Content-Language: en-GB (hyphen format, required for ALL requests)
+    - Accept-Language: en-GB (hyphen format, required for ALL requests)
+    - Authorization: Bearer token (always required)
+    - Content-Type: application/json (for most requests)
+
+    IMPORTANT: MarketplaceID should NEVER be in headers - use request body/parameters instead
+
+    Args:
+        access_token: eBay access token
+        additional_headers: Optional additional headers to merge (will override defaults)
+
+    Returns:
+        Dictionary of standardized headers
+    """
+    standard_headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json",
+        "Content-Language": "en-GB",  # Required for ALL eBay API requests (hyphen format)
+        "Accept-Language": "en-GB",   # Required for ALL eBay API requests (hyphen format)
+    }
+
+    if additional_headers:
+        standard_headers.update(additional_headers)
+
+    return standard_headers
+
 async def execute_ebay_api_call(tool_name: str, client: httpx.AsyncClient, api_call_logic: callable):
     """
     Executes an eBay API call with token acquisition, 401 error handling, token refresh, and retry.
+
+    AUTOMATICALLY APPLIES STANDARD EBAY API HEADERS:
+    - Content-Language: en-GB
+    - Accept-Language: en-GB
+    - Authorization: Bearer token
+    - Content-Type: application/json
 
     Args:
         tool_name: Name of the MCP tool making the call (for logging).

@@ -17,7 +17,7 @@ from models.ebay.inventory import InventoryItemsListResponse
 from models.mcp_tools import GetInventoryItemsParams
 
 # Import the common helper function for eBay API calls
-from utils.api_utils import execute_ebay_api_call, is_token_error
+from utils.api_utils import execute_ebay_api_call, get_standard_ebay_headers, is_token_error
 from utils.debug_httpx import create_debug_client
 
 # Get logger
@@ -40,12 +40,8 @@ async def get_inventory_items_tool(inventory_mcp):
             params = GetInventoryItemsParams(limit=limit, offset=offset)
             
             async def _api_call(access_token: str, client: httpx.AsyncClient):
-                headers = {
-                    "Authorization": f"Bearer {access_token}",
-                    "Content-Type": "application/json",
-                    "X-EBAY-C-MARKETPLACE-ID": "EBAY_GB",
-                    "Accept-Language": "en-GB",
-                }
+                # Use standardized eBay API headers
+                headers = get_standard_ebay_headers(access_token)
                 
                 base_url = "https://api.ebay.com/sell/inventory/v1/inventory_item"
                 

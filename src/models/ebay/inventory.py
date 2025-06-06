@@ -42,22 +42,129 @@ class OfferResponse(EbayResponse[OfferDetails]):
 
 
 class UpdateOfferRequest(EbayBaseModel):
-    """Model for updating an offer."""
-    
+    """
+    Model for updating an offer via eBay Inventory API updateOffer endpoint.
+
+    ⚠️  CRITICAL: This is a COMPLETE REPLACEMENT operation! ⚠️
+
+    The updateOffer API performs a full replacement of the existing offer object.
+    ALL current offer data will be overwritten. Any fields not included will be
+    cleared/reset to defaults.
+
+    Based on EbayOfferDetailsWithId schema from eBay Sell Inventory v1 API.
+    """
+
+    # Core identification (these are typically preserved from current offer)
     offer_id: str = Field(..., description="The unique identifier of the offer to update.")
-    sku: str = Field(..., description="The seller-defined SKU of the offer.")
-    marketplace_id: str = Field("EBAY_GB", description="The eBay marketplace ID.")
-    format: str = Field("FIXED_PRICE", description="The listing format.")
-    available_quantity: Optional[int] = Field(None, description="The quantity available for the offer.")
-    category_id: Optional[str] = Field(None, description="The primary category ID for the offer.")
-    listing_policies: Optional[Dict[str, Any]] = Field(None, description="The listing policies for the offer.")
-    merchant_location_key: Optional[str] = Field(None, description="The merchant location key.")
-    pricing_summary: Optional[Dict[str, Any]] = Field(None, description="Pricing information for the offer.")
-    inventory_location: Optional[str] = Field(None, description="The inventory location.")
-    listing_description: Optional[str] = Field(None, description="The description of the listing.")
-    listing_status: Optional[str] = Field(None, description="The status of the listing.")
-    tax: Optional[Dict[str, Any]] = Field(None, description="Tax information for the offer.")
-    listing_id: Optional[str] = Field(None, description="The eBay listing ID if published.")
+    sku: Optional[str] = Field(None, max_length=50, description="The seller-defined SKU. Max length: 50.")
+    marketplace_id: Optional[str] = Field(None, description="The eBay marketplace ID (e.g., EBAY_US, EBAY_GB).")
+    format: Optional[str] = Field(None, description="The listing format (FIXED_PRICE or AUCTION).")
+
+    # Inventory and availability
+    available_quantity: Optional[int] = Field(
+        None,
+        ge=0,
+        description="Quantity available for purchase. Must be 1+ for purchasable items, exactly 1 for auctions."
+    )
+
+    # Pricing (required for published offers)
+    pricing_summary: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Pricing container with price, MAP, and strikethrough pricing. Required for published offers."
+    )
+
+    # Categories
+    category_id: Optional[str] = Field(
+        None,
+        description="Primary eBay category ID. Required before publishing an offer."
+    )
+
+    secondary_category_id: Optional[str] = Field(
+        None,
+        description="Secondary category ID for dual-category listings. Fees may apply."
+    )
+
+    # Listing content
+    listing_description: Optional[str] = Field(
+        None,
+        max_length=500000,
+        description="Listing description. Required for published offers. Supports HTML. Max: 500,000 chars."
+    )
+
+    listing_duration: Optional[str] = Field(
+        None,
+        description="Listing duration. 'GTC' for fixed-price, various options for auctions. Required before publishing."
+    )
+
+    listing_start_date: Optional[str] = Field(
+        None,
+        description="Scheduled start time in UTC format (YYYY-MM-DDTHH:MM:SSZ). Optional."
+    )
+
+    # Location and fulfillment
+    merchant_location_key: Optional[str] = Field(
+        None,
+        max_length=36,
+        description="Merchant inventory location identifier. Required before publishing. Max: 36 chars."
+    )
+
+    # Business policies (required for published offers)
+    listing_policies: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Business policies container (payment, return, fulfillment). Required for published offers."
+    )
+
+    # Store integration
+    store_category_names: Optional[List[str]] = Field(
+        None,
+        max_items=2,
+        description="eBay store category paths. Max 2 categories. Format: ['/Category/Subcategory']."
+    )
+
+    # Purchase restrictions and special features
+    quantity_limit_per_buyer: Optional[int] = Field(
+        None,
+        ge=1,
+        description="Maximum quantity per buyer across all transactions. Must be 1+."
+    )
+
+    lot_size: Optional[int] = Field(
+        None,
+        ge=1,
+        description="Number of items in lot listing. For multi-item lots only."
+    )
+
+    hide_buyer_details: Optional[bool] = Field(
+        None,
+        description="True for private listings (obfuscated buyer IDs)."
+    )
+
+    include_catalog_product_details: Optional[bool] = Field(
+        None,
+        description="Apply eBay catalog product details. Defaults to true if omitted."
+    )
+
+    # Charitable and compliance features
+    charity: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Charitable organization container with charityId and donationPercentage."
+    )
+
+    extended_producer_responsibility: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Eco-participation fee container. Required in some markets (e.g., France)."
+    )
+
+    regulatory: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Regulatory information and compliance documents container."
+    )
+
+    # Tax settings
+    tax: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Tax configuration container (sales tax, VAT, exceptions)."
+    )
 
 
 class WithdrawOfferRequest(EbayBaseModel):

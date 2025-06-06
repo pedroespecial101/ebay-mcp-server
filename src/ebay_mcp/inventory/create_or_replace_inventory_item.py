@@ -18,7 +18,7 @@ from models.ebay.inventory import CreateOrReplaceInventoryItemRequest, CreateOrR
 from models.mcp_tools import CreateOrReplaceInventoryItemParams
 
 # Import the common helper function for eBay API calls
-from utils.api_utils import execute_ebay_api_call, is_token_error
+from utils.api_utils import execute_ebay_api_call, get_standard_ebay_headers, is_token_error
 from utils.debug_httpx import create_debug_client
 
 # Get logger
@@ -128,12 +128,8 @@ async def create_or_replace_inventory_item_tool(inventory_mcp):
             request_data = CreateOrReplaceInventoryItemRequest.from_params(params)
             
             async def _api_call(access_token: str, client: httpx.AsyncClient):
-                headers = {
-                    "Authorization": f"Bearer {access_token}",
-                    "Content-Type": "application/json",
-                    "X-EBAY-C-MARKETPLACE-ID": "EBAY_GB",
-                    "Content-Language": "en-US",
-                }
+                # Use standardized eBay API headers
+                headers = get_standard_ebay_headers(access_token)
                 
                 # Build the API URL with SKU as path parameter
                 base_url = "https://api.ebay.com/sell/inventory/v1/inventory_item"

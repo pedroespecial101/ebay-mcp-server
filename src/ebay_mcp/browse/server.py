@@ -19,7 +19,7 @@ from models.mcp_tools import SearchEbayItemsParams
 
 # Import the common helper function for eBay API calls
 from ebay_service import get_ebay_access_token
-from utils.api_utils import execute_ebay_api_call, is_token_error
+from utils.api_utils import execute_ebay_api_call, get_standard_ebay_headers
 from utils.debug_httpx import create_debug_client
 
 # Load environment variables
@@ -44,10 +44,8 @@ async def search_ebay_items(query: str, limit: int = 10) -> str:
         params = SearchEbayItemsParams(query=query, limit=limit)
         
         async def _api_call(access_token: str, client: httpx.AsyncClient):
-            headers = {
-                "Authorization": f"Bearer {access_token}",
-                "Content-Type": "application/json",
-            }
+            # Use standardized eBay API headers
+            headers = get_standard_ebay_headers(access_token)
             api_params = {"q": params.query, "limit": params.limit}
             url = "https://api.ebay.com/buy/browse/v1/item_summary/search"
             logger.debug(f"search_ebay_items: Requesting URL: {url} with params: {api_params} using token {access_token[:10]}...")

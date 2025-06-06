@@ -406,3 +406,19 @@ ValueError: "UpdateOfferRequest" object has no field "price"
 2025-06-05 06:26:24,979 - httpcore.connection - DEBUG - close.started
 2025-06-05 06:26:24,979 - httpcore.connection - DEBUG - close.complete
 2025-06-05 06:26:24,979 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-05 06:36:18,960 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x12438a3c0>
+2025-06-05 06:36:18,963 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-05 06:36:18,963 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-05 06:36:18,964 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-05 06:36:19,023 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x12438a330>
+2025-06-05 06:36:19,023 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-05 06:36:19,023 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-05 06:36:19,023 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-05 06:46:18,966 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x1242b4a70>
+2025-06-05 06:46:18,968 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-06-05 06:46:18,971 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListResourcesRequest
+2025-06-05 06:46:18,972 - mcp.server.lowlevel.server - DEBUG - Response sent
+2025-06-05 06:46:19,019 - mcp.server.lowlevel.server - DEBUG - Received message: <mcp.shared.session.RequestResponder object at 0x123f5dfd0>
+2025-06-05 06:46:19,019 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-06-05 06:46:19,019 - mcp.server.lowlevel.server - DEBUG - Dispatching request of type ListPromptsRequest
+2025-06-05 06:46:19,020 - mcp.server.lowlevel.server - DEBUG - Response sent

@@ -17,7 +17,7 @@ from models.ebay.inventory import ListingFeeRequest, ListingFeeResponse
 from models.mcp_tools import ListingFeesParams
 
 # Import the common helper function for eBay API calls
-from utils.api_utils import execute_ebay_api_call, is_token_error
+from utils.api_utils import execute_ebay_api_call, get_standard_ebay_headers, is_token_error
 
 # Get logger
 logger = logging.getLogger(__name__)
@@ -38,11 +38,8 @@ async def listing_fees_tool(inventory_mcp):
             params = ListingFeesParams(offer_ids=offer_ids)
             
             async def _api_call(access_token: str, client: httpx.AsyncClient):
-                headers = {
-                    "Authorization": f"Bearer {access_token}",
-                    "Content-Type": "application/json",
-                    "X-EBAY-C-MARKETPLACE-ID": "EBAY_GB",  # Default to UK
-                }
+                # Use standardized eBay API headers
+                headers = get_standard_ebay_headers(access_token)
                 
                 url = "https://api.ebay.com/sell/inventory/v1/offer/get_listing_fees"
                 logger.debug(f"get_listing_fees: Making API call to {url} using token {access_token[:10]}...")
