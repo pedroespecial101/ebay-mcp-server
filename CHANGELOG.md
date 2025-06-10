@@ -1,3 +1,38 @@
+## Updates in Trajectory Linting update_offer_safe.py, (10062025 - 11:53:39)
+
+### Code Quality
+
+- **`src/ebay_mcp/inventory/update_offer_safe.py` Linting**: Applied various linting fixes to improve code style and readability. Changes include adding type hints, ensuring appropriate line lengths, and standardizing formatting for better maintainability.
+
+## Updates in Trajectory Fix update_offer_safe Validation and Enhance Offer Tools, (10062025 - 11:46:00)
+
+### Bug Fix & Enhancements
+
+- **`update_offer_safe.py` Fix**: Resolved a Pydantic validation issue with the `update_offer_safe` tool. The function signature's type hints were updated to use `Optional` (e.g., `Optional[str]`) for all parameters that default to `None`. This ensures that the MCP Inspector correctly generates an input schema allowing users to omit optional fields, relying on the tool's internal logic to fetch and preserve existing offer data. Previously, not providing all fields led to validation errors before the tool's logic could execute.
+
+## Updates in Trajectory Add Publish Offer, Clarify Get Offer, and External Tool Info, (10062025 - 11:38:08)
+
+### New Feature & Enhancements
+
+- **`get_offer.py` Enhancement**: Updated the docstring of the `get_offer` tool to explicitly state "Get Offer by OfferID" for clarity and to differentiate it from SKU-based lookups.
+- **New `publish_offer.py` Tool**: Added a new MCP tool `publish_offer` that allows an agent to publish a specific offer using its `offer_id`. This converts an unpublished offer into an active eBay listing. The tool was created based on the official eBay Sell Inventory API documentation for the `publishOffer` endpoint.
+  - Registered the new tool in `src/ebay_mcp/inventory/server.py`.
+
+### Tool Management Clarification
+
+- **External Tools (`tests_add`, `DB mockup`)**: Investigated the request to remove `tests_add` (`mcp1_tests_add`) and `DB mockup` (`mcp1_database_mock_db_query`) tools. These tools are provided by the external `ebay-api` MCP server and are not part of this project's codebase. Therefore, they cannot be removed by modifying project files. Their removal would require changes to the `ebay-api` MCP server itself.
+
+## Updates in Trajectory Refactor Offer Tools for Agent Control, (10062025 - 11:03:06)
+
+### Refactor: Separated Offer Update Tools for Granular AI Agent Control
+
+- **`update_offer` -> `update_offer_safe`**: Renamed the existing safe update tool to `update_offer_safe.py`. This tool continues to provide a safe "get-then-update" mechanism to prevent accidental data loss.
+- **New `update_offer` (Unsafe)**: Created a new, unsafe `update_offer.py` tool that directly performs a `PUT` (replace) operation on the eBay API. This provides direct, low-level control for an AI agent that can manage the update payload itself. The docstring contains a critical warning about its use.
+- **New `get_offer`**: Created a new `get_offer.py` tool to allow an agent to retrieve the full details of an existing offer. This is the first step in the recommended workflow for using the unsafe `update_offer` tool.
+- **Server Registration**: Updated `src/ebay_mcp/inventory/server.py` to register the new `get_offer`, `update_offer`, and `update_offer_safe` tools.
+
+This refactoring gives an advanced AI agent the flexibility to choose between a safe, abstracted update method or a direct, low-level one, enabling more sophisticated and efficient interactions with the eBay API.
+
 ## Updates in App MCP Server Comprehensive Route Mapping Fix (07062025 - 10:10:00)
 
 ### 🔧 MAJOR FIX: Complete Overhaul of Route Mapping for FastAPI Integration

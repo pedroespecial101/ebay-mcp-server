@@ -30,13 +30,16 @@ load_dotenv()
 DEBUG_MODE = os.getenv('MCP_LOG_LEVEL', 'NORMAL').upper() == 'DEBUG'
 
 # Import tool modules
+from ebay_mcp.inventory.get_offer import get_offer_tool
 from ebay_mcp.inventory.update_offer import update_offer_tool
+from ebay_mcp.inventory.update_offer_safe import update_offer_safe_tool
 from ebay_mcp.inventory.withdraw_offer import withdraw_offer_tool
 from ebay_mcp.inventory.listing_fees import listing_fees_tool
 from ebay_mcp.inventory.get_inventory_item_by_sku import get_inventory_item_by_sku_tool
 from ebay_mcp.inventory.get_inventory_items import get_inventory_items_tool
 from ebay_mcp.inventory.delete_inventory_item import delete_inventory_item_tool
 from ebay_mcp.inventory.create_or_replace_inventory_item import create_or_replace_inventory_item_tool
+from ebay_mcp.inventory.publish_offer import publish_offer_tool
 
 # Get logger
 logger = logging.getLogger(__name__)
@@ -46,13 +49,16 @@ inventory_mcp = FastMCP("eBay Inventory API")
 
 # Register tools from modules
 async def register_all_tools():
+    await get_offer_tool(inventory_mcp)
     await update_offer_tool(inventory_mcp)
+    await update_offer_safe_tool(inventory_mcp)
     await withdraw_offer_tool(inventory_mcp)
     await listing_fees_tool(inventory_mcp)
     await get_inventory_item_by_sku_tool(inventory_mcp)
     await get_inventory_items_tool(inventory_mcp)
     await delete_inventory_item_tool(inventory_mcp)
     await create_or_replace_inventory_item_tool(inventory_mcp)
+    await publish_offer_tool(inventory_mcp)
 
 # Run the async registration function
 loop = asyncio.get_event_loop()

@@ -2,7 +2,7 @@
 Models for MCP tool parameters and responses.
 """
 from typing import Any, Dict, List, Optional, Union
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 from .base import EbayBaseModel, EbayResponse
 
 
@@ -89,18 +89,31 @@ class UpdateOfferParams(EbayBaseModel):
     For published offers, certain fields become required and must be provided.
     """
 
-    # Required fields
-    offer_id: str = Field(
-        ...,
-        description="The unique identifier of the offer to update. This is required to identify which offer to modify."
+    # Offer identification: Provide EITHER offer_id OR sku.
+    offer_id: Optional[str] = Field(
+        None,
+        description="The unique identifier of the offer to update. Provide either this or SKU."
     )
 
-    # Core offer identification (conditionally required)
     sku: Optional[str] = Field(
         None,
         max_length=50,
-        description="The seller-defined SKU (Stock Keeping Unit) of the offer. Max length: 50 characters. Required if not already set in the offer."
+        description="The seller-defined SKU. Provide either this or Offer ID. Max length: 50 characters."
     )
+
+    @model_validator(mode='before')
+    @classmethod
+    def check_offer_id_or_sku_provided(cls, data: Any) -> Any:
+        """Ensure that exactly one of offer_id or sku is provided."""
+        if isinstance(data, dict):
+            offer_id = data.get('offer_id')
+            sku = data.get('sku')
+
+            if offer_id is not None and sku is not None:
+                raise ValueError("Provide exactly one of offer_id or sku, not both.")
+            if offer_id is None and sku is None:
+                raise ValueError("Either offer_id or sku must be provided to identify the offer.")
+        return data
 
     marketplace_id: Optional[str] = Field(
         None,
