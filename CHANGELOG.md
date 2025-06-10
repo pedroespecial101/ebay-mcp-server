@@ -1,3 +1,11 @@
+## Updates in TrajectoryID <Add AIO Offer MCP Tool, (e1251790-8399-4501-a19c-51306f4424d3)>, 10062025 - 19:10.11
+
+- **Added `manage_offer` MCP Tool**: Introduced a new tool in `src/ebay_mcp/inventory/manage_offer.py`.
+  - This tool consolidates eBay offer management operations (create, modify, withdraw, publish) into a single interface based on SKU.
+  - Uses Pydantic models for request/response validation (`ManageOfferParams`, `OfferDataForManage`, `ManageOfferToolResponse`).
+  - Follows existing project patterns for API calls, logging, and error handling.
+  - Integrated into the inventory MCP server.
+
 ## Updates in Comprehensive Update Offer Tool Enhancement (05062025 - 06:40:00)
 
 ### 🚨 MAJOR ENHANCEMENT: Complete Update Offer Tool Overhaul
