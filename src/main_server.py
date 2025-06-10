@@ -31,15 +31,6 @@ if log_level_str == 'DEBUG':
 else:  # NORMAL or any other value
     log_level = logging.INFO
 
-# Archive existing log file if it exists
-if os.path.exists(LOG_FILE_PATH):
-    timestamp = datetime.datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
-    archive_path = f"{LOG_FILE_PATH}.{timestamp}"
-    try:
-        os.rename(LOG_FILE_PATH, archive_path)
-        print(f"Previous log archived to {archive_path}")
-    except Exception as e:
-        print(f"Failed to archive previous log: {e}")
 
 # Get the root logger and clear any existing handlers
 root_logger = logging.getLogger()
@@ -64,8 +55,19 @@ console_handler.setLevel(log_level)
 root_logger.addHandler(file_handler)
 root_logger.addHandler(console_handler)
 
-# Create a module-specific logger
+# Create a module-specific logger AFTER basic root configuration is done
 logger = logging.getLogger(__name__)
+
+# Archive existing log file if it exists
+if os.path.exists(LOG_FILE_PATH):
+    timestamp = datetime.datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
+    archive_path = f"{LOG_FILE_PATH}.{timestamp}"
+    try:
+        os.rename(LOG_FILE_PATH, archive_path)
+        logger.info(f"Previous log archived to {archive_path}")
+    except Exception as e:
+        logger.error(f"Failed to archive previous log: {e}")
+
 logger.info(f"Logging configured with level {log_level_str} ({logging.getLevelName(log_level)})")
 logger.info(f"Log file location: {LOG_FILE_PATH}")
 # --- End of Centralized Logging Configuration ---

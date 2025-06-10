@@ -1,3 +1,17 @@
+## Updates in Trajectory Server Stability and Linting Fixes, (10062025 - 12:01:19)
+
+### Bug Fix & Code Quality
+
+- **`src/main_server.py` NameError Fix**: Resolved a `NameError: name 'logger' is not defined` that occurred during server startup. The module-specific logger (`logger = logging.getLogger(__name__)`) was being used before it was defined in the log archiving section. The logger initialization has been moved to an earlier point in the script, after root logger configuration but before its first use, ensuring the server starts correctly.
+- **`src/ebay_mcp/inventory/update_offer_safe.py` Linting**: Fixed a line-too-long linting error around lines 283-286 by reformatting a `logger.error()` call with a long f-string into multiple lines for improved readability.
+- **`src/ebay_mcp/inventory/update_offer_safe.py` Syntax Error Fix**: Resolved a critical `SyntaxError: invalid syntax` on line 284 caused by an orphaned `except Exception as e:` statement without a matching `try:` block. The function structure has been properly reorganized to ensure all `try-except` blocks are correctly paired and nested, with all HTTP client operations properly contained within the `async with httpx.AsyncClient()` context manager.
+
+## Updates in Trajectory Fix MCP Inspector JSON Parsing Error, (10062025 - 11:56:32)
+
+### Bug Fix
+
+- **`src/main_server.py` Fix**: Resolved a JSON parsing error (`SyntaxError: Unexpected token 'P', "Previous l"... is not valid JSON`) that occurred when running the MCP Inspector. The error was caused by `print()` statements in `main_server.py` outputting non-JSON text to standard output during log file archiving. These `print()` statements were replaced with `logger.info()` and `logger.error()` calls to ensure that only MCP-compliant JSON is sent via stdio, allowing the MCP Inspector to connect correctly.
+
 ## Updates in Trajectory Linting update_offer_safe.py, (10062025 - 11:53:39)
 
 ### Code Quality
@@ -472,4 +486,3 @@ This update transforms the Update Offer tool from a basic price/quantity updater
 - ✅ Comprehensive test suite confirms fixes are effective
 
 This fix resolves the blocking issues that prevented the Update Offer tool from successfully communicating with eBay's API, enabling full functionality of the comprehensive offer management features.
-
