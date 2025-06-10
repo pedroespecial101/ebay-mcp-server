@@ -54,10 +54,11 @@ class OfferDataForManage(EbayBaseModel):
     tax: Optional[Dict[str, Any]] = Field(None, description="Tax configuration container.")
 
 
-class ManageOfferParams(EbayBaseModel):
+# This model will be used by FastMCP for schema generation and input validation
+class ManageOfferToolInput(EbayBaseModel):
     sku: str = Field(..., description="Inventory item SKU.")
-    action: ManageOfferAction = Field(..., description="Action to perform on the offer.")
-    offer_data: Optional[OfferDataForManage] = Field(None, description="Data for create/modify actions.")
+    action: ManageOfferAction = Field(..., description="Action to perform on the offer ('create', 'modify', 'withdraw', 'publish').")
+    offer_data: Optional[OfferDataForManage] = Field(None, description="Data for create/modify actions. See OfferDataForManage schema.")
 
     @root_validator(skip_on_failure=True)
     def check_offer_data_for_action(cls, values):
@@ -66,7 +67,9 @@ class ManageOfferParams(EbayBaseModel):
         if action in [ManageOfferAction.CREATE, ManageOfferAction.MODIFY] and offer_data is None:
             raise ValueError("offer_data is required for 'create' or 'modify' actions.")
         if action in [ManageOfferAction.WITHDRAW, ManageOfferAction.PUBLISH] and offer_data is not None:
-            raise ValueError("offer_data must not be provided for 'withdraw' or 'publish' actions.")
+            # For withdraw/publish, we could also choose to silently ignore offer_data if provided.
+            # However, raising an error is stricter and makes the API contract clearer.
+            raise ValueError("offer_data must NOT be provided for 'withdraw' or 'publish' actions.")
         return values
 
 
@@ -113,36 +116,32 @@ async def _get_offer_by_sku(sku: str, access_token: str, client: httpx.AsyncClie
 
 async def manage_offer_tool(inventory_mcp):
     @inventory_mcp.tool()
-    async def manage_offer(sku: str, action: str, offer_data: Optional[Dict[str, Any]] = None) -> str:
+    async def manage_offer(params: ManageOfferToolInput) -> str:
         """Manages eBay offers: create, modify, withdraw, or publish based on SKU.
 
+        Uses Pydantic model ManageOfferToolInput for parameters, ensuring schema exposure.
         Args:
-            sku: The inventory item SKU.
-            action: Action to perform - "create", "modify", "withdraw", "publish".
-            offer_data: Dictionary of offer details, required for "create" and "modify".
-                        See OfferDataForManage model for structure.
+            params (ManageOfferToolInput): Container for SKU, action, and conditional offer_data.
         """
-        logger.info(f"Executing manage_offer MCP tool: SKU='{sku}', Action='{action}'")
-        try:
-            params = ManageOfferParams(sku=sku, action=ManageOfferAction(action), offer_data=offer_data)
-        except ValueError as e:
-            logger.error(f"Validation error in manage_offer parameters: {e}")
-            return ManageOfferToolResponse.error_response(str(e)).json(indent=2)
+        # Parameters are now automatically validated by FastMCP against ManageOfferToolInput
+        # Access them via params.sku, params.action, params.offer_data
+        logger.info(f"Executing manage_offer MCP tool: SKU='{params.sku}', Action='{params.action.value}'")
 
-        async def _api_call_logic(access_token: str, client: httpx.AsyncClient):
+        async def _api_call_logic(access_token: str, client: httpx.AsyncClient): # params is available in this scope
             headers = get_standard_ebay_headers(access_token)
             
             current_offer = None
             offer_id_from_current = None
 
             # For modify, withdraw, publish - first get the offer to get offerId and current state
+            # The 'params' variable from the outer scope (manage_offer function) is used here.
             if params.action in [ManageOfferAction.MODIFY, ManageOfferAction.WITHDRAW, ManageOfferAction.PUBLISH]:
                 current_offer = await _get_offer_by_sku(params.sku, access_token, client)
                 if not current_offer:
-                    raise ValueError(f"No existing offer found for SKU '{params.sku}' to {params.action.value}.")
+                    raise ValueError(f"No existing offer found for SKU '{params.sku}' to perform '{params.action.value}'.")
                 offer_id_from_current = current_offer.get('offerId')
                 if not offer_id_from_current:
-                    raise ValueError(f"Could not retrieve offerId for SKU '{params.sku}'.")
+                    raise ValueError(f"Could not retrieve offerId for SKU '{params.sku}' to perform '{params.action.value}'.")
 
             # --- CREATE Action --- 
             if params.action == ManageOfferAction.CREATE:
@@ -150,14 +149,19 @@ async def manage_offer_tool(inventory_mcp):
                 if existing_offer_check:
                     raise ValueError(f"Offer for SKU '{params.sku}' already exists (OfferId: {existing_offer_check.get('offerId')}). Use 'modify' action to update.")
 
-                if not params.offer_data:
-                    raise ValueError("offer_data is required for create action.")
+                # Validation for offer_data presence is now handled by ManageOfferToolInput's root_validator
+                # if not params.offer_data: # This check is now redundant
+                #     raise ValueError("offer_data is required for create action.")
                 
-                # Validate required fields for createOffer API
-                required_fields_create = ['marketplace_id', 'format', 'available_quantity', 'category_id', 'listing_policies', 'merchant_location_key', 'pricing_summary']
-                for field in required_fields_create:
-                    if getattr(params.offer_data, field, None) is None:
-                        raise ValueError(f"Missing required field '{field}' in offer_data for create action.")
+                # Specific field requirements for 'create' action within offer_data
+                if params.offer_data: # Should always be true due to validator, but good for type hinting
+                    required_fields_create = ['marketplace_id', 'format', 'available_quantity', 'category_id', 'listing_policies', 'merchant_location_key', 'pricing_summary']
+                    for field in required_fields_create:
+                        if getattr(params.offer_data, field, None) is None:
+                            raise ValueError(f"Missing required field '{field}' in offer_data for 'create' action.")
+                else:
+                    # This case should ideally be caught by the root_validator in ManageOfferToolInput
+                    raise ValueError("offer_data is unexpectedly None for 'create' action despite validator.")
 
                 payload = params.offer_data.dict(exclude_none=True)
                 payload['sku'] = params.sku # Add SKU to the payload body as required by createOffer
@@ -175,8 +179,14 @@ async def manage_offer_tool(inventory_mcp):
 
             # --- MODIFY Action --- 
             elif params.action == ManageOfferAction.MODIFY:
-                if not params.offer_data or not current_offer or not offer_id_from_current:
-                     raise ValueError("Missing offer_data or current_offer for modify action.") # Should be caught by earlier checks
+                # Validation for offer_data presence is now handled by ManageOfferToolInput's root_validator
+                # if not params.offer_data: # This check is now redundant
+                #    raise ValueError("offer_data is required for modify action.")
+                if not current_offer or not offer_id_from_current:
+                     raise ValueError("Missing current_offer details for modify action.") # Should be caught by earlier checks
+                if not params.offer_data: # Should be caught by validator, but defensive check
+                    raise ValueError("offer_data is unexpectedly None for 'modify' action.")
+
 
                 # Merge current_offer with new data. eBay's updateOffer is a full replacement.
                 # Start with all fields from current_offer, then update with provided non-None fields.

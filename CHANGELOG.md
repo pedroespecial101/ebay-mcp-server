@@ -1,3 +1,12 @@
+## Updates in TrajectoryID <Fix MCP Tool Signature for Schema Exposure, (e1251790-8399-4501-a19c-51306f4424d3)>, 10062025 - 20:29.28
+
+- **Fixed `manage_offer` MCP Tool Signature**: Modified the `manage_offer` tool in `src/ebay_mcp/inventory/manage_offer.py` to correctly expose its schema to MCP clients.
+  - Changed the tool signature to use Pydantic models directly (`ManageOfferAction` for `action` and `OfferDataForManage` for `offer_data`).
+  - Introduced `ManageOfferToolInput` Pydantic model to encapsulate all input parameters (`sku`, `action`, `offer_data`) and their validation logic, including conditional requirements for `offer_data`.
+  - The tool function `manage_offer` now accepts a single `params: ManageOfferToolInput` argument.
+  - Removed manual instantiation and validation of `ManageOfferParams` from within the tool function, relying on FastMCP's automatic validation based on the Pydantic signature.
+  - This ensures that MCP clients receive a complete JSON Schema for the tool, detailing all available fields, types, descriptions, and constraints for `offer_data`.
+
 ## Updates in TrajectoryID <Add AIO Offer MCP Tool, (e1251790-8399-4501-a19c-51306f4424d3)>, 10062025 - 19:10.11
 
 - **Added `manage_offer` MCP Tool**: Introduced a new tool in `src/ebay_mcp/inventory/manage_offer.py`.
