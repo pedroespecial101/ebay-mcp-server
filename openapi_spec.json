@@ -1,0 +1,1146 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "eBay Product Processing",
+    "description": "Product management interface for eBay listings",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/products": {
+      "get": {
+        "tags": [
+          "product_processing"
+        ],
+        "summary": "Product Processing Page",
+        "description": "Render the Product Processing page",
+        "operationId": "product_processing_page_products_get",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": "unprocessed",
+              "title": "Status"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": "",
+              "title": "Search"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": 1,
+              "title": "Page"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/products/{product_id}/category-suggestions": {
+      "post": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Get Category Suggestions",
+        "description": "Get eBay category suggestions for a product\n\nThis endpoint:\n1. Retrieves the product title from the database\n2. Calls the eBay Taxonomy API to get category suggestions\n3. Stores the suggestions in the database\n4. Returns the list of suggestions\n\nArgs:\n    product_id (int): ID of the product to get suggestions for\n\nReturns:\n    dict: Response with status and suggestions",
+        "operationId": "get_category_suggestions_api_products__product_id__category_suggestions_post",
+        "parameters": [
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          },
+          {
+            "name": "debug",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Debug"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Category Suggestions Api Products  Product Id  Category Suggestions Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/products": {
+      "get": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Get Products",
+        "description": "Get products with filtering and pagination",
+        "operationId": "get_products_api_products_get",
+        "parameters": [
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Filter by processing state",
+              "default": "unprocessed",
+              "title": "State"
+            },
+            "description": "Filter by processing state"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Search term for SKU or title",
+              "default": "",
+              "title": "Search"
+            },
+            "description": "Search term for SKU or title"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "description": "Page number",
+              "default": 1,
+              "title": "Page"
+            },
+            "description": "Page number"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "description": "Items per page",
+              "default": 20,
+              "title": "Per Page"
+            },
+            "description": "Items per page"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/products/{product_id}": {
+      "get": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Get Product By Id",
+        "description": "Get a single product by ID with all related data",
+        "operationId": "get_product_by_id_api_products__product_id__get",
+        "parameters": [
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/products/{product_id}/update": {
+      "post": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Update Product Field",
+        "description": "Update a single field of a product",
+        "operationId": "update_product_field_api_products__product_id__update_post",
+        "parameters": [
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductUpdateField"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/products/{product_id}/status": {
+      "post": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Update Product Status",
+        "description": "Update the processing status of a product",
+        "operationId": "update_product_status_api_products__product_id__status_post",
+        "parameters": [
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "title": "Status"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/products/bulk-process": {
+      "post": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Bulk Process Products",
+        "description": "Process multiple products at once (AI processing)",
+        "operationId": "bulk_process_products_api_products_bulk_process_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkProductIds"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/products/bulk-publish": {
+      "post": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Bulk Publish Products",
+        "description": "Publish multiple products to eBay at once",
+        "operationId": "bulk_publish_products_api_products_bulk_publish_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkProductIds"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/products/bulk-delete": {
+      "post": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Bulk Delete Products",
+        "description": "Delete multiple products at once",
+        "operationId": "bulk_delete_products_api_products_bulk_delete_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkProductIds"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/product-images/reorder": {
+      "post": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Reorder Product Images",
+        "description": "Update display order of product images",
+        "operationId": "reorder_product_images_api_product_images_reorder_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImageReorderRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/product-images/{image_id}/delete": {
+      "post": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Delete Product Image",
+        "description": "Mark a product image as deleted",
+        "operationId": "delete_product_image_api_product_images__image_id__delete_post",
+        "parameters": [
+          {
+            "name": "image_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Image Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/products/ai-process": {
+      "post": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Process Product With Ai",
+        "description": "Process a product with AI to extract details from images\n\nThis endpoint:\n1. Retrieves product images from the database based on product ID\n2. Passes images to OpenRouter API for processing\n3. Updates the product details with AI-generated data",
+        "operationId": "process_product_with_ai_api_products_ai_process_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AIProcessingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/products/{product_id}/set-selected-category": {
+      "post": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Set Selected Product Category",
+        "operationId": "set_selected_product_category_api_products__product_id__set_selected_category_post",
+        "parameters": [
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetSelectedCategoryRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Set Selected Product Category Api Products  Product Id  Set Selected Category Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/products/{product_id}/publish-to-ebay": {
+      "post": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Publish Product To Ebay",
+        "description": "Publish a product to eBay using the Inventory API\n\nThis endpoint:\n1. Retrieves the product details from the database based on product ID\n2. Creates an inventory item on eBay\n3. Creates an offer for the inventory item\n4. Publishes the offer to make it a live listing\n\nArgs:\n    product_id (int): ID of the product to publish\n    request (EbayPublishRequest): Request data with debug flag\n\nReturns:\n    dict: Response with status and listing details",
+        "operationId": "publish_product_to_ebay_api_products__product_id__publish_to_ebay_post",
+        "parameters": [
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          },
+          {
+            "name": "debug",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Debug"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Publish Product To Ebay Api Products  Product Id  Publish To Ebay Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/products/{product_id}/category-selection": {
+      "post": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Set Selected Product Category",
+        "operationId": "set_selected_product_category_api_products__product_id__category_selection_post",
+        "parameters": [
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetSelectedCategoryRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Set Selected Product Category Api Products  Product Id  Category Selection Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/image-upload": {
+      "post": {
+        "tags": [
+          "image_upload"
+        ],
+        "summary": "Upload Images",
+        "description": "Upload images for a product SKU\n\nThis endpoint:\n1. Validates the input (SKU and images)\n2. Creates a new capture session in the database\n3. Uploads the images to Backblaze B2 storage\n4. Creates database records for the uploaded images\n5. Returns a success/error message with the capture session ID\n\nArgs:\n    sku (str): Product SKU that the images are for\n    images (List[UploadFile]): List of images to upload\n    debug (bool): Whether to log debug information\n\nReturns:\n    B2UploadResponse: Response with success/error message and capture session ID",
+        "operationId": "upload_images_api_image_upload_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_images_api_image_upload_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/B2UploadResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/test-image-upload": {
+      "post": {
+        "tags": [
+          "image_upload"
+        ],
+        "summary": "Test Image Upload",
+        "description": "Test endpoint for image upload - same as /image-upload but with Swagger UI documentation\nThis is for manual testing via the Swagger UI",
+        "operationId": "test_image_upload_api_test_image_upload_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_test_image_upload_api_test_image_upload_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/B2UploadResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Health check endpoint",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Root",
+        "description": "Redirect root to products page",
+        "operationId": "root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AIProcessingRequest": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "additional_instructions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Additional Instructions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id"
+        ],
+        "title": "AIProcessingRequest"
+      },
+      "B2UploadResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "capture_session_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Capture Session Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "message"
+        ],
+        "title": "B2UploadResponse"
+      },
+      "Body_test_image_upload_api_test_image_upload_post": {
+        "properties": {
+          "sku": {
+            "type": "string",
+            "title": "Sku",
+            "description": "Product SKU"
+          },
+          "images": {
+            "items": {
+              "type": "string",
+              "format": "binary"
+            },
+            "type": "array",
+            "title": "Images",
+            "description": "Images to upload (max 12, JPEG format, max 2MB each)"
+          },
+          "debug": {
+            "type": "boolean",
+            "title": "Debug",
+            "description": "Whether to log debug information",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "sku",
+          "images"
+        ],
+        "title": "Body_test_image_upload_api_test_image_upload_post"
+      },
+      "Body_upload_images_api_image_upload_post": {
+        "properties": {
+          "sku": {
+            "type": "string",
+            "title": "Sku",
+            "description": "Product SKU"
+          },
+          "images": {
+            "items": {
+              "type": "string",
+              "format": "binary"
+            },
+            "type": "array",
+            "title": "Images",
+            "description": "Images to upload (max 12, JPEG format, max 2MB each)"
+          },
+          "debug": {
+            "type": "boolean",
+            "title": "Debug",
+            "description": "Whether to log debug information",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "sku",
+          "images"
+        ],
+        "title": "Body_upload_images_api_image_upload_post"
+      },
+      "BulkProductIds": {
+        "properties": {
+          "product_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Product Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_ids"
+        ],
+        "title": "BulkProductIds"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ImageOrderUpdate": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "order": {
+            "type": "integer",
+            "title": "Order"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "order"
+        ],
+        "title": "ImageOrderUpdate"
+      },
+      "ImageReorderRequest": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "order_updates": {
+            "items": {
+              "$ref": "#/components/schemas/ImageOrderUpdate"
+            },
+            "type": "array",
+            "title": "Order Updates"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "order_updates"
+        ],
+        "title": "ImageReorderRequest"
+      },
+      "ProductUpdateField": {
+        "properties": {
+          "field": {
+            "type": "string",
+            "title": "Field"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "field",
+          "value"
+        ],
+        "title": "ProductUpdateField"
+      },
+      "SetSelectedCategoryRequest": {
+        "properties": {
+          "selected_suggestion_id": {
+            "type": "integer",
+            "title": "Selected Suggestion Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "selected_suggestion_id"
+        ],
+        "title": "SetSelectedCategoryRequest"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

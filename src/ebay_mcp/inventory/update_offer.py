@@ -50,16 +50,13 @@ async def update_offer_tool(inventory_mcp):
     ) -> str:
         """Update an existing eBay offer with comprehensive field support.
 
-        ⚠️  CRITICAL WARNING: This is a REPLACE operation! ⚠️
+        Implementation Note: This tool provides a safe interface for eBay's `updateOffer` API call, 
+        which is a full-replacement operation. To prevent accidental data loss, the tool automatically 
+        performs a "get-then-update" process. It fetches the current offer, merges in the specific 
+        fields you provide, and then sends the complete, updated object to eBay.
 
-        The updateOffer API call performs a COMPLETE REPLACEMENT of the existing offer object.
-        ALL current offer data will be overwritten with the provided values. Any fields not
-        included in the update request will be cleared/reset to defaults.
-
-        RECOMMENDED WORKFLOW:
-        1. First call the Get Offer tool to retrieve current offer data
-        2. Modify only the desired fields while preserving all other existing values
-        3. Include ALL existing field values in the update request to prevent data loss
+        Usage: You only need to specify the parameters for the fields you wish to change. The tool 
+        will preserve all other existing values.
 
         Args:
             offer_id: The unique identifier of the offer to update (REQUIRED)

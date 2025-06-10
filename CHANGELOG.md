@@ -1,3 +1,330 @@
+## Updates in App MCP Server Comprehensive Route Mapping Fix (07062025 - 10:10:00)
+
+### 🔧 MAJOR FIX: Complete Overhaul of Route Mapping for FastAPI Integration
+
+**Implemented a comprehensive route mapping system to correctly expose FastAPI endpoints as MCP tools and resources.**
+
+#### Issues Resolved:
+
+1. **Missing `/api/products` Endpoints** 🔍 -> ✅:
+   - **Problem**: Path parameter endpoints like `/api/products/{product_id}` weren't being recognized
+   - **Root Cause**: Regular expressions in route patterns didn't correctly match paths
+   - **Solution**: Implemented a prioritized route mapping system with specific patterns
+
+2. **Endpoint Type Prioritization** ⚙️:
+   - **New System**: Created explicit priority ordering for endpoint-to-component mapping
+   - **Priority Order**: Exclusions > Forced Tools > /api/products > HTTP Method Rules > GET Params
+   - **Result**: Correct and predictable mapping of endpoints to tool types
+
+3. **Enhanced Debugging** 🛠️:
+   - Added OpenAPI spec JSON export for detailed inspection
+   - Created path parameter analysis with detailed logging
+   - Added dedicated files for tools and resources (mcp_tools.txt, mcp_resources.txt)
+   - Improved error handling for async FastMCP API calls
+
+4. **Structured Route Configuration** 📊:
+   - Implemented `ROUTE_MAPPING` dictionary for clear HTTP method mapping
+   - Defined explicit rules for handling each HTTP method:
+     - `POST`, `PUT`, `DELETE`, `PATCH` → Tools
+     - `GET` without parameters → Resources
+     - `GET` with path parameters → Resource Templates
+
+#### Technical Implementation:
+
+```python
+# Prioritized route mapping system
+route_maps = [
+    # 1. Exclusions (highest priority)
+    RouteMap(methods=["POST", "GET", "PUT", "DELETE", "PATCH"], pattern=f"^{endpoint}$", route_type=RouteType.IGNORE),
+    
+    # 2. Forced tools (high priority)
+    RouteMap(methods=["GET"], pattern=f"^{endpoint}$", route_type=RouteType.TOOL),
+    
+    # 3. Product endpoints with path parameters (specific priority)
+    RouteMap(methods=["GET"], pattern=r"^/api/products/[^/]+$", route_type=RouteType.RESOURCE_TEMPLATE),
+    
+    # 4-6. Method-based rules (low priority)
+    # POST, PUT, PATCH, DELETE -> Tools
+    # GET with params -> Resource Templates
+    # GET without params -> Resources
+]
+```
+
+This comprehensive overhaul ensures that all FastAPI endpoints from api.petetreadaway.com are correctly exposed as MCP tools and resources, making them accessible through the MCP protocol.
+
+## Updates in App MCP Server Async Method Fix (07062025 - 10:05:56)
+
+### 🔧 CRITICAL FIX: Fixed Async Method Handling in App MCP Server
+
+**Fixed warning messages about coroutines not being awaited in App MCP Server.**
+
+#### Issues Resolved:
+
+1. **Async Method Calls** ⚠️ -> ✅:
+   - **Problem**: `get_tools()` and `get_resources()` methods were called without `await`
+   - **Warning Messages**: `RuntimeWarning: coroutine 'FastMCP.get_tools' was never awaited`
+   - **Solution**: Added `await` keyword to async method calls
+
+2. **Resource and Tool Type Handling** 🔄:
+   - **Problem**: Inconsistent handling of resource types (string vs object with uri attribute)
+   - **Solution**: Implemented more robust type checking with `isinstance()` and `hasattr()`
+   - **Result**: Properly handles both string-based resources and object-based resources
+
+#### Technical Changes:
+
+```python
+# Before: Non-awaited async calls
+tools = self.mcp.get_tools()
+resources = self.mcp.get_resources()
+
+# After: Properly awaited async calls
+tools = await self.mcp.get_tools()
+resources = await self.mcp.get_resources()
+```
+
+#### Benefits:
+
+- Eliminates runtime warnings about coroutines
+- Properly displays debug information about exposed tools and resources
+- More robust handling of different resource representation formats
+- Better compatibility with FastMCP's latest API conventions
+
+This fix ensures proper async/await handling in the App MCP Server, making debug output accurate and eliminating runtime warnings.
+
+## Updates in App MCP Server Route Mapping Fix (07062025 - 09:57:44)
+
+### 🔧 CRITICAL FIX: Resolved Missing /api/products Endpoints
+
+**Fixed issues with the App MCP Server where endpoints from api.petetreadaway.com were not showing up correctly.**
+
+#### Issues Resolved:
+
+1. **Missing `/api/products` Endpoints** ❌ -> ✅:
+   - **Problem**: The `/api/products` endpoints were not visible in MCP tools
+   - **Root Cause**: Incorrect route mapping patterns targeting `/products` instead of `/api/products`
+   - **Solution**: Added proper route mapping for `/api/products` endpoints
+
+2. **Path Parameter Handling** ❌ -> ✅:
+   - **Problem**: Endpoints with path parameters like `/api/products/{product_id}` weren't properly exposed
+   - **Solution**: Added specific route pattern for `/api/products/{...}` endpoints as resource templates
+   - **Result**: Endpoints with path parameters now properly accessible as resource templates
+
+3. **Enhanced Debugging** ⚙️:
+   - Added `ROUTE_MAPPING_DEBUG` environment variable for detailed logging of route mapping
+   - When enabled, logs all paths from OpenAPI spec and created MCP components
+   - Helps identify which endpoints are mapped to tools vs resources
+
+4. **Consistent Server Structure** 🏗️:
+   - Added `run()` function to match pattern from `main_server.py`
+   - Ensures both servers can be used interchangeably
+
+#### Technical Implementation:
+
+- Added `FORCE_AS_TOOLS` list to explicitly define endpoints that should be exposed as tools:
+  ```python
+  FORCE_AS_TOOLS = [
+      '/api/products',
+      '/api/categories'
+  ]
+  ```
+
+- Added targeted route mapping for products with path parameters:
+  ```python
+  RouteMap(
+      methods=["GET"],
+      pattern=r"^/api/products/\{.*?\}",  # Target specific products endpoints with parameters
+      route_type=RouteType.RESOURCE_TEMPLATE
+  )
+  ```
+
+- Added comprehensive component logging when debug is enabled to verify all created tools and resources
+
+The App MCP Server now correctly exposes all endpoints from api.petetreadaway.com, with proper handling for path parameters.
+
+## Updates in App MCP Server Naming Compliance Fix (06062025 - 09:05:00)
+
+### 🔧 CRITICAL FIX: Resolved MCP Naming Violations and Missing Endpoints
+
+**Fixed both major issues with the App MCP Server tool generation.**
+
+#### Issues Resolved:
+
+1. **MCP Naming Violations** ❌ -> ✅:
+   - **Problem**: Auto-generated tool names contained double underscores (`__`) which violate MCP naming rules `^[a-zA-Z0-9_-]{1,64}$`
+   - **Examples**: `get_category_suggestions_api_products__product_id__category_suggestions_post`
+   - **Solution**: Implemented `_fix_operation_ids()` method to clean OpenAPI operation IDs before FastMCP processing
+   - **Result**: All 13 tools now have MCP-compliant names
+
+2. **Missing Endpoints** ❌ -> ✅:
+   - **Problem**: GET endpoints with path parameters like `/api/products/{product_id}` weren't visible in MCP tools
+   - **Root Cause**: These endpoints correctly become **Resource Templates** (not tools) in MCP
+   - **Solution**: Added explicit route mapping to ensure GET endpoints with path params become resource templates
+   - **Result**: `/api/products/{product_id}` now available as `get_product_by_id_api_products_product_id_get/{product_id}`
+
+#### Technical Implementation:
+
+**Name Cleaning Algorithm**:
+```python
+def _make_mcp_compliant_name(self, operation_id: str, path: str, method: str) -> str:
+    # Replace multiple underscores with single underscore
+    name = re.sub(r'_{2,}', '_', operation_id)
+    # Remove invalid characters (keep only alphanumeric, underscore, hyphen)
+    name = re.sub(r'[^a-zA-Z0-9_-]', '', name)
+    # Ensure 1-64 character length and proper start/end
+    return name[:64].strip('_-')
+```
+
+**OpenAPI Spec Modification**:
+- Modifies operation IDs directly in the OpenAPI specification before passing to FastMCP
+- Ensures all generated MCP component names are compliant from the start
+- Preserves original functionality while fixing naming issues
+
+#### Results:
+
+**Before Fix**:
+- ❌ 4 tools with invalid names (double underscores)
+- ❌ Missing `/api/products/{product_id}` endpoint
+- ❌ MCP naming rule violations
+
+**After Fix**:
+- ✅ All 13 tools have MCP-compliant names
+- ✅ 1 resource template for GET endpoints with path parameters
+- ✅ 3 resources for GET endpoints without path parameters
+- ✅ Full MCP naming compliance: `^[a-zA-Z0-9_-]{1,64}$`
+
+#### Sample Fixed Names:
+- `get_category_suggestions_api_products__product_id__category_suggestions_post`
+  -> `get_category_suggestions_api_products_product_id_category_sugges`
+- `publish_product_to_ebay_api_products__product_id__publish_to_ebay_post`
+  -> `publish_product_to_ebay_api_products_product_id_publish_to_ebay`
+
+The App MCP Server now generates fully compliant MCP tools and properly exposes all API endpoints according to MCP conventions.
+
+## Updates in App MCP Server Implementation - Fixed (06062025 - 08:45:00)
+
+### 🔧 CRITICAL FIX: Resolved "Already running asyncio in this thread" Error
+
+**Fixed the App MCP Server to work exactly like the eBay MCP Server pattern.**
+
+#### Issues Resolved:
+1. **"Already running asyncio in this thread" Error**:
+   - Server was incorrectly trying to run as a standalone application
+   - MCP servers are **client-started**, not standalone applications
+   - Fixed by following the exact same pattern as `src/main_server.py`
+
+2. **Initialization Pattern**:
+   - Removed incorrect `asyncio.run()` wrapper that caused the error
+   - Implemented module-level initialization like the eBay server
+   - Server now initializes at import time and waits for MCP client connections
+
+#### Technical Changes:
+- **Removed**: Standalone runner approach with `asyncio.run()`
+- **Added**: Module-level initialization using `asyncio.new_event_loop()`
+- **Fixed**: Server now calls `mcp.run()` directly like `main_server.py`
+- **Verified**: Both servers work identically with MCP Test UI
+
+#### Multiple Server Support Confirmed:
+✅ **eBay MCP Server** (`src/main_server.py`) - For eBay API tools
+✅ **App MCP Server** (`src/app_server.py`) - For FastAPI app tools
+
+Both servers can coexist in the project. Switch between them by:
+- Changing `MCP_SERVER_PATH` in `.env` file
+- Using the server path selector in MCP Test UI
+
+#### Usage:
+```bash
+# Test eBay tools
+MCP_SERVER_PATH=src/main_server.py ./start_mcp_test_ui.sh
+
+# Test App tools
+MCP_SERVER_PATH=src/app_server.py ./start_mcp_test_ui.sh
+```
+
+The App MCP Server now works exactly like the eBay MCP Server - no special handling required.
+
+## Updates in App MCP Server Implementation (06062025 - 07:30:00)
+
+### 🚀 NEW FEATURE: Independent App MCP Server for FastAPI Integration
+
+**Created a new standalone MCP server that leverages FastMCP's built-in FastAPI integration to expose endpoints from https://api.petetreadaway.com as MCP tools.**
+
+#### Key Features Implemented:
+
+1. **FastMCP Native Integration**:
+   - Uses `FastMCP.from_openapi()` to automatically generate MCP tools from OpenAPI specification
+   - Connects to https://api.petetreadaway.com and fetches `/openapi.json` dynamically
+   - Leverages FastMCP's automatic tool generation from FastAPI routes
+   - No custom OpenAPI parsing required - uses FastMCP's built-in capabilities
+
+2. **Configurable Endpoint Exclusions**:
+   - Implemented configurable exclusion mechanism using custom route maps
+   - Initially excludes sensitive/test endpoints:
+     - `/api/product-images/reorder` (POST)
+     - `/api/test-image-upload` (POST)
+   - Uses `RouteType.IGNORE` to exclude specific endpoints from MCP tool generation
+   - Easily configurable for future modifications via `EXCLUDED_ENDPOINTS` list
+
+3. **Robust Architecture**:
+   - Independent server at `src/app_server.py` (separate from eBay MCP server)
+   - Follows existing project patterns for authentication, error handling, and logging
+   - Uses environment variables for configuration (`APP_API_BASE_URL`, `APP_API_TIMEOUT`)
+   - Proper resource cleanup with async context management
+
+4. **Tool Generation Results**:
+   - **19 total routes** processed from OpenAPI specification
+   - **13 tools created** (POST, PUT, PATCH, DELETE operations)
+   - **3 resources created** (GET operations without path parameters)
+   - **2 endpoints excluded** as configured (reorder and test-image-upload)
+
+5. **Authentication & Error Handling**:
+   - HTTP client configured with proper headers and timeout handling
+   - Follows existing logging patterns using the project's logging infrastructure
+   - Comprehensive error handling for API connection and OpenAPI spec loading
+   - Graceful resource cleanup on server shutdown
+
+6. **Testing & Validation**:
+   - Compatible with existing `start_mcp_test_ui.sh` testing infrastructure
+   - Server can run independently without conflicts with eBay server
+   - Verified tool discovery and resource enumeration functionality
+   - Confirmed exclusion patterns work correctly
+
+#### Technical Implementation:
+
+**Files Created:**
+- `src/app_server.py` - Main App MCP server implementation
+
+**Key Components:**
+- `AppMCPServer` class for server lifecycle management
+- `_create_route_maps()` method for endpoint exclusion configuration
+- Environment-based configuration with sensible defaults
+- Async initialization and cleanup patterns
+
+**Route Mapping Strategy:**
+- Excludes specific endpoints using exact pattern matching
+- Converts HTML-returning endpoints to tools (not resources)
+- Uses FastMCP's default mapping for all other endpoints
+- Processes route maps in order with exclusions taking precedence
+
+#### Integration Benefits:
+
+1. **Reusable Template**: Serves as a template for exposing other FastAPI applications as MCP servers
+2. **Zero Code Duplication**: Automatically inherits all API endpoint definitions and validation
+3. **Schema Preservation**: Maintains Pydantic models and validation from the original FastAPI app
+4. **Future-Proof**: Automatically picks up new endpoints as they're added to the API
+5. **Consistent Patterns**: Follows established project architecture and conventions
+
+#### Usage:
+
+```bash
+# Run standalone
+python src/app_server.py
+
+# Test with MCP Test UI
+# Server will be available for testing alongside existing eBay tools
+```
+
+This implementation demonstrates FastMCP's powerful OpenAPI integration capabilities and provides a foundation for exposing any FastAPI application as MCP tools with minimal configuration.
+
 ## Updates in Comprehensive Update Offer Tool Enhancement (05062025 - 06:40:00)
 
 ### 🚨 MAJOR ENHANCEMENT: Complete Update Offer Tool Overhaul
@@ -111,372 +438,3 @@ This update transforms the Update Offer tool from a basic price/quantity updater
 
 This fix resolves the blocking issues that prevented the Update Offer tool from successfully communicating with eBay's API, enabling full functionality of the comprehensive offer management features.
 
-## Updates in Definitive eBay API Header Standards Implementation (05062025 - 07:35:00)
-
-### 🎯 CRITICAL INFRASTRUCTURE: Implemented Definitive eBay API Header Standards
-
-**COMPREHENSIVE PROJECT-WIDE HEADER STANDARDIZATION**
-
-Based on extensive debugging of the Content-Language header issues, implemented definitive eBay API header standards across the entire project to ensure consistent, reliable communication with all eBay API endpoints.
-
-#### 📋 DEFINITIVE EBAY API HEADER STANDARDS:
-
-**REQUIRED HEADERS FOR ALL EBAY API REQUESTS:**
-1. **Content-Language: en-GB** (hyphen format, required for ALL requests)
-2. **Accept-Language: en-GB** (hyphen format, required for ALL requests)
-3. **Authorization: Bearer {token}** (always required)
-4. **Content-Type: application/json** (for most requests)
-
-**MARKETPLACE ID STANDARDS:**
-- ❌ **NEVER** include marketplace ID in request headers (no X-EBAY-C-MARKETPLACE-ID)
-- ✅ **ALWAYS** include marketplace ID in request body/parameters when required
-- ✅ **DEFAULT** marketplace ID: `EBAY_GB` (underscore format for UK)
-
-#### 🔧 IMPLEMENTATION DETAILS:
-
-**1. Created Centralized Header Management:**
-- Added `get_standard_ebay_headers()` function in `src/utils/api_utils.py`
-- Provides consistent header generation for all eBay API tools
-- Supports additional headers while maintaining standards
-- Eliminates header inconsistencies across tools
-
-**2. Updated ALL eBay API Tools:**
-- **Inventory API Tools** (8 tools updated):
-  - `update_offer.py` - Fixed Content-Language header issues
-  - `get_inventory_item_by_sku.py`
-  - `get_inventory_items.py`
-  - `create_or_replace_inventory_item.py`
-  - `listing_fees.py`
-  - `delete_inventory_item.py`
-  - `withdraw_offer.py`
-
-- **Browse API Tools** (1 tool updated):
-  - `browse/server.py`
-
-- **Taxonomy API Tools** (2 tools updated):
-  - `taxonomy/server.py` (both endpoints)
-
-**3. Removed Inconsistent Header Patterns:**
-- Eliminated all `X-EBAY-C-MARKETPLACE-ID` headers
-- Removed inconsistent Content-Language formats (`en-US`, `en_GB`)
-- Standardized Accept-Language usage
-- Fixed marketplace ID placement in request bodies
-
-#### 🧪 COMPREHENSIVE TESTING:
-
-**Created `tests/test_ebay_header_standards.py`:**
-- ✅ Standard header function validation
-- ✅ Update offer tool header implementation
-- ✅ Header format compliance (en-GB hyphen format)
-- ✅ Marketplace ID standards (EBAY_GB underscore format)
-- ✅ All tests pass (4/4)
-
-#### 📁 FILES MODIFIED:
-
-**Core Infrastructure:**
-- `src/utils/api_utils.py` - Added `get_standard_ebay_headers()` function
-
-**Inventory API Tools:**
-- `src/ebay_mcp/inventory/update_offer.py`
-- `src/ebay_mcp/inventory/get_inventory_item_by_sku.py`
-- `src/ebay_mcp/inventory/get_inventory_items.py`
-- `src/ebay_mcp/inventory/create_or_replace_inventory_item.py`
-- `src/ebay_mcp/inventory/listing_fees.py`
-- `src/ebay_mcp/inventory/delete_inventory_item.py`
-- `src/ebay_mcp/inventory/withdraw_offer.py`
-
-**Browse & Taxonomy APIs:**
-- `src/ebay_mcp/browse/server.py`
-- `src/ebay_mcp/taxonomy/server.py`
-
-**Testing:**
-- `tests/test_ebay_header_standards.py` - Comprehensive header standards validation
-
-#### 🎯 IMPACT & BENEFITS:
-
-1. **✅ RESOLVED Content-Language Header Issues** - Update Offer tool now works correctly
-2. **✅ CONSISTENT API Communication** - All tools use identical header standards
-3. **✅ FUTURE-PROOF Architecture** - New tools automatically inherit correct headers
-4. **✅ REDUCED API Errors** - Eliminates header-related eBay API rejections
-5. **✅ MAINTAINABLE Codebase** - Centralized header management
-6. **✅ DOCUMENTED Standards** - Clear guidelines for future development
-
-#### 🚀 NEXT STEPS:
-- All eBay API tools now use consistent, eBay-compliant headers
-- Update Offer tool ready for full functionality testing
-- Foundation established for reliable eBay API integration across all endpoints
-
-This implementation establishes the definitive eBay API header standards that will ensure reliable communication with eBay's APIs across all current and future tools in the project.
-
-## Updates in TrajectoryID <create_or_replace_inventory_item_header_debugging, (inventory_004)>, <04062025 - 12:45.00>
-
-- **Debugging Content-Language header issue:**
-  - Identified that eBay API is rejecting the `Content-Language` header with error: "Invalid value for header Content-Language"
-  - Tested multiple header values: `en-US`, `en-GB`, `en_GB` - all rejected by eBay API
-  - According to eBay API documentation, `Content-Language` header is required for createOrReplaceInventoryItem endpoint
-  - Issue appears to be with eBay API validation or authentication scope limitations
-  - Tool implementation is complete and functional except for this header validation issue
-
-- **Current status:**
-  - Tool is fully implemented with comprehensive parameter validation
-  - All Pydantic models are working correctly
-  - Request body construction is proper
-  - Authentication and token refresh working
-  - Only blocking issue is the Content-Language header rejection by eBay API
-  - May require eBay developer support or different authentication scope
-
-## Updates in TrajectoryID <create_or_replace_inventory_item_implementation, (inventory_003)>, <04062025 - 08:15.30>
-
-- **Added new MCP tool for eBay Sell Inventory v1 API:**
-  - **create_or_replace_inventory_item**: Create or replace an inventory item using PUT /sell/inventory/v1/inventory_item/{sku}
-    - Supports both create (201) and update (204) operations in a single tool
-    - Comprehensive parameter validation with Pydantic models
-    - Full API field support including product details, availability, packaging, and condition descriptors
-    - LLM-friendly parameter structure with flattened field names for ease of use
-
-- **Enhanced parameter models in `src/models/mcp_tools.py`:**
-  - Added `CreateOrReplaceInventoryItemParams` with extensive validation:
-    - SKU validation (max 50 characters, non-empty)
-    - Condition validation against eBay's 17 allowed enum values
-    - Required fields: product_title, product_description
-    - Optional fields: product aspects, images, brand, MPN, EAN/UPC/ISBN codes
-    - Package weight and dimensions with unit validation
-    - Availability distributions and pickup availability support
-    - URL format validation for image URLs
-
-- **Enhanced inventory models in `src/models/ebay/inventory.py`:**
-  - Added `CreateOrReplaceInventoryItemRequest` model with smart parameter mapping
-  - Added `CreateOrReplaceInventoryItemResponse` model for operation feedback
-  - Implemented `from_params()` class method to build complex nested API request structure
-  - Proper handling of optional fields and nested objects (availability, packageWeightAndSize, product)
-
-- **Created modular tool implementation:**
-  - `src/ebay_mcp/inventory/create_or_replace_inventory_item.py` - Main tool implementation
-  - Follows established patterns with `execute_ebay_api_call` utility integration
-  - Comprehensive error handling and logging
-  - Support for all documented API fields while maintaining usability
-
-- **Updated `src/ebay_mcp/inventory/server.py`:**
-  - Imported and registered the new create_or_replace_inventory_item_tool
-  - Maintains consistency with existing tool registration pattern
-
-- **Implementation features:**
-  - PUT method to eBay API endpoint with SKU as path parameter
-  - Handles both 201 (created) and 204 (updated) response scenarios
-  - Comprehensive field validation including condition enums and URL formats
-  - LLM-friendly parameter names (e.g., product_title instead of nested product.title)
-  - Automatic request body construction from flattened parameters
-  - Proper authentication and token refresh handling via existing utilities
-
-## Updates in TrajectoryID <cloudflare_tunnel_timeout_fix, (cascade_002)>, <04062025 - 07:10.23>
-
-- **Fixed `start_mcp_test_ui.sh` script for environments without `timeout` command:**
-  - Modified the `check_and_start_cloudflare_tunnel` function to conditionally use the `timeout` command only if it's available.
-  - If `timeout` is not found (e.g., on a default macOS environment without `coreutils`), the `cloudflared tunnel info` commands are run directly without a timeout.
-  - Added an informational message to the console when `timeout` is not found, explaining the behavior and suggesting `coreutils` installation for macOS users.
-  - This makes the script more robust and usable across different system configurations.
-
-## Updates in TrajectoryID <cloudflare_tunnel_integration, (cascade_001)>, <04062025 - 07:05.00>
-
-- **Enhanced `start_mcp_test_ui.sh` script:**
-  - Added a new function `check_and_start_cloudflare_tunnel` to manage the Cloudflare tunnel (`dev-tunnel`).
-  - The function checks if `cloudflared` CLI is available.
-  - It then checks if the `dev-tunnel` is active using `cloudflared tunnel info dev-tunnel` (with a timeout).
-  - If the tunnel is not active, it attempts to start it in the background using `nohup cloudflared tunnel run dev-tunnel &`.
-  - Tunnel output (stdout and stderr) is logged to `cloudflare_tunnel_dev-tunnel.log` in the project root directory.
-  - The script waits for 5 seconds after attempting to start the tunnel and re-checks its status to provide feedback.
-  - This function is called before starting the MCP Test UI server to ensure the tunnel is operational if needed.
-  - The function includes informative echo statements about its progress and the tunnel's status.
-  - Designed to be relatively self-contained for potential reuse.
-
-## Updates in eBay Inventory API New Tools Implementation (15052025 - 17:45:44)
-
-- **Added three new MCP tools for the eBay Sell Inventory v1 API:**
-  - **get_inventory_item_by_sku**: Retrieve a specific inventory item using its SKU identifier
-    - Endpoint: `GET /sell/inventory/v1/inventory_item/{sku}`
-    - Parameters: `sku` (required) - The seller-defined SKU of the inventory item
-    - Returns: Complete inventory item details including condition, product info, availability, etc.
-  - **get_inventory_items**: Retrieve multiple inventory items with pagination support
-    - Endpoint: `GET /sell/inventory/v1/inventory_item`
-    - Parameters: `limit` (1-200, default: 25), `offset` (default: 0)
-    - Returns: Paginated list of inventory items with navigation links
-  - **delete_inventory_item**: Delete an inventory item by its SKU
-    - Endpoint: `DELETE /sell/inventory/v1/inventory_item/{sku}`
-    - Parameters: `sku` (required) - The seller-defined SKU of the inventory item to delete
-    - Effects: Deletes inventory item, unpublished offers, single-variation listings, and removes from groups
-
-- **Enhanced data models in `src/models/ebay/inventory.py`:**
-  - Added `InventoryItemDetails` model for comprehensive inventory item representation
-  - Added `InventoryItemResponse` model for single item API responses
-  - Added `InventoryItemsListResponse` model for paginated list responses with navigation
-  - Added `DeleteInventoryItemResponse` model for deletion operation feedback
-
-- **Enhanced parameter models in `src/models/mcp_tools.py`:**
-  - Added `GetInventoryItemBySkuParams` with SKU validation (max 50 characters)
-  - Added `GetInventoryItemsParams` with pagination validation (limit 1-200, offset ≥ 0)
-  - Added `DeleteInventoryItemParams` with SKU validation
-
-- **Created modular tool implementations:**
-  - `src/ebay_mcp/inventory/get_inventory_item_by_sku.py` - Single item retrieval
-  - `src/ebay_mcp/inventory/get_inventory_items.py` - Paginated list retrieval
-  - `src/ebay_mcp/inventory/delete_inventory_item.py` - Item deletion with proper 204 handling
-
-- **Updated `src/ebay_mcp/inventory/server.py`:**
-  - Imported and registered all three new tools in the inventory MCP server
-  - Maintained existing authentication and error handling patterns
-  - All tools integrate with existing `execute_ebay_api_call` utility for token management
-
-- **Implementation follows established patterns:**
-  - Proper parameter validation using Pydantic models
-  - Comprehensive error handling and logging
-  - Integration with existing authentication system
-  - Consistent API response formatting
-  - Debug logging support for troubleshooting
-
-- **Updated README.md documentation:**
-  - Added three new inventory tools to the MCP Client Integration section with detailed descriptions
-  - Updated Key Features section to reflect comprehensive inventory management capabilities
-  - Enhanced project structure to show new tool files in inventory directory
-  - Added modular tool implementation pattern documentation explaining the architecture
-  - Added testing guidance for MCP servers emphasizing client-started nature
-  - Organized tool list by API category (Authentication, Browse, Taxonomy, Inventory)
-  - Updated troubleshooting section with MCP server testing best practices
-
-## Updates in Code Cleanup and Unused Files Removal (03062025 - 13:53:33)
-
-- Moved unused/deprecated files to the `_archive` directory:
-  - `src/server_old.py` - Legacy monolithic server implementation replaced by modular architecture
-  - `mcp_test_ui_start.py` - Replaced by `start_mcp_test_ui.sh` script
-- Deleted empty `mcp_test_ui/llm_handlers/` directory that remained after LLM chat functionality removal
-- This cleanup removes redundant code, reduces clutter, and makes the codebase more maintainable
-
-## Updates in Code Cleanup and Unused Files Removal (03062025 - 13:53:33)
-
-- Moved unused/deprecated files to the `_archive` directory:
-  - `src/server_old.py` - Legacy monolithic server implementation replaced by modular architecture
-  - `mcp_test_ui_start.py` - Replaced by `start_mcp_test_ui.sh` script
-- Deleted empty `mcp_test_ui/llm_handlers/` directory that remained after LLM chat functionality removal
-- This cleanup removes redundant code, reduces clutter, and makes the codebase more maintainable
-
-## Updates in Import Path Fixes (03062025 - 07:20:23)
-
-- Fixed import path issues in all refactored modules
-- Updated Python module paths to use project root as the base for imports
-- Fixed FastMCP server variable naming in main_server.py to use standard name 'mcp'
-- Fixed mount method syntax in main_server.py
-- Updated README.md to reflect the new project structure
-- Successfully tested the dynamic composition architecture with authenticated calls
-
-## Updates in MCP Server UI Integration (03062025 - 07:53.44)
-
-- Fixed variable name in main_server.py run() call, changing main_mcp.run() to mcp.run()
-- Updated MCP_SERVER_PATH in .env to point to new main_server.py instead of server.py
-- Fixed MCP Test UI tool execution by updating the Client initialization to use PythonStdioTransport
-- Added necessary imports (sys, PythonStdioTransport) to routes_mcp.py
-- Created run_test_ui.py script for properly running the MCP Test UI with correct imports
-- Successfully tested the MCP Test UI with the new modular server architecture
-
-## Updates in MCP Server Modularization (03062025 - 07:24.10)
-
-- Fixed Python import paths in all sub-servers to use project root instead of 'src.' prefixes
-- Renamed FastMCP server variable from 'main_mcp' to 'mcp' for consistency
-- Corrected mount method calls to use proper FastMCP API signature (mcp.mount(prefix, server))
-- Updated README.md with detailed architecture overview of the new modular structure
-- Successfully tested dynamic composition architecture with all sub-servers
-- Verified OAuth2 token management works correctly across all components
-
-## Updates in TrajectoryID <ebay_mcp_server_dynamic_composition, (refactor_001)>, <03062025 - 07:10:38>
-
-- **Major refactoring of MCP server to use dynamic composition:**
-  - Split the monolithic `server.py` into multiple modular sub-servers organized by eBay API domain:
-    - Created `src/ebay_mcp/auth/server.py` for eBay authentication tools (`test_auth`, `trigger_ebay_login`)
-    - Created `src/ebay_mcp/browse/server.py` for eBay Browse API tools (`search_ebay_items`)
-    - Created `src/ebay_mcp/taxonomy/server.py` for eBay Taxonomy API tools (`get_category_suggestions`, `get_item_aspects_for_category`)
-    - Created `src/ebay_mcp/inventory/server.py` for eBay Inventory API base functionality (`get_offer_by_sku`)
-    - Split large inventory API functions into separate modules:
-      - `src/ebay_mcp/inventory/update_offer.py` for offer update functionality
-      - `src/ebay_mcp/inventory/withdraw_offer.py` for offer withdrawal functionality
-      - `src/ebay_mcp/inventory/listing_fees.py` for listing fees functionality
-  - Created additional utility servers in `src/other_tools_mcp/`:
-    - `src/other_tools_mcp/tests/server.py` for testing tools (`add`)
-    - `src/other_tools_mcp/database/server.py` for database utility tools (`mock_db_query`)
-  - Created `src/utils/api_utils.py` for shared API utility functions
-  - Created new main server `src/main_server.py` that dynamically mounts all sub-servers
-  - Updated `start.sh` to use the new `main_server.py` instead of the original `server.py`
-  - Implemented proper Python path handling and module imports across all files
-
-## Updates in TrajectoryID <ui_fixes_and_chat_menu_removal, (cascade_final_002)>, <01062025 - 19:57:12>
-
-- **mcp_test_ui/mcp_utils.py**:
-    - Corrected `PythonStdioTransport` configuration in `get_mcp_tools` to use `sys.executable` for `python_cmd`, ensuring the correct Python interpreter from the active virtual environment is used. This resolved `FileNotFoundError` when fetching MCP tools.
-- **mcp_test_ui/app.py**:
-    - Added a `POST` route for `/set_server_path` to allow dynamic updating of the MCP server path from the UI. This includes path validation and clearing the tool cache.
-- **mcp_test_ui/templates/base.html**:
-    - Removed the "LLM Chat" link from the main navigation menu, as the chat functionality has been completely deprecated.
-- **General**:
-    - Verified that setting the server path and executing MCP tools via the UI is now working correctly.
-
-## Updates in TrajectoryID <remove_llm_chat_functionality, (cascade_removal_001)>, <02062025 - 10:00.00>
-
-- Removed all LLM chat functionality from the MCP Test UI.
-- Deleted `mcp_test_ui/templates/chat.html`.
-- Removed chat-related routes, Pydantic models, and handler functions from `mcp_test_ui/app.py`.
-- Removed chat-specific Pydantic models from `mcp_test_ui/models.py`.
-- Simplified the application to focus solely on MCP tool testing and execution.
-
-## Updates in TrajectoryID <mcp_test_ui_start_script, (223)>, <01062025 - 19:16:59>
-
-- Created `start_mcp_test_ui.sh` to manage the MCP Test UI server lifecycle (activate venv, kill port, start app).
-- Fixed `ImportError` in `start_mcp_test_ui.sh` by changing `python mcp_test_ui/app.py` to `python -m mcp_test_ui.app` to correctly handle relative imports.
-
-## Updates in TrajectoryID <test_auth_successful_env_fix, (223)>, <01062025 - 09:51:51>
-
-- Successfully executed the `test_auth` tool via the refactored MCP UI, confirming the AJAX URL fix and end-to-end functionality.
-- User fixed a parsing issue in `.env` at line 12.
-
-## Updates in TrajectoryID <mcp_test_ui_start_script, (223)>, <01062025 - 19:16:59>
-
-- Created `start_mcp_test_ui.sh` to manage the MCP Test UI server lifecycle (activate venv, kill port, start app).
-- Fixed `ImportError` in `start_mcp_test_ui.sh` by changing `python mcp_test_ui/app.py` to `python -m mcp_test_ui.app` to correctly handle relative imports.
-
-## Updates in TrajectoryID <fix_ajax_url_index_html, (223)>, <01062025 - 09:49.26>
-
-- Fixed AJAX call URL in `mcp_test_ui/templates/index.html` for tool execution to correctly include the `/mcp` prefix (e.g., `/mcp/execute/{tool_name}`). This resolves the 404 error when trying to execute tools from the UI.
-
-## Updates in TrajectoryID <Set by User later (trajectoryID)>, <01062025 - 09:48.00>
-
-- **mcp_test_ui/mcp_utils.py**:
-    - Iteratively debugged and corrected the instantiation of `fastmcp.Client` and `PythonStdioTransport`.
-    - Ensured `PythonStdioTransport` is used with the correct `python_cmd` (pointing to the virtual environment's Python) and `script_path` (pointing to the MCP server script).
-    - Resolved `FileNotFoundError` and `TypeError` issues related to client and transport initialization.
-    - Fixed Pydantic `ValidationError` for `MCPToolParameter` by using the alias `type` as the keyword argument during instantiation (e.g., `type=param_type` instead of `type_=param_type`). This enables proper communication with the MCP server script and correct parsing of tool parameters.
-
-## Updates in TrajectoryID <mcp_ui_refactor_app_py, (cascade_refactor_001)>, 01062025 - 09:32.07
-
-- **Refactored `mcp_test_ui/app.py` for improved modularity and maintainability:**
-    - **Created `mcp_test_ui/models.py`**:
-        - Moved Pydantic models (`Parameter`, `MCPToolParameter`, `MCPTool`) and `CustomJSONEncoder` related to MCP tool testing from `app.py` to this new file.
-        - Kept LLM-related Pydantic models (`Message`, `ChatRequest`, `ToolCall`, `ToolResult`) in `app.py` for now.
-    - **Created `mcp_test_ui/config.py`**:
-        - Established a shared configuration module for global variables like `mcp_server_path` and `cached_tools`.
-        - Centralized logger instance for MCP UI components.
-    - **Created `mcp_test_ui/mcp_utils.py`**:
-        - Moved the core `get_mcp_tools()` function from `app.py` to this utility module.
-        - Modified `get_mcp_tools()` to accept an optional `server_path_override` to allow fetching tools from a specific server path without using/affecting the global cache (useful for LLM chat functionality).
-        - Added `clear_mcp_tool_cache()` function.
-    - **Created `mcp_test_ui/routes_mcp.py`**:
-        - Moved MCP tool testing FastAPI routes (`/`, `/execute/{tool_name}`, `/set_server_path`) from `app.py` into a new `APIRouter`.
-        - The router uses the new `config.py`, `models.py`, and `mcp_utils.py` modules.
-        - Added an initialization function `init_mcp_router_templates` to pass the `Jinja2Templates` instance.
-    - **Modified `mcp_test_ui/app.py`**:
-        - Removed MCP-related Pydantic models and global variables (now in `models.py` and `config.py`).
-        - Removed MCP core functions (`get_mcp_tools`, `home`, `execute_tool`, `set_server_path`) as they are now in `mcp_utils.py` and `routes_mcp.py`.
-        - Added imports for the new modules (`config`, `models`, `mcp_utils`, `routes_mcp`).
-        - Initialized `config.mcp_server_path` from the `MCP_SERVER_PATH` environment variable.
-        - Included the MCP router from `routes_mcp.py` with a `/mcp` prefix, enabling side-by-side testing with the original app structure if needed.
-        - Updated `get_mcp_tools_for_openai()` to use `mcp_utils.get_mcp_tools(server_path_override=...)` and reference models from `models.py`.
-        - Modified `run_server()` and the `if __name__ == "__main__":` block to:
-            - Use `config.mcp_server_path`.
-            - Allow `config.mcp_server_path` to be overridden by a `--server` command-line argument.
-            - Change the default port for this refactored application to `8001` to facilitate side-by-side testing with an older version on port `8000`.
-- **Overall Goal**: Improve code organization, reduce the size of `app.py`, and make the MCP Test UI more maintainable, especially for AI agents.

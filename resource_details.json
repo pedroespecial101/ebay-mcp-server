@@ -1,0 +1,5 @@
+[
+  "resource://openapi/product_processing_page_products_get_get",
+  "resource://openapi/health_check_health_get_get",
+  "resource://openapi/root__get_get"
+]
