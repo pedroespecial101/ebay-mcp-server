@@ -30,8 +30,6 @@ load_dotenv()
 DEBUG_MODE = os.getenv('MCP_LOG_LEVEL', 'NORMAL').upper() == 'DEBUG'
 
 # Import tool modules
-from ebay_mcp.inventory.update_offer import update_offer_tool
-from ebay_mcp.inventory.withdraw_offer import withdraw_offer_tool
 from ebay_mcp.inventory.manage_offer import manage_offer_tool
 from ebay_mcp.inventory.listing_fees import listing_fees_tool
 from ebay_mcp.inventory.get_inventory_item_by_sku import get_inventory_item_by_sku_tool
@@ -47,8 +45,6 @@ inventory_mcp = FastMCP("eBay Inventory API")
 
 # Register tools from modules
 async def register_all_tools():
-    await update_offer_tool(inventory_mcp)
-    await withdraw_offer_tool(inventory_mcp)
     await manage_offer_tool(inventory_mcp)  
     await listing_fees_tool(inventory_mcp)
     await get_inventory_item_by_sku_tool(inventory_mcp)

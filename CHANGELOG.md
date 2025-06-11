@@ -1,3 +1,15 @@
+## Updates in TrajectoryID <Consolidate Offer Management Tools, (e1251790-8399-4501-a19c-51306f4424d3)>, 11062025 - 07:15:47
+
+- **Enhanced `manage_offer` Tool**:
+    - Added a new `get` action to the `manage_offer` tool in `src/ebay_mcp/inventory/manage_offer.py`.
+    - This allows retrieving full offer details by SKU, with the output formatted like an `OfferDataForManage` payload for consistency.
+
+- **Consolidated Offer Management**:
+    - Removed the superseded `update_offer.py` and `withdraw_offer.py` tools.
+    - Their functionality is now handled by the `modify` and `withdraw` actions within the single `manage_offer` tool.
+    - Updated `src/ebay_mcp/inventory/server.py` to remove the registrations for the obsolete tools.
+    - Deleted the corresponding files to clean up the codebase.
+
 ## Updates in TrajectoryID <Log Rotation Enhancement, (YOUR_CURRENT_TRAJECTORY_ID)>, 11062025 - 06:08:04
 
 - **Enhanced Logging Rotation**:

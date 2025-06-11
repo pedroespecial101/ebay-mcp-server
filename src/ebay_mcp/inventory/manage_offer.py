@@ -28,6 +28,7 @@ class ManageOfferAction(str, Enum):
     MODIFY = "modify"
     WITHDRAW = "withdraw"
     PUBLISH = "publish"
+    GET = "get"
 
 
 class OfferDataForManage(EbayBaseModel):
@@ -57,7 +58,7 @@ class OfferDataForManage(EbayBaseModel):
 # This model will be used by FastMCP for schema generation and input validation
 class ManageOfferToolInput(EbayBaseModel):
     sku: str = Field(..., description="Inventory item SKU.")
-    action: ManageOfferAction = Field(..., description="Action to perform on the offer ('create', 'modify', 'withdraw', 'publish').")
+    action: ManageOfferAction = Field(..., description="Action to perform on the offer ('create', 'modify', 'withdraw', 'publish', 'get').")
     offer_data: Optional[OfferDataForManage] = Field(None, description="Data for create/modify actions. See OfferDataForManage schema.")
 
     @root_validator(skip_on_failure=True)
@@ -66,10 +67,10 @@ class ManageOfferToolInput(EbayBaseModel):
         offer_data = values.get('offer_data')
         if action in [ManageOfferAction.CREATE, ManageOfferAction.MODIFY] and offer_data is None:
             raise ValueError("offer_data is required for 'create' or 'modify' actions.")
-        if action in [ManageOfferAction.WITHDRAW, ManageOfferAction.PUBLISH] and offer_data is not None:
-            # For withdraw/publish, we could also choose to silently ignore offer_data if provided.
+        if action in [ManageOfferAction.WITHDRAW, ManageOfferAction.PUBLISH, ManageOfferAction.GET] and offer_data is not None:
+            # For withdraw/publish/get, we could also choose to silently ignore offer_data if provided.
             # However, raising an error is stricter and makes the API contract clearer.
-            raise ValueError("offer_data must NOT be provided for 'withdraw' or 'publish' actions.")
+            raise ValueError(f"offer_data must NOT be provided for '{action.value}' action.")
         return values
 
 
@@ -135,12 +136,13 @@ async def manage_offer_tool(inventory_mcp):
 
             # For modify, withdraw, publish - first get the offer to get offerId and current state
             # The 'params' variable from the outer scope (manage_offer function) is used here.
-            if params.action in [ManageOfferAction.MODIFY, ManageOfferAction.WITHDRAW, ManageOfferAction.PUBLISH]:
+            if params.action in [ManageOfferAction.MODIFY, ManageOfferAction.WITHDRAW, ManageOfferAction.PUBLISH, ManageOfferAction.GET]:
                 current_offer = await _get_offer_by_sku(params.sku, access_token, client)
                 if not current_offer:
                     raise ValueError(f"No existing offer found for SKU '{params.sku}' to perform '{params.action.value}'.")
                 offer_id_from_current = current_offer.get('offerId')
-                if not offer_id_from_current:
+                # For GET, we can proceed even without an offerId, but for others it's critical.
+                if not offer_id_from_current and params.action not in [ManageOfferAction.GET]:
                     raise ValueError(f"Could not retrieve offerId for SKU '{params.sku}' to perform '{params.action.value}'.")
 
             # --- CREATE Action --- 
@@ -239,6 +241,25 @@ async def manage_offer_tool(inventory_mcp):
                 logger.info(f"manage_offer (PUBLISH): Successfully published offer '{offer_id_from_current}' for SKU '{params.sku}'. ListingId: {listing_id}")
                 return ManageOfferToolResponse.success_response(
                     ManageOfferResponseDetails(offer_id=offer_id_from_current, status_code=response.status_code, message=f"Offer published successfully. ListingId: {listing_id}", details=response_json)
+                ).model_dump_json(indent=2)
+
+            # --- GET Action ---
+            elif params.action == ManageOfferAction.GET:
+                if not current_offer: # Should be caught by the check at the top of the function
+                    raise ValueError(f"No offer found for SKU '{params.sku}'.")
+
+                offer_id = current_offer.get('offerId')
+                logger.info(f"manage_offer (GET): Successfully retrieved offer '{offer_id}' for SKU '{params.sku}'.")
+                
+                # The user wants the output to be like an OfferDataForManage payload.
+                # We return the full offer dictionary from the API in the 'details' field.
+                return ManageOfferToolResponse.success_response(
+                    ManageOfferResponseDetails(
+                        offer_id=offer_id,
+                        status_code=200, # Assuming 200 OK as we have the offer
+                        message=f"Offer details for SKU '{params.sku}' retrieved successfully.",
+                        details=current_offer
+                    )
                 ).model_dump_json(indent=2)
             
             else:
