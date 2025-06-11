@@ -75,7 +75,8 @@ ebay-mcp-server/
 │   │   │   ├── delete_inventory_item.py      # Delete inventory item tool
 │   │   │   ├── update_offer.py  # Update offer tool implementation
 │   │   │   ├── withdraw_offer.py # Withdraw offer tool implementation
-│   │   │   └── listing_fees.py  # Listing fees tool implementation
+│   │   │   ├── listing_fees.py  # Listing fees tool implementation
+│   │   │   └── manage_offer.py  # Comprehensive offer management tool (create, modify, withdraw, publish, get)
 │   │   └── taxonomy/       # Taxonomy API server
 │   │       └── server.py   # Taxonomy MCP tools implementation
 │   ├── other_tools_mcp/    # Other utility tool servers

@@ -1,3 +1,11 @@
+## Updates in TrajectoryID <Update README for manage_offer.py, (cascade_update_readme_11062025_0949)>, 11062025 - 09:49:50
+
+- **Updated `README.md` Documentation**:
+    - Examined `src/ebay_mcp/inventory/manage_offer.py`.
+    - Verified the `manage_offer` tool description in the "Inventory API Tools" section of `README.md`.
+    - Ensured `manage_offer.py` is correctly listed in the "Project Structure" section in `README.md`.
+    - Corrected a duplicated entry for the `manage_offer` tool in the "Inventory API Tools" section that was inadvertently added in a previous step.
+
 ## Updates in TrajectoryID <Add Verification to Offer Management, (cascade_update_06_11_2025_0801)>, 11062025 - 08:01:50
 
 - **Enhanced `manage_offer` Tool with Verification Step**:

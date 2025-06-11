@@ -23,6 +23,63 @@ from utils.debug_httpx import create_debug_client
 
 logger = logging.getLogger(__name__)
 
+
+def _normalize_for_comparison(value: Any) -> str:
+    """Normalize values for comparison, handling None, numbers, and strings consistently."""
+    if value is None:
+        return ""
+    if isinstance(value, (int, float)):
+        return str(float(value))  # Normalize to float representation
+    if isinstance(value, bool):
+        return str(value).lower()
+    if isinstance(value, str):
+        # Try to parse as float for numeric strings
+        try:
+            return str(float(value))
+        except ValueError:
+            return value
+    return str(value)
+
+
+def _deep_compare_dict(dict1: Dict[str, Any], dict2: Dict[str, Any]) -> bool:
+    """Deep compare two dictionaries, handling nested structures and eBay-added defaults."""
+    # Only check keys that exist in dict1 (expected values)
+    # Allow dict2 to have additional keys that eBay may add as defaults
+    for key in dict1.keys():
+        if key not in dict2:
+            return False
+        
+        val1, val2 = dict1[key], dict2[key]
+        if isinstance(val1, dict) and isinstance(val2, dict):
+            if not _deep_compare_dict(val1, val2):
+                return False
+        elif isinstance(val1, list) and isinstance(val2, list):
+            if not _deep_compare_list(val1, val2):
+                return False
+        else:
+            if _normalize_for_comparison(val1) != _normalize_for_comparison(val2):
+                return False
+    return True
+
+
+def _deep_compare_list(list1: List[Any], list2: List[Any]) -> bool:
+    """Deep compare two lists, handling nested structures."""
+    if len(list1) != len(list2):
+        return False
+    
+    for item1, item2 in zip(list1, list2):
+        if isinstance(item1, dict) and isinstance(item2, dict):
+            if not _deep_compare_dict(item1, item2):
+                return False
+        elif isinstance(item1, list) and isinstance(item2, list):
+            if not _deep_compare_list(item1, item2):
+                return False
+        else:
+            if _normalize_for_comparison(item1) != _normalize_for_comparison(item2):
+                return False
+    return True
+
+
 class ManageOfferAction(str, Enum):
     CREATE = "create"
     MODIFY = "modify"
@@ -170,7 +227,7 @@ async def manage_offer_tool(inventory_mcp):
                     # This case should ideally be caught by the root_validator in ManageOfferToolInput
                     raise ValueError("offer_data is unexpectedly None for 'create' action despite validator.")
 
-                payload = params.offer_data.dict(exclude_none=True)
+                payload = params.offer_data.model_dump(exclude_none=True)
                 payload['sku'] = params.sku # Add SKU to the payload body as required by createOffer
                 
                 url = "https://api.ebay.com/sell/inventory/v1/offer"
@@ -212,7 +269,7 @@ async def manage_offer_tool(inventory_mcp):
                 # Merge current_offer with new data. eBay's updateOffer is a full replacement.
                 # Start with all fields from current_offer, then update with provided non-None fields.
                 update_payload = current_offer.copy() # Start with all fields from the fetched offer
-                provided_updates = params.offer_data.dict(exclude_none=True)
+                provided_updates = params.offer_data.model_dump(exclude_none=True)
                 update_payload.update(provided_updates) # Override with new values
                 
                 # Ensure critical fields are not accidentally wiped if not in provided_updates but were in current_offer
@@ -224,25 +281,55 @@ async def manage_offer_tool(inventory_mcp):
                 response.raise_for_status() # Expect 204 No Content
                 logger.info(f"manage_offer (MODIFY): Successfully submitted modification for offer '{offer_id_from_current}' for SKU '{params.sku}'. Verifying...")
 
-                # Verification step
+                # Enhanced Verification step
                 verified_offer = await _get_offer_by_sku(params.sku, access_token, client)
                 if not verified_offer:
                     raise ValueError(f"VERIFICATION FAILED: Could not retrieve offer for SKU '{params.sku}' immediately after modification.")
 
-                # Verification logic
+                # Create expected final state: original offer + modifications
+                expected_final_state = current_offer.copy()
+                expected_final_state.update(provided_updates)
+                
+                # Comprehensive verification: compare expected vs actual final state
                 discrepancies = []
-                for key, value in provided_updates.items():
-                    # This is a shallow comparison. For complex objects (like pricingSummary), a deep-diff would be better.
-                    if str(verified_offer.get(key)) != str(value):
-                        discrepancies.append(f"Field '{key}': expected '{value}', found '{verified_offer.get(key)}'")
+                
+                # Only check keys that we expect to be present (from expected_final_state)
+                # This allows eBay to add additional fields without triggering false positives
+                for key in expected_final_state.keys():
+                    expected_value = expected_final_state.get(key)
+                    actual_value = verified_offer.get(key)
+                    
+                    # Skip comparison for system-managed fields that eBay might update
+                    system_managed_fields = {'offerId', 'listing', 'status', 'statusReason', 'totalListingIds'}
+                    if key in system_managed_fields:
+                        continue
+                    
+                    # Check if key exists in actual response
+                    if actual_value is None and expected_value is not None:
+                        discrepancies.append(f"Field '{key}': expected '{expected_value}', but field is missing in actual response")
+                        continue
+                    
+                    # Deep comparison for complex objects
+                    if isinstance(expected_value, dict) and isinstance(actual_value, dict):
+                        if not _deep_compare_dict(expected_value, actual_value):
+                            discrepancies.append(f"Field '{key}': expected {expected_value}, found {actual_value}")
+                    elif isinstance(expected_value, list) and isinstance(actual_value, list):
+                        if not _deep_compare_list(expected_value, actual_value):
+                            discrepancies.append(f"Field '{key}': expected {expected_value}, found {actual_value}")
+                    else:
+                        # For primitive types, normalize for comparison
+                        expected_str = _normalize_for_comparison(expected_value)
+                        actual_str = _normalize_for_comparison(actual_value)
+                        if expected_str != actual_str:
+                            discrepancies.append(f"Field '{key}': expected '{expected_value}', found '{actual_value}'")
                 
                 message = "Offer modified and verified successfully."
                 if discrepancies:
                     discrepancy_details = '; '.join(discrepancies)
-                    logger.warning(f"Verification for SKU '{params.sku}' found discrepancies: {discrepancy_details}")
-                    message = f"Offer modified. Verification found discrepancies: {discrepancy_details}"
+                    logger.warning(f"Enhanced verification for SKU '{params.sku}' found discrepancies: {discrepancy_details}")
+                    message = f"Offer modified. Enhanced verification found discrepancies: {discrepancy_details}"
                 else:
-                    logger.info(f"manage_offer (MODIFY): Verification successful for SKU '{params.sku}'.")
+                    logger.info(f"manage_offer (MODIFY): Enhanced verification successful for SKU '{params.sku}'. All fields match expected state.")
 
                 return ManageOfferToolResponse.success_response(
                     ManageOfferResponseDetails(offer_id=offer_id_from_current, status_code=response.status_code, message=message, details=verified_offer)
