@@ -83,6 +83,16 @@
   - Run MCP Test UI and exercise `manage_offer` and taxonomy tools to ensure validation logic still works.
   - Continue auditing remaining modules for v2 compliance.
 
+## Updates in TrajectoryID <remove_legacy_offer_param_models_12062025_1749>, 12062025 - 17:49:30
+
+- **Removed Unused Legacy Models**:
+  - Deleted `UpdateOfferParams` and `WithdrawOfferParams` classes from `src/models/mcp_tools.py` (legacy after tool consolidation).
+  - Cleaned `src/ebay_mcp/inventory/server.py` to drop now-unused imports.
+  - Confirmed no remaining references via codebase grep.
+
+- **Housekeeping**:
+  - Added comment placeholder in `mcp_tools.py` indicating models were removed during Pydantic v2 refactor.
+
 ## Updates in TrajectoryID <Fix Pydantic Serialization, (e1251790-8399-4501-a19c-51306f4424d3)>, 10062025 - 20:42:10
 
 - **Fixed Pydantic Serialization**: Updated `src/ebay_mcp/inventory/manage_offer.py` to use `model_dump_json(indent=2)` instead of the deprecated `json(indent=2)` for serializing Pydantic model responses. This resolves a `TypeError` with Pydantic V2 and ensures correct JSON output formatting.

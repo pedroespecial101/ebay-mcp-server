@@ -14,11 +14,6 @@ from dotenv import load_dotenv
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 sys.path.append(project_root)
 
-# Import inventory-related models
-from models.ebay.inventory import OfferRequest, OfferDetails, OfferResponse
-from models.ebay.inventory import UpdateOfferRequest, WithdrawOfferRequest
-from models.mcp_tools import UpdateOfferParams, WithdrawOfferParams
-
 # Import the common helper function for eBay API calls
 from utils.api_utils import execute_ebay_api_call, is_token_error
 from utils.debug_httpx import create_debug_client

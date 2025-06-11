@@ -14,7 +14,6 @@ project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(o
 sys.path.append(project_root)
 
 # Import browse-related models
-from models.ebay.browse import SearchRequest, SearchResult, SearchResponse, ItemSummary
 from models.mcp_tools import SearchEbayItemsParams
 
 # Import the common helper function for eBay API calls
@@ -64,28 +63,10 @@ async def search_ebay_items(query: str, limit: int = 10) -> str:
             try:
                 if not result.startswith('Token acquisition failed') and not result.startswith('HTTPX RequestError'):
                     result_json = json.loads(result)
-                    search_result = SearchResult(
-                        total=result_json.get('total', 0),
-                        items=[ItemSummary(
-                            item_id=item.get('itemId', ''),
-                            title=item.get('title', ''),
-                            image_url=item.get('image', {}).get('imageUrl'),
-                            price=item.get('price'),
-                            seller=item.get('seller'),
-                            condition=item.get('condition'),
-                            item_web_url=item.get('itemWebUrl')
-                        ) for item in result_json.get('itemSummaries', [])],
-                        href=result_json.get('href'),
-                        next_page=result_json.get('next'),
-                        prev_page=result_json.get('prev'),
-                        limit=result_json.get('limit'),
-                        offset=result_json.get('offset')
-                    )
-                    logger.info(f"Parsed search results: {search_result.total} items found")
-                    # Return the original JSON for backward compatibility
+                    logger.info(f"Parsed search results: {len(result_json.get('itemSummaries', []))} items found")
                     return result
             except Exception as e:
-                logger.warning(f"Failed to parse search results as SearchResult: {str(e)}")
+                logger.warning(f"Failed to parse search results: {str(e)}")
             
             return result
     except Exception as e:

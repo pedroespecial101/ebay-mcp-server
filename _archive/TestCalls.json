@@ -1,0 +1,58 @@
+
+
+{
+  "sku": "Coffee-1",
+  "action": "get"
+}
+
+{
+    "sku": "Coffee-5",
+    "action": "delete"
+}
+
+
+{
+  "sku": "Coffee-1",
+  "action": "create",
+  "item_data": {
+    "condition": "NEW",
+    "product": {
+      "title": "Premium Coffee Beans - 1kg",
+      "description": "High-quality Arabica coffee beans, medium roast",
+      "aspects": {
+        "brand": ["Starbucks"],
+        "roast": ["Medium"],
+        "flavor": ["Chocolate", "Nutty"]
+      },
+      "imageUrls": ["https://example.com/coffee.jpg"]
+    },
+    "availability": {
+      "shipToLocationAvailability": {
+        "quantity": 50
+      }
+    }
+  }
+}
+
+{
+    "sku": "Coffee-1",
+    "action": "modify",
+    "item_data": {
+      "condition": "NEW",
+      "product": {
+        "title": "Premium Coffee Beans - 1kg",
+        "description": "High-quality Arabica coffee beans, medium roast",
+        "aspects": {
+          "brand": ["Starbucks"],
+          "roast": ["Medium"],
+          "flavor": ["Chocolate", "Nutty"]
+        },
+        "imageUrls": ["https://example.com/coffee.jpg"]
+      },
+      "availability": {
+        "shipToLocationAvailability": {
+          "quantity": 50
+        }
+      }
+    }
+  }
