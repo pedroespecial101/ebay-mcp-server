@@ -1,3 +1,18 @@
+## Updates in TrajectoryID <Log Rotation Enhancement, (YOUR_CURRENT_TRAJECTORY_ID)>, 11062025 - 06:08:04
+
+- **Enhanced Logging Rotation**:
+    - Modified `src/main_server.py` to implement improved log file rotation.
+    - The system now keeps the latest `fastmcp_server.log` and up to 9 backup files (10 total).
+    - Backup files are named `fastmcp_server.log.NN_YYYY-MM-DD-HH:MM:SS`, where NN is the sequence number (01-09).
+    - Replaced `logging.FileHandler` with `logging.handlers.RotatingFileHandler`.
+    - Added a `custom_log_namer` function to handle the new filename format.
+    - Commented out the old manual log archiving logic, as `RotatingFileHandler` now manages this.
+    - Set log rotation to trigger when a log file reaches 10MB.
+
+## Updates in TrajectoryID <Fix Pydantic Serialization, (e1251790-8399-4501-a19c-51306f4424d3)>, 10062025 - 20:42:10
+
+- **Fixed Pydantic Serialization**: Updated `src/ebay_mcp/inventory/manage_offer.py` to use `model_dump_json(indent=2)` instead of the deprecated `json(indent=2)` for serializing Pydantic model responses. This resolves a `TypeError` with Pydantic V2 and ensures correct JSON output formatting.
+
 ## Updates in TrajectoryID <Fix MCP Tool Signature for Schema Exposure, (e1251790-8399-4501-a19c-51306f4424d3)>, 10062025 - 20:29.28
 
 - **Fixed `manage_offer` MCP Tool Signature**: Modified the `manage_offer` tool in `src/ebay_mcp/inventory/manage_offer.py` to correctly expose its schema to MCP clients.

@@ -175,7 +175,7 @@ async def manage_offer_tool(inventory_mcp):
                 logger.info(f"manage_offer (CREATE): Successfully created offer for SKU '{params.sku}'. New OfferId: {new_offer_id}")
                 return ManageOfferToolResponse.success_response(
                     ManageOfferResponseDetails(offer_id=new_offer_id, status_code=response.status_code, message="Offer created successfully.", details=response_json)
-                ).json(indent=2)
+                ).model_dump_json(indent=2)
 
             # --- MODIFY Action --- 
             elif params.action == ManageOfferAction.MODIFY:
@@ -204,7 +204,7 @@ async def manage_offer_tool(inventory_mcp):
                 logger.info(f"manage_offer (MODIFY): Successfully modified offer '{offer_id_from_current}' for SKU '{params.sku}'.")
                 return ManageOfferToolResponse.success_response(
                     ManageOfferResponseDetails(offer_id=offer_id_from_current, status_code=response.status_code, message="Offer modified successfully.")
-                ).json(indent=2)
+                ).model_dump_json(indent=2)
 
             # --- WITHDRAW Action --- 
             elif params.action == ManageOfferAction.WITHDRAW:
@@ -223,7 +223,7 @@ async def manage_offer_tool(inventory_mcp):
                 logger.info(f"manage_offer (WITHDRAW): Successfully withdrew offer '{offer_id_from_current}' for SKU '{params.sku}'.")
                 return ManageOfferToolResponse.success_response(
                     ManageOfferResponseDetails(offer_id=offer_id_from_current, status_code=response.status_code, message="Offer withdrawn successfully.", details=response.text or None)
-                ).json(indent=2)
+                ).model_dump_json(indent=2)
 
             # --- PUBLISH Action --- 
             elif params.action == ManageOfferAction.PUBLISH:
@@ -239,7 +239,7 @@ async def manage_offer_tool(inventory_mcp):
                 logger.info(f"manage_offer (PUBLISH): Successfully published offer '{offer_id_from_current}' for SKU '{params.sku}'. ListingId: {listing_id}")
                 return ManageOfferToolResponse.success_response(
                     ManageOfferResponseDetails(offer_id=offer_id_from_current, status_code=response.status_code, message=f"Offer published successfully. ListingId: {listing_id}", details=response_json)
-                ).json(indent=2)
+                ).model_dump_json(indent=2)
             
             else:
                 # Should not happen due to Enum validation
@@ -253,7 +253,7 @@ async def manage_offer_tool(inventory_mcp):
                 return result_str # result_str is already a JSON string from _api_call_logic
         except ValueError as ve: # Catch specific validation/logic errors from _api_call_logic
             logger.error(f"ValueError in manage_offer ({params.action.value}) for SKU '{params.sku}': {ve}")
-            return ManageOfferToolResponse.error_response(str(ve)).json(indent=2)
+            return ManageOfferToolResponse.error_response(str(ve)).model_dump_json(indent=2)
         except httpx.HTTPStatusError as hse:
             logger.error(f"HTTPStatusError in manage_offer ({params.action.value}) for SKU '{params.sku}': {hse.response.status_code} - {hse.response.text[:500]}")
             error_details = hse.response.text
@@ -262,10 +262,7 @@ async def manage_offer_tool(inventory_mcp):
                 error_details = error_json.get('errors', [{}])[0].get('message', hse.response.text)
             except Exception:
                 pass # Keep raw text if not JSON
-            return ManageOfferToolResponse.error_response(f"eBay API Error ({hse.response.status_code}): {error_details}").json(indent=2)
+            return ManageOfferToolResponse.error_response(f"eBay API Error ({hse.response.status_code}): {error_details}").model_dump_json(indent=2)
         except Exception as e:
             logger.exception(f"Unexpected error in manage_offer ({params.action.value}) for SKU '{params.sku}': {e}")
-            return ManageOfferToolResponse.error_response(f"Unexpected error: {str(e)}").json(indent=2)
-
-
-
+            return ManageOfferToolResponse.error_response(f"Unexpected error: {str(e)}").model_dump_json(indent=2)

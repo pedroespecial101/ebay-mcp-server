@@ -31,15 +31,33 @@ if log_level_str == 'DEBUG':
 else:  # NORMAL or any other value
     log_level = logging.INFO
 
-# Archive existing log file if it exists
-if os.path.exists(LOG_FILE_PATH):
-    timestamp = datetime.datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
-    archive_path = f"{LOG_FILE_PATH}.{timestamp}"
-    try:
-        os.rename(LOG_FILE_PATH, archive_path)
-        print(f"Previous log archived to {archive_path}")
-    except Exception as e:
-        print(f"Failed to archive previous log: {e}")
+# --- Custom Namer for RotatingFileHandler ---
+def custom_log_namer(default_name):
+    # default_name will be like /path/to/logs/fastmcp_server.log.1
+    # We want to transform it to /path/to/logs/fastmcp_server.log.01_YYYY-MM-DD-HH-MM-SS
+    base_filename, ext_num_str = os.path.splitext(default_name)
+    if not ext_num_str or not ext_num_str[1:].isdigit():
+        current_timestamp = datetime.datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
+        # Fallback: append timestamp to avoid overwriting or errors
+        return f"{default_name}_{current_timestamp}"
+    
+    log_num = int(ext_num_str[1:])
+    current_timestamp = datetime.datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
+    
+    # Construct the new name: e.g., fastmcp_server.log.01_2023-10-27-15-30-00
+    # The base_filename already contains the full path and the "fastmcp_server.log" part
+    return f"{base_filename}.{log_num:02d}_{current_timestamp}"
+# --- End of Custom Namer ---
+
+# # Archive existing log file if it exists (Replaced by RotatingFileHandler)
+# if os.path.exists(LOG_FILE_PATH):
+#     timestamp = datetime.datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
+#     archive_path = f"{LOG_FILE_PATH}.{timestamp}"
+#     try:
+#         os.rename(LOG_FILE_PATH, archive_path)
+#         print(f"Previous log archived to {archive_path}")
+#     except Exception as e:
+#         print(f"Failed to archive previous log: {e}")
 
 # Get the root logger and clear any existing handlers
 root_logger = logging.getLogger()
@@ -51,7 +69,12 @@ root_logger.setLevel(logging.DEBUG)  # Base level for root logger
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 # File Handler for the main log file
-file_handler = logging.FileHandler(LOG_FILE_PATH)
+file_handler = logging.handlers.RotatingFileHandler(
+    LOG_FILE_PATH,
+    maxBytes=10*1024*1024,  # 10 MB
+    backupCount=9
+)
+file_handler.namer = custom_log_namer # Assign custom namer
 file_handler.setFormatter(formatter)
 file_handler.setLevel(log_level)
 
