@@ -6,25 +6,6 @@ from pydantic import Field, field_validator
 from .base import EbayBaseModel, EbayResponse
 
 
-class AddToolParams(EbayBaseModel):
-    """Parameters for the add tool."""
-    
-    a: int = Field(..., description="First number to add.")
-    b: int = Field(..., description="Second number to add.")
-    
-    @field_validator('a', 'b')
-    def validate_numbers(cls, v):
-        """Validate that the numbers are integers."""
-        if not isinstance(v, int):
-            raise ValueError(f"Value must be an integer, got {type(v)}")
-        return v
-
-
-class AddToolResponse(EbayResponse[int]):
-    """Response for the add tool."""
-    pass
-
-
 class SearchEbayItemsParams(EbayBaseModel):
     """Parameters for the search_ebay_items tool."""
     
@@ -63,12 +44,6 @@ Parameters for the get_item_aspects_for_category tool."""
     def validate_category_id(cls, v):
         """Convert the category_id to string if it's an integer."""
         return str(v) if v is not None else v
-
-
-class OfferBySkuParams(EbayBaseModel):
-    """Parameters for the get_offer_by_sku tool."""
-    
-    sku: str = Field(..., description="The seller-defined SKU (Stock Keeping Unit) of the offer.")
 
 
 class UpdateOfferParams(EbayBaseModel):
@@ -275,19 +250,6 @@ Parameters for the withdraw_offer tool."""
     def validate_offer_id(cls, v):
         """Convert the offer_id to string if it's an integer."""
         return str(v) if v is not None else v
-
-
-class ListingFeesParams(EbayBaseModel):
-    """Parameters for the get_listing_fees tool."""
-    
-    offer_ids: List[str] = Field(..., description="List of offer IDs to get fees for (up to 250).")
-    
-    @field_validator('offer_ids')
-    def validate_offer_ids(cls, v):
-        """Validate the length of the offer_ids list."""
-        if len(v) > 250:
-            raise ValueError("Maximum of 250 offer IDs allowed")
-        return v
 
 
 class TestAuthResponse(EbayResponse[str]):

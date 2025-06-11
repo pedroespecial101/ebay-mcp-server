@@ -100,8 +100,6 @@ from ebay_mcp.auth.server import auth_mcp
 from ebay_mcp.browse.server import browse_mcp
 from ebay_mcp.taxonomy.server import taxonomy_mcp
 from ebay_mcp.inventory.server import inventory_mcp
-from other_tools_mcp.tests.server import tests_mcp
-from other_tools_mcp.database.server import database_mcp
 
 # Create the main MCP server
 mcp = FastMCP("eBay API")
@@ -127,13 +125,7 @@ def mount_servers():
     mcp.mount("inventoryAPI", inventory_mcp)
     logger.info("Mounted inventory API MCP server")
     
-    # Mount test tools
-    mcp.mount("tests", tests_mcp)
-    logger.info("Mounted tests MCP server")
-    
-    # Mount database tools
-    mcp.mount("database", database_mcp)
-    logger.info("Mounted database MCP server")
+    # Test and database tools have been removed as they are no longer needed
     
     logger.info("All sub-servers mounted successfully")
 
