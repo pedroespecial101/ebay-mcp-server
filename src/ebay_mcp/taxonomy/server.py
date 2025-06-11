@@ -14,8 +14,6 @@ project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(o
 sys.path.append(project_root)
 
 # Import taxonomy-related models
-from models.ebay.taxonomy import CategorySuggestionRequest, CategorySuggestion, CategorySuggestionResponse
-from models.ebay.taxonomy import ItemAspectsRequest, Aspect, ItemAspectsResponse
 from models.mcp_tools import CategorySuggestionsParams, ItemAspectsParams
 
 # Import the common helper function for eBay API calls
@@ -39,8 +37,8 @@ async def get_category_suggestions(query: str) -> str:
     """Get category suggestions from eBay Taxonomy API for the UK catalogue."""
     logger.info(f"Executing get_category_suggestions MCP tool with query='{query}'.")
     
-    # Validate parameters using Pydantic model
     try:
+        # Validate and coerce params using shared model
         params = CategorySuggestionsParams(query=query)
         
         async def _api_call(access_token: str, client: httpx.AsyncClient):
@@ -60,29 +58,9 @@ async def get_category_suggestions(query: str) -> str:
         async with create_debug_client() as client:
             result = await execute_ebay_api_call("get_category_suggestions", client, _api_call)
             
-            # Try to parse the response as a CategorySuggestionResponse
-            try:
-                if not result.startswith('Token acquisition failed') and not result.startswith('HTTPX RequestError'):
-                    result_json = json.loads(result)
-                    suggestions = []
-                    for suggestion in result_json.get('categorySuggestions', []):
-                        category = suggestion.get('category', {})
-                        suggestions.append(CategorySuggestion(
-                            category_id=category.get('categoryId', ''),
-                            category_name=category.get('categoryName', ''),
-                            category_tree_node_level=category.get('categoryTreeNodeLevel'),
-                            relevancy=suggestion.get('relevancy'),
-                            category_tree_id=result_json.get('categoryTreeId'),
-                            leaf_category=category.get('leafCategory', False)
-                        ))
-                    
-                    suggestion_response = CategorySuggestionResponse.success_response(suggestions)
-                    logger.info(f"Parsed category suggestions: {len(suggestions)} suggestions found")
-                    # Return the original JSON for backward compatibility
-                    return result
-            except Exception as e:
-                logger.warning(f"Failed to parse category suggestions: {str(e)}")
-            
+            # Optionally parse for logging only
+            result_json = json.loads(result)
+            logger.info(f"Parsed {len(result_json.get('categorySuggestions', []))} category suggestions")
             return result
     except Exception as e:
         logger.error(f"Error in get_category_suggestions: {str(e)}")
@@ -97,7 +75,6 @@ async def get_item_aspects_for_category(category_id: str) -> str:
     """
     logger.info(f"Executing get_item_aspects_for_category MCP tool with category_id='{category_id}'.")
     
-    # Validate parameters using Pydantic model
     try:
         params = ItemAspectsParams(category_id=category_id)
         
@@ -117,34 +94,8 @@ async def get_item_aspects_for_category(category_id: str) -> str:
         async with create_debug_client() as client:
             result = await execute_ebay_api_call("get_item_aspects_for_category", client, _api_call)
             
-            # Try to parse the response as an ItemAspectsResponse
-            try:
-                if not result.startswith('Token acquisition failed') and not result.startswith('HTTPX RequestError'):
-                    result_json = json.loads(result)
-                    aspects = []
-                    for aspect_json in result_json.get('aspects', []):
-                        # Convert aspect metadata to Pydantic model
-                        aspect = Aspect(
-                            aspect_id=aspect_json.get('localizedAspectName'),
-                            name=aspect_json.get('localizedAspectName', ''),
-                            aspect_type=aspect_json.get('aspectConstraint', {}).get('aspectMode', ''),
-                            required=aspect_json.get('aspectConstraint', {}).get('aspectRequired', False),
-                            aspect_values=aspect_json.get('aspectValues', []),
-                            usage=aspect_json.get('aspectConstraint', {}).get('aspectUsage', ''),
-                            min_values=aspect_json.get('aspectConstraint', {}).get('itemToAspectCardinality', {}).get('minimum', 0),
-                            max_values=aspect_json.get('aspectConstraint', {}).get('itemToAspectCardinality', {}).get('maximum', 0),
-                            confidence=aspect_json.get('aspectConstraint', {}).get('confidenceThreshold', 0),
-                            value_format=aspect_json.get('aspectConstraint', {}).get('valueConstraint', {}).get('applicableForLocalizedAspectName', '')
-                        )
-                        aspects.append(aspect)
-                    
-                    aspects_response = ItemAspectsResponse.success_response(aspects)
-                    logger.info(f"Parsed item aspects: {len(aspects)} aspects found for category {params.category_id}")
-                    # Return the original JSON for backward compatibility
-                    return result
-            except Exception as e:
-                logger.warning(f"Failed to parse item aspects: {str(e)}")
-            
+            result_json = json.loads(result)
+            logger.info(f"Parsed {len(result_json.get('aspects', []))} aspects for category {params.category_id}")
             return result
     except Exception as e:
         logger.error(f"Error in get_item_aspects_for_category: {str(e)}")

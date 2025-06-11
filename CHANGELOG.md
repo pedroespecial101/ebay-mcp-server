@@ -71,6 +71,18 @@
     - Commented out the old manual log archiving logic, as `RotatingFileHandler` now manages this.
     - Set log rotation to trigger when a log file reaches 10MB.
 
+## Updates in TrajectoryID <pydantic_v2_migration_manage_offer_taxonomy_12062025_1410>, 12062025 - 14:10:00
+
+- **Pydantic v2 Migration Progress**:
+  - Replaced deprecated `root_validator` with `model_validator` in `src/ebay_mcp/inventory/manage_offer.py` (`ManageOfferToolInput`).
+  - Updated import to use `model_validator` instead of `root_validator`.
+  - Removed unused legacy Pydantic model imports (`CategorySuggestion*`, `ItemAspects*`) and heavy parsing logic from `src/ebay_mcp/taxonomy/server.py`. The server now relies on raw JSON responses with lightweight logging only, reducing maintenance overhead.
+  - Confirmed inline models and shared models comply with Pydantic 2.0 standards in the modified files.
+
+- **Next Steps**:
+  - Run MCP Test UI and exercise `manage_offer` and taxonomy tools to ensure validation logic still works.
+  - Continue auditing remaining modules for v2 compliance.
+
 ## Updates in TrajectoryID <Fix Pydantic Serialization, (e1251790-8399-4501-a19c-51306f4424d3)>, 10062025 - 20:42:10
 
 - **Fixed Pydantic Serialization**: Updated `src/ebay_mcp/inventory/manage_offer.py` to use `model_dump_json(indent=2)` instead of the deprecated `json(indent=2)` for serializing Pydantic model responses. This resolves a `TypeError` with Pydantic V2 and ensures correct JSON output formatting.
@@ -152,4 +164,3 @@
 - `tests/test_update_offer_comprehensive.py`: New comprehensive test suite
 
 This update transforms the Update Offer tool from a basic price/quantity updater into a comprehensive offer management solution supporting all eBay Inventory API capabilities while maintaining safety through prominent warnings and data preservation features.
-
