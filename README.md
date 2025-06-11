@@ -202,8 +202,7 @@ The server implements the Model Context Protocol, allowing AI assistants and oth
 - `get_inventory_items(limit: int = 25, offset: int = 0)`: Retrieve multiple inventory items with pagination support
 - `delete_inventory_item(sku: str)`: Delete an inventory item by its SKU (also removes associated offers and listings)
 - `get_offer_by_sku(sku: str)`: Get offer details for a specific SKU
-- `update_offer(offer_id: str, sku: str, marketplace_id: str, price: float, available_quantity: int)`: Update an existing offer
-- `withdraw_offer(offer_id: str)`: Withdraw (delete) an existing offer
+- `manage_offer(sku: str, action: str, offer_data: Optional[dict])`: Manages eBay offers. Actions include 'create', 'modify', 'withdraw', 'publish', 'get'. The `offer_data` parameter is a complex object required for 'create' and 'modify' actions; refer to the tool's auto-generated schema for detailed field names (using `camelCase`) and descriptions.
 - `get_listing_fees(offer_ids: list)`: Get listing fees for unpublished offers
 
 ## Adding New Functions

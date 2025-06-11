@@ -1,3 +1,22 @@
+## Updates in TrajectoryID <Add Verification to Offer Management, (cascade_update_06_11_2025_0801)>, 11062025 - 08:01:50
+
+- **Enhanced `manage_offer` Tool with Verification Step**:
+    - Added a verification step to the `CREATE` and `MODIFY` actions in the `manage_offer` tool in `src/ebay_mcp/inventory/manage_offer.py`.
+    - After a successful `CREATE` or `MODIFY` operation, the tool now immediately performs a `GET` request to fetch the offer's latest state from eBay.
+    - For `CREATE`, it confirms the offer was created and returns the full, verified payload.
+    - For `MODIFY`, it compares the updated fields against the fetched data and reports any discrepancies.
+    - The success response to the MCP client now includes the complete, verified offer payload from eBay in the `details` field, ensuring the client receives confirmation of the final state.
+    - This change improves the reliability of the tool by confirming that eBay has successfully processed the changes before reporting success.
+
+## Updates in TrajectoryID <Correct eBay API Field Naming in Manage Offer, (cascade_update_06_11_2025_0749)>, 11062025 - 07:49:21
+
+- **Standardized eBay API Field Naming in `manage_offer.py`**:
+    - Updated the `OfferDataForManage` Pydantic model in `src/ebay_mcp/inventory/manage_offer.py` to use `camelCase` field names (e.g., `categoryId` instead of `category_id`) to align with eBay API specifications.
+    - Replaced existing field descriptions in `OfferDataForManage` with detailed descriptions sourced directly from the eBay Sell Inventory v1 API Overview (`EbayOfferDetailsWithAll` schema). This enhances the clarity and usability of the MCP tool's schema.
+    - Added `class Config: allow_population_by_field_name = True` to `OfferDataForManage` to support population with `snake_case` keys while ensuring `camelCase` serialization.
+    - Updated the `required_fields_create` list within the `manage_offer` tool's logic to use the new `camelCase` field names for validation of 'create' actions.
+    - These changes ensure that JSON payloads sent to eBay use the correct field naming conventions and improve the descriptiveness of the MCP tool.
+
 ## Updates in TrajectoryID <Consolidate Offer Management Tools, (e1251790-8399-4501-a19c-51306f4424d3)>, 11062025 - 07:15:47
 
 - **Enhanced `manage_offer` Tool**:

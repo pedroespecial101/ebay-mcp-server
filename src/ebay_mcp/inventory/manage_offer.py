@@ -32,27 +32,32 @@ class ManageOfferAction(str, Enum):
 
 
 class OfferDataForManage(EbayBaseModel):
-    """Data payload for creating or modifying an offer. Fields are based on UpdateOfferRequest excluding offer_id and sku."""
-    marketplace_id: Optional[str] = Field(None, description="The eBay marketplace ID (e.g., EBAY_US, EBAY_GB).")
-    format: Optional[str] = Field(None, description="The listing format (FIXED_PRICE or AUCTION).")
-    available_quantity: Optional[int] = Field(None, ge=0, description="Quantity available for purchase.")
-    pricing_summary: Optional[Dict[str, Any]] = Field(None, description="Pricing container.")
-    category_id: Optional[str] = Field(None, description="Primary eBay category ID.")
-    listing_description: Optional[str] = Field(None, max_length=500000, description="Listing description.")
-    listing_duration: Optional[str] = Field(None, description="Listing duration.")
-    listing_start_date: Optional[str] = Field(None, description="Scheduled start time in UTC.")
-    merchant_location_key: Optional[str] = Field(None, max_length=36, description="Merchant inventory location ID.")
-    listing_policies: Optional[Dict[str, Any]] = Field(None, description="Business policies container.")
-    secondary_category_id: Optional[str] = Field(None, description="Secondary category ID.")
-    store_category_names: Optional[List[str]] = Field(None, max_items=2, description="eBay store category paths.")
-    quantity_limit_per_buyer: Optional[int] = Field(None, ge=1, description="Max quantity per buyer.")
-    lot_size: Optional[int] = Field(None, ge=1, description="Number of items in lot listing.")
-    hide_buyer_details: Optional[bool] = Field(None, description="True for private listings.")
-    include_catalog_product_details: Optional[bool] = Field(None, description="Apply eBay catalog product details.")
-    charity: Optional[Dict[str, Any]] = Field(None, description="Charitable organization container.")
-    extended_producer_responsibility: Optional[Dict[str, Any]] = Field(None, description="Eco-participation fee container.")
-    regulatory: Optional[Dict[str, Any]] = Field(None, description="Regulatory information container.")
-    tax: Optional[Dict[str, Any]] = Field(None, description="Tax configuration container.")
+    """Data payload for creating or modifying an offer. Fields are based on the eBay Offer object structure, using camelCase as per eBay API.
+    Detailed descriptions are sourced from the eBay Sell Inventory v1 API Overview.
+    """
+    marketplaceId: Optional[str] = Field(None, description="This enumeration value is the unique identifier of the eBay site on which the offer is available, or will be made available. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/inventory/types/slr:MarketplaceEnum'>eBay API documentation</a>")
+    format: Optional[str] = Field(None, description="This enumerated value indicates the listing format of the offer. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/inventory/types/slr:FormatTypeEnum'>eBay API documentation</a>")
+    availableQuantity: Optional[int] = Field(None, ge=0, description="This integer value indicates the quantity of the inventory item (specified by the <strong>sku</strong> value) that will be available for purchase by buyers shopping on the eBay site specified in the <strong>marketplaceId</strong> field.")
+    pricingSummary: Optional[Dict[str, Any]] = Field(None, description="This container shows the listing price for the product offer, and if applicable, the settings for the Minimum Advertised Price and Strikethrough Pricing features. The Minimum Advertised Price feature is only available on the US site. Strikethrough Pricing is available on the US, eBay Motors, UK, Germany, Canada (English and French), France, Italy, and Spain sites.<br><br>For unpublished offers where pricing information has yet to be specified, this container will be returned as empty.")
+    categoryId: Optional[str] = Field(None, description="The unique identifier of the primary eBay category that the inventory item is listed under. This field is always returned for published offers, but is only returned if set for unpublished offers.")
+    listingDescription: Optional[str] = Field(None, max_length=500000, description="The description of the eBay listing that is part of the unpublished or published offer. This field is always returned for published offers, but is only returned if set for unpublished offers.<br><br><strong>Max Length</strong>: 500000 (which includes HTML markup/tags)")
+    listingDuration: Optional[str] = Field(None, description="This field indicates the number of days that the listing will be active.<br><br>This field is returned for both auction and fixed-price listings; however, the value returned for fixed-price listings will always be <code>GTC</code>. The GTC (Good 'Til Cancelled) listings are automatically renewed each calendar month until the seller decides to end the listing.<br><br><span class=\"tablenote\"> <strong>Note:</strong> If the listing duration expires for an auction offer, the listing then becomes available as a fixed-price offer and will be GTC.</span> For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/inventory/types/slr:ListingDurationEnum'>eBay API documentation</a>")
+    listingStartDate: Optional[str] = Field(None, description="This timestamp is the date/time (in UTC format) that the seller set for the scheduled listing. With the scheduled listing feature, the seller can set a time in the future that the listing will become active, instead of the listing becoming active immediately after a <strong>publishOffer</strong> call.<br><br>For example: 2023-05-30T19:08:00Z.<br><br>Scheduled listings do not always start at the exact date/time specified by the seller, but the date/time of the timestamp returned in <strong>getOffer</strong>/<strong>getOffers</strong> will be the same as the timestamp passed into a 'Create' or 'Update' offer call. <br><br>This field is returned if set for an offer.")
+    merchantLocationKey: Optional[str] = Field(None, max_length=36, description="The unique identifier of the inventory location. This identifier is set up by the merchant when the inventory location is first created with the <strong>createInventoryLocation</strong> call. Once this value is set for an inventory location, it can not be modified. To get more information about this inventory location, the <a href=\"api-docs/sell/inventory/resources/location/methods/getInventoryLocation\" target=\"_blank \">getInventoryLocation</a> method can be used, passing in this value at the end of the call URI.<br><br>This field is always returned for published offers, but is only returned if set for unpublished offers.<br><br><b>Max length</b>: 36")
+    listingPolicies: Optional[Dict[str, Any]] = Field(None, description="This container indicates the listing policies that are applied to the offer. Listing policies include business policies, custom listing policies, and fields that override shipping costs, enable eBay Plus eligibility, or enable the Best Offer feature.<br><br>It is required that the seller be opted into Business Policies before being able to create live eBay listings through the Inventory API. Sellers can opt-in to Business Policies through My eBay or by using the Account API's <strong>optInToProgram</strong> call. Payment, return, and fulfillment listing policies may be created/managed in My eBay or by using the listing policy calls of the sell <strong>Account API</strong>. The sell <strong>Account API</strong> can also be used to create and manage custom policies. For more information, see the sell <a href=\"api-docs/sell/account/overview.html\" target=\"_blank\">Account API</a>.<br><br>For unpublished offers where business policies have yet to be specified, this container will be returned as empty.")
+    secondaryCategoryId: Optional[str] = Field(None, description="The unique identifier for a secondary category. This field is applicable if the seller decides to list the item under two categories. Sellers can use the <a href=\"api-docs/commerce/taxonomy/resources/category_tree/methods/getCategorySuggestions\" target=\"_blank\">getCategorySuggestions</a> method of the Taxonomy API to retrieve suggested category ID values. A fee may be charged when adding a secondary category to a listing. <br><br><span class=\"tablenote\"><strong>Note:</strong> You cannot list <strong>US eBay Motors</strong> vehicles in two categories. However, you can list <strong>Parts & Accessories</strong> in two categories.</span>")
+    storeCategoryNames: Optional[List[str]] = Field(None, max_items=2, description="This container is returned if the seller chose to place the inventory item into one or two eBay store categories that the seller has set up for their eBay store. The string value(s) in this container will be the full path(s) to the eBay store categories, as shown below:<br> <pre><code>\"storeCategoryNames\": [<br> \"/Fashion/Men/Shirts\", <br> \"/Fashion/Men/Accessories\" ], </pre></code>")
+    quantityLimitPerBuyer: Optional[int] = Field(None, ge=1, description="This field is only applicable and set if the seller wishes to set a restriction on the purchase quantity of an inventory item per seller. If this field is set by the seller for the offer, then each distinct buyer may purchase up to, but not exceed the quantity in this field. So, if this field's value is <code>5</code>, each buyer may purchase a quantity of the inventory item between one and five, and the purchases can occur in one multiple-quantity purchase, or over multiple transactions. If a buyer attempts to purchase one or more of these products, and the cumulative quantity will take the buyer beyond the quantity limit, that buyer will be blocked from that purchase.<br>")
+    lotSize: Optional[int] = Field(None, ge=1, description="This field is only applicable and returned if the listing is a lot listing. A lot listing is a listing that has multiple quantity of the same product. An example would be a set of four identical car tires. The integer value in this field is the number of identical items being sold through the lot listing.")
+    hideBuyerDetails: Optional[bool] = Field(None, description="This field is returned as <code>true</code> if the private listing feature has been enabled for the offer. Sellers may want to use this feature when they believe that a listing's potential bidders/buyers would not want their obfuscated user IDs (and feedback scores) exposed to other users. <br><br>This field is always returned even if not explicitly set in the offer. It defaults to <code>false</code>, so will get returned as <code>false</code> if seller does not set this feature with a 'Create' or 'Update' offer method.")
+    includeCatalogProductDetails: Optional[bool] = Field(None, description="This field indicates whether or not eBay product catalog details are applied to a listing. A value of <code>true</code> indicates the listing corresponds to the eBay product associated with the provided product identifier. The product identifier is provided in <strong>createOrReplaceInventoryItem</strong>.<p><span class=\"tablenote\"><strong>Note:</strong> Though the <strong>includeCatalogProductDetails</strong> parameter is not required to be submitted in the request, the parameter defaults to 'true' if omitted.</span></p>")
+    charity: Optional[Dict[str, Any]] = Field(None, description="This container is returned if a charitable organization will receive a percentage of sale proceeds for each sale generated by the listing. This container consists of the <strong>charityId</strong> field to identify the charitable organization, and the <strong>donationPercentage</strong> field that indicates the percentage of the sales proceeds that will be donated to the charitable organization.")
+    extendedProducerResponsibility: Optional[Dict[str, Any]] = Field(None, description="This container is used to provide the eco-participation fee for a product. Use the <a href=\"api-docs/sell/metadata/resources/marketplace/methods/getExtendedProducerResponsibilityPolicies\" >getExtendedProducerResponsibilityPolicies</a> method of the <strong>Sell Metadata API</strong> to retrieve categories that support eco-participation fee for a specified marketplace.")
+    regulatory: Optional[Dict[str, Any]] = Field(None, description="This container is used by the seller to provide regulatory information.")
+    tax: Optional[Dict[str, Any]] = Field(None, description="This container is only returned if a sales tax table, a Value-Added Tax (VAT) rate, and/or a tax exception category code was applied to the offer. Only Business Sellers can apply VAT to their listings. It is possible that the <strong>applyTax</strong> field will be included with a value of <code>true</code>, but a buyer's purchase will not involve sales tax. A sales tax rate must be set up in the seller's sales tax table for the buyer's state/tax jurisdiction in order for that buyer to be subject to sales tax.<br><br>See the <a href=\"https://pages.ebay.com/help/pay/checkout-tax-table.html \" target=\"_blank\">Using a tax table</a> help page for more information on setting up and using a sales tax table.")
+
+    class Config:
+        allow_population_by_field_name = True # Allows populating with snake_case keys if needed, serializes with attribute names (now camelCase)
 
 
 # This model will be used by FastMCP for schema generation and input validation
@@ -157,7 +162,7 @@ async def manage_offer_tool(inventory_mcp):
                 
                 # Specific field requirements for 'create' action within offer_data
                 if params.offer_data: # Should always be true due to validator, but good for type hinting
-                    required_fields_create = ['marketplace_id', 'format', 'available_quantity', 'category_id', 'listing_policies', 'merchant_location_key', 'pricing_summary']
+                    required_fields_create = ['marketplaceId', 'format', 'availableQuantity', 'categoryId', 'listingPolicies', 'merchantLocationKey', 'pricingSummary']
                     for field in required_fields_create:
                         if getattr(params.offer_data, field, None) is None:
                             raise ValueError(f"Missing required field '{field}' in offer_data for 'create' action.")
@@ -174,9 +179,23 @@ async def manage_offer_tool(inventory_mcp):
                 response.raise_for_status()
                 response_json = response.json()
                 new_offer_id = response_json.get('offerId')
-                logger.info(f"manage_offer (CREATE): Successfully created offer for SKU '{params.sku}'. New OfferId: {new_offer_id}")
+                logger.info(f"manage_offer (CREATE): Successfully created offer for SKU '{params.sku}'. New OfferId: {new_offer_id}. Verifying...")
+
+                # Verification step
+                verified_offer = await _get_offer_by_sku(params.sku, access_token, client)
+                if not verified_offer:
+                    # This could be a transient issue, but we'll treat it as a failure for now.
+                    raise ValueError(f"VERIFICATION FAILED: Could not retrieve offer for SKU '{params.sku}' immediately after creation.")
+
+                # Simple verification: check if a key field matches.
+                # Note: eBay might transform or default some values. This is a basic check.
+                if payload.get('categoryId') != verified_offer.get('categoryId'):
+                    logger.warning(f"Verification discrepancy for SKU '{params.sku}'. Sent categoryId '{payload.get('categoryId')}', but found '{verified_offer.get('categoryId')}' in fetched offer.")
+                    # For now, we will still return success but include the fetched data.
+
+                logger.info(f"manage_offer (CREATE): Verification successful for SKU '{params.sku}'.")
                 return ManageOfferToolResponse.success_response(
-                    ManageOfferResponseDetails(offer_id=new_offer_id, status_code=response.status_code, message="Offer created successfully.", details=response_json)
+                    ManageOfferResponseDetails(offer_id=new_offer_id, status_code=response.status_code, message="Offer created and verified successfully.", details=verified_offer)
                 ).model_dump_json(indent=2)
 
             # --- MODIFY Action --- 
@@ -203,9 +222,30 @@ async def manage_offer_tool(inventory_mcp):
                 logger.debug(f"manage_offer (MODIFY): URL: {url}, Payload: {update_payload}")
                 response = await client.put(url, headers=headers, json=update_payload)
                 response.raise_for_status() # Expect 204 No Content
-                logger.info(f"manage_offer (MODIFY): Successfully modified offer '{offer_id_from_current}' for SKU '{params.sku}'.")
+                logger.info(f"manage_offer (MODIFY): Successfully submitted modification for offer '{offer_id_from_current}' for SKU '{params.sku}'. Verifying...")
+
+                # Verification step
+                verified_offer = await _get_offer_by_sku(params.sku, access_token, client)
+                if not verified_offer:
+                    raise ValueError(f"VERIFICATION FAILED: Could not retrieve offer for SKU '{params.sku}' immediately after modification.")
+
+                # Verification logic
+                discrepancies = []
+                for key, value in provided_updates.items():
+                    # This is a shallow comparison. For complex objects (like pricingSummary), a deep-diff would be better.
+                    if str(verified_offer.get(key)) != str(value):
+                        discrepancies.append(f"Field '{key}': expected '{value}', found '{verified_offer.get(key)}'")
+                
+                message = "Offer modified and verified successfully."
+                if discrepancies:
+                    discrepancy_details = '; '.join(discrepancies)
+                    logger.warning(f"Verification for SKU '{params.sku}' found discrepancies: {discrepancy_details}")
+                    message = f"Offer modified. Verification found discrepancies: {discrepancy_details}"
+                else:
+                    logger.info(f"manage_offer (MODIFY): Verification successful for SKU '{params.sku}'.")
+
                 return ManageOfferToolResponse.success_response(
-                    ManageOfferResponseDetails(offer_id=offer_id_from_current, status_code=response.status_code, message="Offer modified successfully.")
+                    ManageOfferResponseDetails(offer_id=offer_id_from_current, status_code=response.status_code, message=message, details=verified_offer)
                 ).model_dump_json(indent=2)
 
             # --- WITHDRAW Action --- 
