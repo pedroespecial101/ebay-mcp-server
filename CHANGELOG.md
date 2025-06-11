@@ -1,3 +1,14 @@
+## Updates in TrajectoryID <Remove Deprecated Inventory Tools, (remove_deprecated_inventory_tools_11062025_1218)>, 11062025 - 12:18:00
+
+- **Removed Deprecated Inventory Tools**:
+  - Removed the following deprecated inventory management tools that have been superseded by the `manage_offer` tool:
+    - `create_or_replace_inventory_item.py`
+    - `get_inventory_item_by_sku.py`
+    - `delete_inventory_item.py`
+  - Removed related Pydantic models and request/response schemas
+  - Updated `README.md` to remove references to the deleted tools
+  - All inventory management should now be done through the consolidated `manage_offer` tool
+
 ## Updates in TrajectoryID <Update README for manage_offer.py, (cascade_update_readme_11062025_0949)>, 11062025 - 09:49:50
 
 - **Updated `README.md` Documentation**:

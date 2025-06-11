@@ -223,9 +223,7 @@ class InventoryItemDetails(EbayBaseModel):
     group_ids: Optional[List[str]] = Field(None, description="List of inventory item group IDs this item belongs to.")
 
 
-class InventoryItemResponse(EbayResponse[InventoryItemDetails]):
-    """Response model for inventory item details."""
-    pass
+
 
 
 class InventoryItemsListResponse(EbayBaseModel):
@@ -272,135 +270,6 @@ class InventoryItemsListResponse(EbayBaseModel):
     def error_response(cls, error_message: str):
         """Create an error response."""
         return cls(inventory_items=[], total=0, size=0)
-
-
-class DeleteInventoryItemResponse(EbayBaseModel):
-    """Response model for delete inventory item operation."""
-
-    success: bool = Field(..., description="Whether the deletion was successful.")
-    message: str = Field(..., description="Success or error message.")
-    sku: Optional[str] = Field(None, description="The SKU that was deleted.")
-
-    @classmethod
-    def success_response(cls, sku: str):
-        """Create a success response for deletion."""
-        return cls(
-            success=True,
-            message=f"Inventory item with SKU '{sku}' has been successfully deleted.",
-            sku=sku
-        )
-
-    @classmethod
-    def error_response(cls, error_message: str, sku: str = None):
-        """Create an error response for deletion."""
-        return cls(
-            success=False,
-            message=f"Failed to delete inventory item: {error_message}",
-            sku=sku
-        )
-
-
-class CreateOrReplaceInventoryItemRequest(EbayBaseModel):
-    """Request model for create or replace inventory item operation."""
-
-    availability: Optional[Dict[str, Any]] = Field(None, description="Availability information including quantity.")
-    condition: str = Field(..., description="The condition of the inventory item.")
-    condition_description: Optional[str] = Field(None, description="Additional description of the item condition.")
-    condition_descriptors: Optional[List[Dict[str, Any]]] = Field(None, description="List of condition descriptors.")
-    package_weight_and_size: Optional[Dict[str, Any]] = Field(None, description="Package weight and dimensions.")
-    product: Dict[str, Any] = Field(..., description="Product details including title, description, aspects, etc.")
-
-    @classmethod
-    def from_params(cls, params):
-        """Create request from validated parameters."""
-        # Build product object
-        product = {
-            "title": params.product_title,
-            "description": params.product_description
-        }
-
-        # Add optional product fields
-        if params.product_aspects:
-            product["aspects"] = params.product_aspects
-        if params.product_imageUrls:
-            product["imageUrls"] = params.product_imageUrls
-        if params.product_brand:
-            product["brand"] = params.product_brand
-        if params.product_mpn:
-            product["mpn"] = params.product_mpn
-        if params.product_ean:
-            product["ean"] = params.product_ean
-        if params.product_upc:
-            product["upc"] = params.product_upc
-        if params.product_isbn:
-            product["isbn"] = params.product_isbn
-        if params.product_epid:
-            product["epid"] = params.product_epid
-        if params.product_subtitle:
-            product["subtitle"] = params.product_subtitle
-        if params.product_videoIds:
-            product["videoIds"] = params.product_videoIds
-
-        # Build availability object
-        availability = {
-            "shipToLocationAvailability": {
-                "quantity": params.quantity
-            }
-        }
-
-        # Add availability distributions if provided
-        if params.availability_distributions:
-            availability["shipToLocationAvailability"]["availabilityDistributions"] = params.availability_distributions
-
-        # Add pickup availability if provided
-        if params.pickup_availability:
-            availability["pickupAtLocationAvailability"] = params.pickup_availability
-
-        # Build package weight and size if provided
-        package_weight_and_size = None
-        if any([params.package_weight_value, params.package_dimensions_length,
-                params.package_dimensions_width, params.package_dimensions_height]):
-            package_weight_and_size = {}
-
-            if params.package_weight_value and params.package_weight_unit:
-                package_weight_and_size["weight"] = {
-                    "value": params.package_weight_value,
-                    "unit": params.package_weight_unit
-                }
-
-            if any([params.package_dimensions_length, params.package_dimensions_width,
-                    params.package_dimensions_height]):
-                dimensions = {}
-                if params.package_dimensions_length:
-                    dimensions["length"] = params.package_dimensions_length
-                if params.package_dimensions_width:
-                    dimensions["width"] = params.package_dimensions_width
-                if params.package_dimensions_height:
-                    dimensions["height"] = params.package_dimensions_height
-                if params.package_dimensions_unit:
-                    dimensions["unit"] = params.package_dimensions_unit
-
-                if dimensions:
-                    package_weight_and_size["dimensions"] = dimensions
-
-            if params.package_type:
-                package_weight_and_size["packageType"] = params.package_type
-            if params.package_shipping_irregular is not None:
-                package_weight_and_size["shippingIrregular"] = params.package_shipping_irregular
-
-        # Build condition descriptors if provided
-        condition_descriptors = None
-        if params.condition_descriptors:
-            condition_descriptors = params.condition_descriptors
-
-        return cls(
-            availability=availability,
-            condition=params.condition,
-            condition_description=params.condition_description,
-            condition_descriptors=condition_descriptors,
-            package_weight_and_size=package_weight_and_size,
-            product=product
-        )
 
 
 class CreateOrReplaceInventoryItemResponse(EbayBaseModel):

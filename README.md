@@ -70,9 +70,7 @@ ebay-mcp-server/
 │   │   │   └── server.py   # Browse MCP tools implementation
 │   │   ├── inventory/      # Inventory API server
 │   │   │   ├── server.py   # Inventory MCP base implementation
-│   │   │   ├── get_inventory_item_by_sku.py  # Get single inventory item tool
 │   │   │   ├── get_inventory_items.py        # Get inventory items with pagination tool
-│   │   │   ├── delete_inventory_item.py      # Delete inventory item tool
 │   │   │   ├── update_offer.py  # Update offer tool implementation
 │   │   │   ├── withdraw_offer.py # Withdraw offer tool implementation
 │   │   │   ├── listing_fees.py  # Listing fees tool implementation
@@ -198,10 +196,7 @@ The server implements the Model Context Protocol, allowing AI assistants and oth
 - `get_item_aspects_for_category(category_id: str)`: Get item aspects for a specific category
 
 ### Inventory API Tools
-- `create_or_replace_inventory_item(sku: str, condition: str, product_title: str, product_description: str, ...)`: Create or replace an inventory item with comprehensive product details, availability, and packaging information
-- `get_inventory_item_by_sku(sku: str)`: Retrieve a specific inventory item using its SKU identifier
 - `get_inventory_items(limit: int = 25, offset: int = 0)`: Retrieve multiple inventory items with pagination support
-- `delete_inventory_item(sku: str)`: Delete an inventory item by its SKU (also removes associated offers and listings)
 - `get_offer_by_sku(sku: str)`: Get offer details for a specific SKU
 - `manage_offer(sku: str, action: str, offer_data: Optional[dict])`: Manages eBay offers. Actions include 'create', 'modify', 'withdraw', 'publish', 'get'. The `offer_data` parameter is a complex object required for 'create' and 'modify' actions; refer to the tool's auto-generated schema for detailed field names (using `camelCase`) and descriptions.
 - `get_listing_fees(offer_ids: list)`: Get listing fees for unpublished offers
@@ -214,7 +209,7 @@ This project uses a **modular tool implementation pattern** for organizing MCP t
 
 For complex APIs like eBay Inventory, tools are organized as follows:
 
-1. **Individual Tool Files**: Each MCP tool is implemented in its own file (e.g., `get_inventory_item_by_sku.py`)
+1. **Individual Tool Files**: Each MCP tool is implemented in its own file
 2. **Server Registration**: Tools are imported and registered in the main server file (e.g., `inventory/server.py`)
 3. **Shared Utilities**: Common functionality like authentication is handled by shared utilities (`execute_ebay_api_call`)
 

@@ -352,165 +352,24 @@ class TriggerEbayLoginResponse(EbayResponse[str]):
         )
 
 
-class GetInventoryItemBySkuParams(EbayBaseModel):
-    """Parameters for the get_inventory_item_by_sku tool."""
-
-    sku: str = Field(..., description="The seller-defined SKU (Stock Keeping Unit) of the inventory item to retrieve.")
-
-    @field_validator('sku')
-    def validate_sku(cls, v):
-        """Convert the SKU to string if needed and validate length."""
-        sku_str = str(v) if v is not None else v
-        if sku_str and len(sku_str) > 50:
-            raise ValueError("SKU must be 50 characters or less")
-        return sku_str
-
-
 class GetInventoryItemsParams(EbayBaseModel):
     """Parameters for the get_inventory_items tool."""
-
+    
     limit: int = Field(25, description="The maximum number of inventory items to return per page (1-200).")
     offset: int = Field(0, description="The number of inventory items to skip before starting to return results.")
-
+    
     @field_validator('limit')
+    @classmethod
     def validate_limit(cls, v):
         """Validate that limit is within acceptable range."""
         if v < 1 or v > 200:
             raise ValueError("Limit must be between 1 and 200")
         return v
-
+    
     @field_validator('offset')
+    @classmethod
     def validate_offset(cls, v):
         """Validate that offset is non-negative."""
         if v < 0:
-            raise ValueError("Offset must be non-negative")
-        return v
-
-
-class DeleteInventoryItemParams(EbayBaseModel):
-    """Parameters for the delete_inventory_item tool."""
-
-    sku: str = Field(..., description="The seller-defined SKU (Stock Keeping Unit) of the inventory item to delete.")
-
-    @field_validator('sku')
-    def validate_sku(cls, v):
-        """Convert the SKU to string if needed and validate length."""
-        sku_str = str(v) if v is not None else v
-        if sku_str and len(sku_str) > 50:
-            raise ValueError("SKU must be 50 characters or less")
-        return sku_str
-
-
-class CreateOrReplaceInventoryItemParams(EbayBaseModel):
-    """Parameters for the create_or_replace_inventory_item tool."""
-
-    sku: str = Field(..., description="The seller-defined SKU (Stock Keeping Unit) of the inventory item.")
-    condition: str = Field(..., description="The condition of the inventory item.")
-    product_title: str = Field(..., description="The title of the product.")
-    product_description: str = Field(..., description="The description of the product.")
-    quantity: int = Field(1, description="The quantity available for the inventory item.")
-    product_aspects: Optional[Dict[str, Any]] = Field(None, description="Product aspects as key-value pairs.")
-    product_imageUrls: Optional[List[str]] = Field(None, description="List of image URLs for the product.")
-    product_brand: Optional[str] = Field(None, description="The brand of the product.")
-    product_mpn: Optional[str] = Field(None, description="The manufacturer part number.")
-    product_ean: Optional[List[str]] = Field(None, description="List of EAN codes.")
-    product_upc: Optional[List[str]] = Field(None, description="List of UPC codes.")
-    product_isbn: Optional[List[str]] = Field(None, description="List of ISBN codes.")
-    product_epid: Optional[str] = Field(None, description="The eBay product identifier.")
-    product_subtitle: Optional[str] = Field(None, description="The subtitle of the product.")
-    product_videoIds: Optional[List[str]] = Field(None, description="List of video IDs for the product.")
-    condition_description: Optional[str] = Field(None, description="Additional description of the item condition.")
-    condition_descriptors: Optional[List[Dict[str, Any]]] = Field(None, description="List of condition descriptors.")
-    package_weight_value: Optional[float] = Field(None, description="The weight value of the package.")
-    package_weight_unit: Optional[str] = Field(None, description="The weight unit of the package.")
-    package_dimensions_length: Optional[float] = Field(None, description="The length of the package.")
-    package_dimensions_width: Optional[float] = Field(None, description="The width of the package.")
-    package_dimensions_height: Optional[float] = Field(None, description="The height of the package.")
-    package_dimensions_unit: Optional[str] = Field(None, description="The dimension unit of the package.")
-    package_type: Optional[str] = Field(None, description="The package type.")
-    package_shipping_irregular: Optional[bool] = Field(None, description="Whether the package has irregular shipping.")
-    availability_distributions: Optional[List[Dict[str, Any]]] = Field(None, description="Availability distributions.")
-    pickup_availability: Optional[List[Dict[str, Any]]] = Field(None, description="Pickup availability information.")
-
-    @field_validator('sku')
-    def validate_sku(cls, v):
-        """Convert the SKU to string if needed and validate length."""
-        sku_str = str(v) if v is not None else v
-        if not sku_str or len(sku_str.strip()) == 0:
-            raise ValueError("SKU cannot be empty")
-        if len(sku_str) > 50:
-            raise ValueError("SKU must be 50 characters or less")
-        return sku_str.strip()
-
-    @field_validator('condition')
-    def validate_condition(cls, v):
-        """Validate condition against eBay's allowed values."""
-        allowed_conditions = [
-            'NEW', 'LIKE_NEW', 'NEW_OTHER', 'NEW_WITH_DEFECTS',
-            'MANUFACTURER_REFURBISHED', 'CERTIFIED_REFURBISHED',
-            'EXCELLENT_REFURBISHED', 'VERY_GOOD_REFURBISHED',
-            'GOOD_REFURBISHED', 'SELLER_REFURBISHED',
-            'USED_EXCELLENT', 'USED_VERY_GOOD', 'USED_GOOD',
-            'USED_ACCEPTABLE', 'FOR_PARTS_OR_NOT_WORKING',
-            'PRE_OWNED_EXCELLENT', 'PRE_OWNED_FAIR'
-        ]
-        if v not in allowed_conditions:
-            raise ValueError(f"Condition must be one of: {', '.join(allowed_conditions)}")
-        return v
-
-    @field_validator('product_title')
-    def validate_product_title(cls, v):
-        """Validate product title is not empty."""
-        if not v or len(v.strip()) == 0:
-            raise ValueError("Product title cannot be empty")
-        return v.strip()
-
-    @field_validator('product_description')
-    def validate_product_description(cls, v):
-        """Validate product description is not empty."""
-        if not v or len(v.strip()) == 0:
-            raise ValueError("Product description cannot be empty")
-        return v.strip()
-
-    @field_validator('quantity')
-    def validate_quantity(cls, v):
-        """Validate quantity is positive."""
-        if v < 1:
-            raise ValueError("Quantity must be at least 1")
-        return v
-
-    @field_validator('product_imageUrls')
-    def validate_image_urls(cls, v):
-        """Validate image URLs format."""
-        if v is not None:
-            import re
-            url_pattern = re.compile(
-                r'^https?://'  # http:// or https://
-                r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?|'  # domain...
-                r'localhost|'  # localhost...
-                r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
-                r'(?::\d+)?'  # optional port
-                r'(?:/?|[/?]\S+)$', re.IGNORECASE)
-
-            for url in v:
-                if not url_pattern.match(url):
-                    raise ValueError(f"Invalid URL format: {url}")
-        return v
-
-    @field_validator('package_weight_unit')
-    def validate_weight_unit(cls, v):
-        """Validate weight unit."""
-        if v is not None:
-            allowed_units = ['POUND', 'KILOGRAM', 'OUNCE', 'GRAM']
-            if v not in allowed_units:
-                raise ValueError(f"Weight unit must be one of: {', '.join(allowed_units)}")
-        return v
-
-    @field_validator('package_dimensions_unit')
-    def validate_dimensions_unit(cls, v):
-        """Validate dimensions unit."""
-        if v is not None:
-            allowed_units = ['INCH', 'FEET', 'CENTIMETER', 'METER']
-            if v not in allowed_units:
-                raise ValueError(f"Dimensions unit must be one of: {', '.join(allowed_units)}")
+            raise ValueError("Offset cannot be negative")
         return v
