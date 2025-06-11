@@ -198,6 +198,7 @@ The server implements the Model Context Protocol, allowing AI assistants and oth
 ### Inventory API Tools
 - `get_inventory_items(limit: int = 25, offset: int = 0)`: Retrieve multiple inventory items with pagination support
 - `get_offer_by_sku(sku: str)`: Get offer details for a specific SKU
+- `manage_inventory_item(sku: str, action: str, item_data: Optional[dict])`: Manages eBay inventory items. Actions include 'create', 'modify', 'get', 'delete'. For 'create' and 'modify', the `item_data` payload follows a limited-field schema (title, description, identifiers, condition, availability) as defined by the InventoryItemDataForManage model.
 - `manage_offer(sku: str, action: str, offer_data: Optional[dict])`: Manages eBay offers. Actions include 'create', 'modify', 'withdraw', 'publish', 'get'. The `offer_data` parameter is a complex object required for 'create' and 'modify' actions; refer to the tool's auto-generated schema for detailed field names (using `camelCase`) and descriptions.
 - `get_listing_fees(offer_ids: list)`: Get listing fees for unpublished offers
 

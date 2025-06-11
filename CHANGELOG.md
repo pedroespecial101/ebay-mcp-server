@@ -114,9 +114,20 @@
   - Follows existing project patterns for API calls, logging, and error handling.
   - Integrated into the inventory MCP server.
 
-## Updates in Comprehensive Update Offer Tool Enhancement (05062025 - 06:40:00)
+## Updates in TrajectoryID <inventory_item_limited_fields_11062025_1846>, 11062025 - 18:46:00
 
-### 🚨 MAJOR ENHANCEMENT: Complete Update Offer Tool Overhaul
+- **Refactored `InventoryItemDataForManage` model**:
+  - Introduced strongly-typed nested models (`ProductDataForInventoryItem`, `AvailabilityData`, `ShipToLocationAvailability`) limited to the mandatory fields defined in `_archive/InventoryItemRequired_Limited.json`.
+  - Added rich `Field` metadata (titles, descriptions, examples) sourced from *eBay Sell Inventory v1 API Overview* to improve MCP schema clarity.
+  - Removed unused fields (`conditionDescriptors`, `packageWeightAndSize`) from the inventory item payload.
+  - Updated validation logic in the `CREATE` action of `manage_inventory_item` to use the new nested models.
+
+- **Documentation**:
+  - Updated `README.md` to list the `manage_inventory_item` MCP tool with its new limited-field payload description.
+
+## Updates in TrajectoryID <Comprehensive Update Offer Tool Enhancement, (05062025 - 06:40:00)>
+
+### MAJOR ENHANCEMENT: Complete Update Offer Tool Overhaul
 
 **CRITICAL WARNING ADDED**: The updateOffer API performs a COMPLETE REPLACEMENT operation. All current offer data will be overwritten with provided values. Any fields not included will be cleared/reset to defaults.
 
