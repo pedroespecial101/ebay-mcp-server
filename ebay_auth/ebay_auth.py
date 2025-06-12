@@ -11,6 +11,13 @@ import socketserver
 import queue
 from urllib.parse import urlparse, parse_qs, urlencode
 import uuid # For state parameter
+import warnings
+warnings.warn(
+    "ebay_auth.ebay_auth is deprecated and will be removed soon. "
+    "Please switch to ebay_mcp.auth.ebay_oauth.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

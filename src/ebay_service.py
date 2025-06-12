@@ -4,7 +4,7 @@ import logging.handlers
 from typing import Optional, Union, Dict, Any
 from dotenv import load_dotenv
 import httpx
-from ebay_auth.ebay_auth import get_env_variable as get_ebay_auth_env_variable
+from ebay_mcp.auth.ebay_oauth import get_access_token
 
 # Import Pydantic models
 from models.config.settings import EbayAuthConfig, ServerConfig
@@ -37,26 +37,24 @@ else:
 
 
 async def get_ebay_access_token() -> str:
+    """Return a valid eBay user access token via FastMCP OAuth helper.
+
+    The helper will automatically launch an interactive login the first time and
+    transparently refresh tokens thereafter.  Any failure is returned as an
+    error string so existing callers continue to work.
     """
-    Retrieves the current eBay User Access Token from the .env file.
-    This token is expected to be managed (e.g., refreshed) by the ebay_auth module.
-    
-    Returns:
-        str: The access token if available, otherwise an error message.
-    """
-    logger.info("Attempting to retrieve EBAY_USER_ACCESS_TOKEN from .env via ebay_auth module.")
-    
-    # Get the auth configuration from environment variables
-    auth_config = EbayAuthConfig.from_env(dotenv_path)
-    
-    if auth_config.user_access_token:
-        logger.info("Successfully retrieved EBAY_USER_ACCESS_TOKEN.")
-        logger.debug(f"get_ebay_access_token: EBAY_USER_ACCESS_TOKEN (first 10 chars): {auth_config.user_access_token[:10]}...")
-        return auth_config.user_access_token
-    else:
-        error_msg = ("The user's EBAY_USER_ACCESS_TOKEN was not found. The user needs to authenticate with eBay before they can use this MCP. "
-                     "You can use the 'trigger_ebay_login' tool. This will open a browser window for eBay login by the user. "
-                     "Once they have completed this process, you should be able to try your request again!")
+    logger.info("Fetching EBAY_USER_ACCESS_TOKEN using FastMCP OAuth helper …")
+
+    try:
+        token = await get_access_token()
+        logger.debug(f"Retrieved token (first 10 chars): {token[:10]}…")
+        return token
+    except Exception as e:
+        error_msg = (
+            "Failed to retrieve eBay access token via OAuth helper. "
+            "User likely needs to run the 'trigger_ebay_login' tool. "
+            f"Details: {e}"
+        )
         logger.error(error_msg)
         return error_msg
 
@@ -68,6 +66,7 @@ async def get_auth_config() -> EbayAuthConfig:
     Returns:
         EbayAuthConfig: The eBay authentication configuration.
     """
+    # Still return static env-based config for now (may remove later)
     return EbayAuthConfig.from_env(dotenv_path)
 
 

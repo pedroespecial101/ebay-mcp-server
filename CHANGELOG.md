@@ -1,3 +1,21 @@
+## Updates in TrajectoryID <fastmcp_oauth_tests_and_deprecation>, 12062025 - 12:05:00
+
+- **Deprecated legacy `ebay_auth.ebay_auth`**: added runtime DeprecationWarning.
+- **Refactored `ebay_service.py`** to fetch tokens via FastMCP helper, removed `.env` dependence.
+- **Added fallback stub in `ebay_mcp.auth.ebay_oauth`** to allow unit testing without `fastmcp` installed.
+- **New pytest `tests/test_oauth_flow.py`** mocks helper to verify token retrieval path.
+- CHANGELOG updated with these changes.
+
+## Updates in TrajectoryID <start_fasmcp_oauth_migration>, 12062025 - 10:15:00
+
+- **Began migration to FastMCP native OAuth**:
+  - Added `src/ebay_mcp/auth/ebay_oauth.py` providing a pre-configured `fastmcp.client.auth.OAuth` helper for eBay.
+  - Upgraded `fastmcp` dependency to `>=2.4.0` in `requirements.txt`.
+  - Refactored `src/ebay_mcp/auth/server.py`:
+    - Switched token acquisition to new OAuth helper.
+    - Re-implemented `trigger_ebay_login` to use `oauth.login()` and removed redundant threading logic.
+  - **No breaking behavioural changes yet**; legacy `ebay_auth` remains for interim compatibility.
+
 ## Updates in TrajectoryID <remove_mcp_test_ui, (cascade_remove_mcp_test_ui)>, 12062025 - 08:39:30
 
 - Removed legacy `mcp_test_ui/` directory and the `start_mcp_test_ui.sh` script.

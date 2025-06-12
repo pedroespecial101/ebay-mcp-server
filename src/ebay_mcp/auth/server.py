@@ -17,11 +17,9 @@ sys.path.append(project_root)
 # Import auth-related models and functions
 from models.auth import LoginResult
 from models.mcp_tools import TestAuthResponse, TriggerEbayLoginResponse
-from ebay_auth.ebay_auth import refresh_access_token as ebay_auth_refresh_token
-from ebay_auth.ebay_auth import initiate_user_login
-from ebay_service import get_ebay_access_token
-from utils.api_utils import execute_ebay_api_call, is_token_error
-from utils.debug_httpx import create_debug_client
+from ebay_mcp.auth.ebay_oauth import get_ebay_oauth, get_access_token
+from ebay_auth.ebay_auth import get_user_details
+from utils.api_utils import is_token_error
 
 # Load environment variables
 load_dotenv()
@@ -58,7 +56,7 @@ async def test_auth() -> str:
     logger.info("Executing test_auth MCP tool.")
     
     try:
-        token = await get_ebay_access_token()
+        token = await get_access_token()
         
         if is_token_error(token):
             logger.error(f"test_auth: Token acquisition failed: {token}")
@@ -87,37 +85,18 @@ async def trigger_ebay_login() -> str:
     """
     logger.info("Executing trigger_ebay_login MCP tool.")
     try:
-        loop = asyncio.get_event_loop()
-        # Run the synchronous initiate_user_login in a separate thread
-        # initiate_user_login handles its own browser opening and local server for callback
-        login_result = await loop.run_in_executor(None, initiate_user_login)
-        
-        if login_result and login_result.get("status") == "success":
-            logger.info("trigger_ebay_login: eBay login process completed successfully according to initiate_user_login.")
-            # Get the user details if available
-            user_name = login_result.get("user_name", "TreadersLoft")
-            # Create and return a success response using the Pydantic model
-            response = TriggerEbayLoginResponse.success_response(user_name)
-            return response.data
-        elif login_result and "error" in login_result:
-            error_message = login_result.get("message", "Unknown error")
-            error_details = login_result.get("error_details", "No specific error details provided.")
-            logger.error(f"trigger_ebay_login: eBay login process failed. Error: {error_message}, Details: {error_details}")
-            # Create and return an error response using the Pydantic model
-            response = TriggerEbayLoginResponse.error_response(error_message, error_details)
-            return response.data
-        else:
-            # This case might occur if initiate_user_login returns None or an unexpected structure
-            logger.warning(f"trigger_ebay_login: eBay login process finished, but the result was unexpected: {login_result}")
-            # Create and return an uncertain response using the Pydantic model
-            response = TriggerEbayLoginResponse.uncertain_response(login_result)
-            return response.data
+        oauth = get_ebay_oauth()
+        # Open browser if necessary
+        await oauth.login()
+
+        token = await oauth.get_token()
+        # Optionally get user details via existing util
+        user_id, user_name = get_user_details(access_token=token)
+
+        response = TriggerEbayLoginResponse.success_response(user_name or "eBay User")
+        return response.data
 
     except Exception as e:
-        logger.exception("trigger_ebay_login: An unexpected error occurred while trying to initiate eBay login.")
-        # Create and return an error response for the exception
-        response = TriggerEbayLoginResponse.error_response(
-            "An unexpected error occurred while trying to initiate eBay login", 
-            str(e)
-        )
+        logger.exception("trigger_ebay_login: OAuth login failed.")
+        response = TriggerEbayLoginResponse.error_response("OAuth login failed", str(e))
         return response.data
