@@ -1,3 +1,10 @@
+## Updates in TrajectoryID <remove_mcp_test_ui, (cascade_remove_mcp_test_ui)>, 12062025 - 08:39:30
+
+- Removed legacy `mcp_test_ui/` directory and the `start_mcp_test_ui.sh` script.
+- Overhauled `README.md` to eliminate references to the MCP Test UI and point users to MCP Inspector instead.
+- Confirmed no production code in `src/` imports or relies on `mcp_test_ui`.
+- No other breaking changes introduced.
+
 ## Updates in TrajectoryID <Remove Unused MCP Tools, (remove_unused_mcp_tools_11062025_1345)>, 11062025 - 13:45:00
 
 - **Removed Unused MCP Tools**:
