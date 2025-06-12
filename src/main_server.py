@@ -100,6 +100,7 @@ from ebay_mcp.auth.server import auth_mcp
 from ebay_mcp.browse.server import browse_mcp
 from ebay_mcp.taxonomy.server import taxonomy_mcp
 from ebay_mcp.inventory.server import inventory_mcp
+from ebay_mcp.prompts.server import prompts_mcp
 
 # Create the main MCP server
 mcp = FastMCP("eBay API")
@@ -124,6 +125,10 @@ def mount_servers():
     # Mount inventory API tools
     mcp.mount("inventoryAPI", inventory_mcp)
     logger.info("Mounted inventory API MCP server")
+
+    # Mount custom prompts server
+    mcp.mount("customPrompts", prompts_mcp)
+    logger.info("Mounted custom prompts MCP server")
     
     # Test and database tools have been removed as they are no longer needed
     

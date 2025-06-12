@@ -1,3 +1,7 @@
+## Updates in TrajectoryID <add default eBay settings to .env, (add_ebay_settings)>, 12062025 - 17:50:39
+
+- Added default eBay marketplace, listing, and tax settings to the `.env` file.
+
 ## Updates in TrajectoryID <remove_mcp_test_ui, (cascade_remove_mcp_test_ui)>, 12062025 - 08:39:30
 
 - Removed legacy `mcp_test_ui/` directory and the `start_mcp_test_ui.sh` script.
