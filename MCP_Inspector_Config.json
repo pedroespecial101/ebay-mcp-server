@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "ebayAPI-mcp-server": {
+      "command": "/Users/petetreadaway/Projects/ebay-mcp-server/.venv/bin/python",
+      "args": ["/Users/petetreadaway/Projects/ebay-mcp-server/src/main_server.py"],
+      "env": {}
+    },
+    "eBayUI-mcp-server": {
+      "command": "/Users/petetreadaway/Projects/eBayAuthPoC/venv_new/bin/python",
+      "args": ["/Users/petetreadaway/Projects/eBayAuthPoC/mcp_server_stdio.py"],
+      "env": {}
+    }
+  }
+}

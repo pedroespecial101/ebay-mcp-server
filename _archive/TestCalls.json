@@ -56,3 +56,17 @@
       }
     }
   }
+
+
+
+  {
+        "sku": "Coffee-5",
+        "availableQuantity": 20,
+        "pricingSummary": {
+          "price": {
+            "value": "200.0",
+            "currency": "GBP"
+          }
+        },
+        "categoryId": "38179"
+      }

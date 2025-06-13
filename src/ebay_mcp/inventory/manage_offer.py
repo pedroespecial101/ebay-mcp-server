@@ -17,9 +17,10 @@ sys.path.append(project_root)
 
 from models.base import EbayBaseModel, EbayResponse
 # Re-using UpdateOfferRequest fields for OfferDataForManage structure
-from models.ebay.inventory import UpdateOfferRequest 
+from models.ebay.inventory import UpdateOfferRequest
 from utils.api_utils import execute_ebay_api_call, get_standard_ebay_headers
 from utils.debug_httpx import create_debug_client
+from ..config import ebay_offer_defaults
 
 logger = logging.getLogger(__name__)
 
@@ -88,22 +89,40 @@ class ManageOfferAction(str, Enum):
     GET = "get"
 
 
+class OfferFormat(str, Enum):
+    AUCTION = "AUCTION"
+    FIXED_PRICE = "FIXED_PRICE"
+
+
 class OfferDataForManage(EbayBaseModel):
     """Data payload for creating or modifying an offer. Fields are based on the eBay Offer object structure, using camelCase as per eBay API.
-    Detailed descriptions are sourced from the eBay Sell Inventory v1 API Overview.
+    This is a subset of the fields that are available in the eBay API. Only the fields that are required for creating or modifying an offer are included.
     """
-    marketplaceId: Optional[str] = Field(None, description="This enumeration value is the unique identifier of the eBay site on which the offer is available, or will be made available. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/inventory/types/slr:MarketplaceEnum'>eBay API documentation</a>")
-    format: Optional[str] = Field(None, description="This enumerated value indicates the listing format of the offer. Either AUCTION or FIXED_PRICE.")
+    marketplaceId: Optional[str] = Field(None, description="This defaults to the marketplaceId set by the user and should not need to be changed.")
+    format: Optional[OfferFormat] = Field(None, description="The listing format of the offer.")
     availableQuantity: Optional[int] = Field(None, ge=0, description="This integer value indicates the quantity of the inventory item (specified by the <strong>sku</strong> value) that will be available for purchase by buyers shopping on the eBay site specified in the <strong>marketplaceId</strong> field.")
-    pricingSummary: Optional[Dict[str, Any]] = Field(None, description="This container shows the listing price for the product offer, and if applicable, the settings for the Minimum Advertised Price and Strikethrough Pricing features. The Minimum Advertised Price feature is only available on the US site. Strikethrough Pricing is available on the US, eBay Motors, UK, Germany, Canada (English and French), France, Italy, and Spain sites.<br><br>For unpublished offers where pricing information has yet to be specified, this container will be returned as empty.")
-    categoryId: Optional[str] = Field(None, description="The unique identifier of the primary eBay category that the inventory item is listed under. This field is always returned for published offers, but is only returned if set for unpublished offers.")
+    pricingSummary: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Pricing information for the offer.",
+        example={
+            'price': {
+                'value': '99.99',
+                'currency': 'GBP'
+            },
+        }
+    )
+    categoryId: Optional[str] = Field(
+        None, 
+        description="The unique identifier of the primary eBay category for the item. "
+        "Use the 'get_category_suggestions' tool to find the appropriate category ID for your item. "
+        "This field is required when creating a new offer."
+    )
     listingDescription: Optional[str] = Field(None, max_length=500000, description="The description of the eBay listing that is part of the unpublished or published offer. This field is always returned for published offers, but is only returned if set for unpublished offers.<br><br><strong>Max Length</strong>: 500000 (which includes HTML markup/tags)")
-    listingDuration: Optional[str] = Field(None, description="This field indicates the number of days that the listing will be active.<br><br>This field is returned for both auction and fixed-price listings; however, the value returned for fixed-price listings will always be <code>GTC</code>. The GTC (Good 'Til Cancelled) listings are automatically renewed each calendar month until the seller decides to end the listing.<br><br><span class=\"tablenote\"> <strong>Note:</strong> If the listing duration expires for an auction offer, the listing then becomes available as a fixed-price offer and will be GTC.</span> For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/inventory/types/slr:ListingDurationEnum'>eBay API documentation</a>")
-    merchantLocationKey: Optional[str] = Field(None, max_length=36, description="The unique identifier of the inventory location. This identifier is set up by the merchant when the inventory location is first created with the <strong>createInventoryLocation</strong> call. Once this value is set for an inventory location, it can not be modified. To get more information about this inventory location, the <a href=\"api-docs/sell/inventory/resources/location/methods/getInventoryLocation\" target=\"_blank \">getInventoryLocation</a> method can be used, passing in this value at the end of the call URI.<br><br>This field is always returned for published offers, but is only returned if set for unpublished offers.<br><br><b>Max length</b>: 36")
-    listingPolicies: Optional[Dict[str, Any]] = Field(None, description="This container indicates the listing policies that are applied to the offer. Listing policies include business policies, custom listing policies, and fields that override shipping costs, enable eBay Plus eligibility, or enable the Best Offer feature.<br><br>It is required that the seller be opted into Business Policies before being able to create live eBay listings through the Inventory API. Sellers can opt-in to Business Policies through My eBay or by using the Account API's <strong>optInToProgram</strong> call. Payment, return, and fulfillment listing policies may be created/managed in My eBay or by using the listing policy calls of the sell <strong>Account API</strong>. The sell <strong>Account API</strong> can also be used to create and manage custom policies. For more information, see the sell <a href=\"api-docs/sell/account/overview.html\" target=\"_blank\">Account API</a>.<br><br>For unpublished offers where business policies have yet to be specified, this container will be returned as empty.")
-    secondaryCategoryId: Optional[str] = Field(None, description="The unique identifier for a secondary category. This field is applicable if the seller decides to list the item under two categories. Sellers can use the <a href=\"api-docs/commerce/taxonomy/resources/category_tree/methods/getCategorySuggestions\" target=\"_blank\">getCategorySuggestions</a> method of the Taxonomy API to retrieve suggested category ID values. A fee may be charged when adding a secondary category to a listing. <br><br><span class=\"tablenote\"><strong>Note:</strong> You cannot list <strong>US eBay Motors</strong> vehicles in two categories. However, you can list <strong>Parts & Accessories</strong> in two categories.</span>")
-    storeCategoryNames: Optional[List[str]] = Field(None, max_items=2, description="This container is returned if the seller chose to place the inventory item into one or two eBay store categories that the seller has set up for their eBay store. The string value(s) in this container will be the full path(s) to the eBay store categories, as shown below:<br> <pre><code>\"storeCategoryNames\": [<br> \"/Fashion/Men/Shirts\", <br> \"/Fashion/Men/Accessories\" ], </pre></code>")
-    includeCatalogProductDetails: Optional[bool] = Field(None, description="This field indicates whether or not eBay product catalog details are applied to a listing. A value of <code>true</code> indicates the listing corresponds to the eBay product associated with the provided product identifier. The product identifier is provided in <strong>createOrReplaceInventoryItem</strong>.<p><span class=\"tablenote\"><strong>Note:</strong> Though the <strong>includeCatalogProductDetails</strong> parameter is not required to be submitted in the request, the parameter defaults to 'true' if omitted.</span></p>")
+    listingDuration: Optional[str] = Field(None, description="This defaults to the marketplaceId set by the user and should not need to be changed.")
+    merchantLocationKey: Optional[str] = Field(None, max_length=36, description="This defaults to the marketplaceId set by the user and should not need to be changed.")
+    listingPolicies: Optional[Dict[str, Any]] = Field(None, description="This defaults to the marketplaceId set by the user and should not need to be changed.")
+    secondaryCategoryId: Optional[str] = Field(None, description="Rarely used")
+    includeCatalogProductDetails: Optional[bool] = Field(None, description="This defaults to the marketplaceId set by the user and should not need to be changed.")
  
 
     class Config:
@@ -208,18 +227,44 @@ async def manage_offer_tool(inventory_mcp):
                 # if not params.offer_data: # This check is now redundant
                 #     raise ValueError("offer_data is required for create action.")
                 
-                # Specific field requirements for 'create' action within offer_data
-                if params.offer_data: # Should always be true due to validator, but good for type hinting
-                    required_fields_create = ['marketplaceId', 'format', 'availableQuantity', 'categoryId', 'listingPolicies', 'merchantLocationKey', 'pricingSummary']
-                    for field in required_fields_create:
-                        if getattr(params.offer_data, field, None) is None:
-                            raise ValueError(f"Missing required field '{field}' in offer_data for 'create' action.")
-                else:
-                    # This case should ideally be caught by the root_validator in ManageOfferToolInput
+                if not params.offer_data:
                     raise ValueError("offer_data is unexpectedly None for 'create' action despite validator.")
 
-                payload = params.offer_data.model_dump(exclude_none=True)
-                payload['sku'] = params.sku # Add SKU to the payload body as required by createOffer
+                # Start with defaults from config
+                defaults = {
+                    "marketplaceId": ebay_offer_defaults.EBAY_MARKETPLACE_ID,
+                    "format": ebay_offer_defaults.EBAY_LISTING_FORMAT,
+                    "listingDuration": ebay_offer_defaults.EBAY_LISTING_DURATION,
+                    "includeCatalogProductDetails": ebay_offer_defaults.EBAY_LISTING_INCLUDE_CATALOG_PRODUCT_DETAILS,
+                    "merchantLocationKey": ebay_offer_defaults.EBAY_MERCHANT_LOCATION_KEY,
+                    "listingPolicies": {
+                        "paymentPolicyId": ebay_offer_defaults.EBAY_PAYMENT_POLICY_ID,
+                        "returnPolicyId": ebay_offer_defaults.EBAY_RETURN_POLICY_ID,
+                        "fulfillmentPolicyId": ebay_offer_defaults.EBAY_FULFILLMENT_POLICY_ID,
+                    },
+                }
+
+                # User-provided data takes precedence
+                user_payload = params.offer_data.model_dump(exclude_none=True)
+
+                # Deep merge user payload into defaults
+                if 'listingPolicies' in user_payload and 'listingPolicies' in defaults:
+                    merged_policies = defaults['listingPolicies'].copy()
+                    merged_policies.update(user_payload['listingPolicies'])
+                    user_payload['listingPolicies'] = merged_policies
+
+                # Create the final payload by starting with defaults and updating with user data
+                payload = defaults.copy()
+                payload.update(user_payload)
+
+                # Add SKU to the payload body as required by createOffer
+                payload['sku'] = params.sku
+
+                # Final validation for fields not covered by defaults
+                required_fields_after_merge = ['availableQuantity', 'categoryId', 'pricingSummary']
+                for field in required_fields_after_merge:
+                    if field not in payload or payload[field] is None:
+                        raise ValueError(f"Missing required field '{field}' in final payload for 'create' action.")
                 
                 url = "https://api.ebay.com/sell/inventory/v1/offer"
                 logger.debug(f"manage_offer (CREATE): URL: {url}, Payload: {payload}")

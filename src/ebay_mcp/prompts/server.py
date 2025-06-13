@@ -4,12 +4,9 @@ from fastmcp import FastMCP
 logger = logging.getLogger(__name__)
 
 # Create the MCP server instance for prompts
-prompts_mcp = FastMCP(
-    name="CustomPrompts",
-    title="Custom Prompts Server",
-    description="A server hosting custom prompts for interacting with the eBay MCP system.",
-    version="0.1.0"
-)
+# The FastMCP constructor takes a single string argument for the server's title.
+# Other metadata like name, description, and version are not set here.
+prompts_mcp = FastMCP("Custom Prompts Server")
 
 logger.info("CustomPrompts MCP server instance created.")
 

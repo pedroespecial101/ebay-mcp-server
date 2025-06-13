@@ -1,0 +1,671 @@
+{
+  "tools": [
+    {
+      "name": "auth_test_auth",
+      "description": "Test authentication and token retrieval",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "auth_trigger_ebay_login",
+      "description": "Initiates the eBay OAuth2 login flow. \n\nThis will open a browser window for eBay authentication. After successful login, \nthe .env file will be updated with new tokens.\nIMPORTANT: You MUST restart the MCP server in your IDE after completing the login \nfor the new tokens to take effect.\n",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "browseAPI_search_ebay_items",
+      "description": "Search items on eBay using Browse API",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "title": "Query",
+            "type": "string"
+          },
+          "limit": {
+            "default": 10,
+            "title": "Limit",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    },
+    {
+      "name": "taxonomyAPI_get_category_suggestions",
+      "description": "Get category suggestions from eBay Taxonomy API for the UK catalogue.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "title": "Query",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    },
+    {
+      "name": "taxonomyAPI_get_item_aspects_for_category",
+      "description": "Get item aspects for a specific category from eBay Taxonomy API.\n\nArgs:\n    category_id: The eBay category ID to get aspects for.\n",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "category_id": {
+            "title": "Category Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "category_id"
+        ]
+      }
+    },
+    {
+      "name": "inventoryAPI_manage_offer",
+      "description": "Manages eBay offers: create, modify, withdraw, or publish based on SKU.\n\nUses Pydantic model ManageOfferToolInput for parameters, ensuring schema exposure.\nArgs:\n    params (ManageOfferToolInput): Container for SKU, action, and conditional offer_data.\n",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "params": {
+            "$ref": "#/$defs/ManageOfferToolInput",
+            "title": "Params"
+          }
+        },
+        "required": [
+          "params"
+        ],
+        "$defs": {
+          "ManageOfferAction": {
+            "enum": [
+              "create",
+              "modify",
+              "withdraw",
+              "publish",
+              "get"
+            ],
+            "title": "ManageOfferAction",
+            "type": "string"
+          },
+          "ManageOfferToolInput": {
+            "examples": [],
+            "properties": {
+              "sku": {
+                "description": "Inventory item SKU.",
+                "title": "Sku",
+                "type": "string"
+              },
+              "action": {
+                "$ref": "#/$defs/ManageOfferAction",
+                "description": "Action to perform on the offer ('create', 'modify', 'withdraw', 'publish', 'get')."
+              },
+              "offer_data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/OfferDataForManage"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Data for create/modify actions. See OfferDataForManage schema."
+              }
+            },
+            "required": [
+              "sku",
+              "action"
+            ],
+            "title": "ManageOfferToolInput",
+            "type": "object"
+          },
+          "OfferDataForManage": {
+            "description": "Data payload for creating or modifying an offer. Fields are based on the eBay Offer object structure, using camelCase as per eBay API.\nDetailed descriptions are sourced from the eBay Sell Inventory v1 API Overview.",
+            "examples": [],
+            "properties": {
+              "marketplaceId": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "This enumeration value is the unique identifier of the eBay site on which the offer is available, or will be made available. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/inventory/types/slr:MarketplaceEnum'>eBay API documentation</a>",
+                "title": "Marketplaceid"
+              },
+              "format": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "This enumerated value indicates the listing format of the offer. Either AUCTION or FIXED_PRICE.",
+                "title": "Format"
+              },
+              "availableQuantity": {
+                "anyOf": [
+                  {
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "This integer value indicates the quantity of the inventory item (specified by the <strong>sku</strong> value) that will be available for purchase by buyers shopping on the eBay site specified in the <strong>marketplaceId</strong> field.",
+                "title": "Availablequantity"
+              },
+              "pricingSummary": {
+                "anyOf": [
+                  {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "This container shows the listing price for the product offer, and if applicable, the settings for the Minimum Advertised Price and Strikethrough Pricing features. The Minimum Advertised Price feature is only available on the US site. Strikethrough Pricing is available on the US, eBay Motors, UK, Germany, Canada (English and French), France, Italy, and Spain sites.<br><br>For unpublished offers where pricing information has yet to be specified, this container will be returned as empty.",
+                "title": "Pricingsummary"
+              },
+              "categoryId": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "The unique identifier of the primary eBay category that the inventory item is listed under. This field is always returned for published offers, but is only returned if set for unpublished offers.",
+                "title": "Categoryid"
+              },
+              "listingDescription": {
+                "anyOf": [
+                  {
+                    "maxLength": 500000,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "The description of the eBay listing that is part of the unpublished or published offer. This field is always returned for published offers, but is only returned if set for unpublished offers.<br><br><strong>Max Length</strong>: 500000 (which includes HTML markup/tags)",
+                "title": "Listingdescription"
+              },
+              "listingDuration": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "This field indicates the number of days that the listing will be active.<br><br>This field is returned for both auction and fixed-price listings; however, the value returned for fixed-price listings will always be <code>GTC</code>. The GTC (Good 'Til Cancelled) listings are automatically renewed each calendar month until the seller decides to end the listing.<br><br><span class=\"tablenote\"> <strong>Note:</strong> If the listing duration expires for an auction offer, the listing then becomes available as a fixed-price offer and will be GTC.</span> For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/inventory/types/slr:ListingDurationEnum'>eBay API documentation</a>",
+                "title": "Listingduration"
+              },
+              "merchantLocationKey": {
+                "anyOf": [
+                  {
+                    "maxLength": 36,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "The unique identifier of the inventory location. This identifier is set up by the merchant when the inventory location is first created with the <strong>createInventoryLocation</strong> call. Once this value is set for an inventory location, it can not be modified. To get more information about this inventory location, the <a href=\"api-docs/sell/inventory/resources/location/methods/getInventoryLocation\" target=\"_blank \">getInventoryLocation</a> method can be used, passing in this value at the end of the call URI.<br><br>This field is always returned for published offers, but is only returned if set for unpublished offers.<br><br><b>Max length</b>: 36",
+                "title": "Merchantlocationkey"
+              },
+              "listingPolicies": {
+                "anyOf": [
+                  {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "This container indicates the listing policies that are applied to the offer. Listing policies include business policies, custom listing policies, and fields that override shipping costs, enable eBay Plus eligibility, or enable the Best Offer feature.<br><br>It is required that the seller be opted into Business Policies before being able to create live eBay listings through the Inventory API. Sellers can opt-in to Business Policies through My eBay or by using the Account API's <strong>optInToProgram</strong> call. Payment, return, and fulfillment listing policies may be created/managed in My eBay or by using the listing policy calls of the sell <strong>Account API</strong>. The sell <strong>Account API</strong> can also be used to create and manage custom policies. For more information, see the sell <a href=\"api-docs/sell/account/overview.html\" target=\"_blank\">Account API</a>.<br><br>For unpublished offers where business policies have yet to be specified, this container will be returned as empty.",
+                "title": "Listingpolicies"
+              },
+              "secondaryCategoryId": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "The unique identifier for a secondary category. This field is applicable if the seller decides to list the item under two categories. Sellers can use the <a href=\"api-docs/commerce/taxonomy/resources/category_tree/methods/getCategorySuggestions\" target=\"_blank\">getCategorySuggestions</a> method of the Taxonomy API to retrieve suggested category ID values. A fee may be charged when adding a secondary category to a listing. <br><br><span class=\"tablenote\"><strong>Note:</strong> You cannot list <strong>US eBay Motors</strong> vehicles in two categories. However, you can list <strong>Parts & Accessories</strong> in two categories.</span>",
+                "title": "Secondarycategoryid"
+              },
+              "storeCategoryNames": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 2,
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "This container is returned if the seller chose to place the inventory item into one or two eBay store categories that the seller has set up for their eBay store. The string value(s) in this container will be the full path(s) to the eBay store categories, as shown below:<br> <pre><code>\"storeCategoryNames\": [<br> \"/Fashion/Men/Shirts\", <br> \"/Fashion/Men/Accessories\" ], </pre></code>",
+                "title": "Storecategorynames"
+              },
+              "includeCatalogProductDetails": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "This field indicates whether or not eBay product catalog details are applied to a listing. A value of <code>true</code> indicates the listing corresponds to the eBay product associated with the provided product identifier. The product identifier is provided in <strong>createOrReplaceInventoryItem</strong>.<p><span class=\"tablenote\"><strong>Note:</strong> Though the <strong>includeCatalogProductDetails</strong> parameter is not required to be submitted in the request, the parameter defaults to 'true' if omitted.</span></p>",
+                "title": "Includecatalogproductdetails"
+              }
+            },
+            "title": "OfferDataForManage",
+            "type": "object"
+          }
+        }
+      }
+    },
+    {
+      "name": "inventoryAPI_manage_inventory_item",
+      "description": "Manages eBay inventory items: create, modify, get, or delete based on SKU.\n\nUses Pydantic model ManageInventoryItemToolInput for parameters, ensuring schema exposure.\nArgs:\n    params (ManageInventoryItemToolInput): Container for SKU, action, and conditional item_data.\n",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "params": {
+            "$ref": "#/$defs/ManageInventoryItemToolInput",
+            "title": "Params"
+          }
+        },
+        "required": [
+          "params"
+        ],
+        "$defs": {
+          "AvailabilityData": {
+            "description": "Top-level availability container (limited to shipToLocationAvailability).",
+            "examples": [],
+            "properties": {
+              "shipToLocationAvailability": {
+                "$ref": "#/$defs/ShipToLocationAvailability",
+                "description": "Container for quantity available for domestic fulfilment instructions.",
+                "title": "Ship-To-Location Availability"
+              }
+            },
+            "required": [
+              "shipToLocationAvailability"
+            ],
+            "title": "AvailabilityData",
+            "type": "object"
+          },
+          "ConditionEnum": {
+            "description": "Enumeration of eBay item conditions.\n\nThe numeric values correspond to eBay *conditionId*s used across the\nInventory, Browse and Trading APIs.\n\nSource: `_archive/eBayConditionEnums.md`.\n\n| Name                       | ID   | Notes |\n|----------------------------|------|-------|\n| NEW                        | 1000 | Brand-new, unopened item in original packaging |\n| LIKE_NEW                   | 2750 | Opened but very lightly used (e.g. books/DVDs). For trading cards: *Graded* |\n| NEW_OTHER                  | 1500 | New, unused but may be missing original packaging or not sealed |\n| NEW_WITH_DEFECTS           | 1750 | New, unused but has defects (e.g. scuffs, missing buttons) |\n| USED_EXCELLENT             | 3000 | Used but in excellent condition. For apparel: *Pre-owned – Good* |\n| USED_VERY_GOOD             | 4000 | Used but in very good condition. For trading cards: *Ungraded* |\n| USED_GOOD                  | 5000 | Used but in good condition |\n| USED_ACCEPTABLE            | 6000 | Acceptable condition |\n| FOR_PARTS_OR_NOT_WORKING   | 7000 | Not fully functioning; suitable for repair or parts |\n| PRE_OWNED_EXCELLENT        | 2990 | Apparel categories only |\n| PRE_OWNED_FAIR             | 3010 | Apparel categories only |",
+            "enum": [
+              "NEW",
+              "LIKE_NEW",
+              "NEW_OTHER",
+              "NEW_WITH_DEFECTS",
+              "USED_EXCELLENT",
+              "USED_VERY_GOOD",
+              "USED_GOOD",
+              "USED_ACCEPTABLE",
+              "FOR_PARTS_OR_NOT_WORKING",
+              "PRE_OWNED_EXCELLENT",
+              "PRE_OWNED_FAIR"
+            ],
+            "title": "ConditionEnum",
+            "type": "string"
+          },
+          "InventoryItemDataForManage": {
+            "description": "Data payload for creating or modifying an inventory item.\n\nThis limited-field version only includes the keys defined in\n`_archive/InventoryItemRequired_Limited.json`, but each is richly decorated\nwith field metadata sourced from the *eBay Sell Inventory v1 API Overview*.",
+            "examples": [],
+            "properties": {
+              "product": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/ProductDataForInventoryItem"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Container for title, description, identifiers and images of the product.",
+                "title": "Product Details"
+              },
+              "condition": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/ConditionEnum"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Enumeration value indicating the condition of the item. Must be one of the values in the Inventory API ConditionEnum (e.g. NEW, USED_GOOD, MANUFACTURER_REFURBISHED).",
+                "examples": [
+                  "NEW",
+                  "USED_GOOD"
+                ],
+                "title": "Condition"
+              },
+              "conditionDescription": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "More detailed, human-readable condition notes. Allowed for all conditions other than brand-new. Ignored by eBay if provided with a new condition.",
+                "title": "Condition Description"
+              },
+              "availability": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/AvailabilityData"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Container defining quantity available for purchase.",
+                "title": "Availability"
+              }
+            },
+            "title": "InventoryItemDataForManage",
+            "type": "object"
+          },
+          "ManageInventoryItemAction": {
+            "enum": [
+              "create",
+              "modify",
+              "get",
+              "delete"
+            ],
+            "title": "ManageInventoryItemAction",
+            "type": "string"
+          },
+          "ManageInventoryItemToolInput": {
+            "examples": [],
+            "properties": {
+              "sku": {
+                "description": "Inventory item SKU.",
+                "maxLength": 50,
+                "title": "Sku",
+                "type": "string"
+              },
+              "action": {
+                "$ref": "#/$defs/ManageInventoryItemAction",
+                "description": "Action to perform on the inventory item ('create', 'modify', 'get', 'delete')."
+              },
+              "item_data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/InventoryItemDataForManage"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Data for create/modify actions. See InventoryItemDataForManage schema."
+              }
+            },
+            "required": [
+              "sku",
+              "action"
+            ],
+            "title": "ManageInventoryItemToolInput",
+            "type": "object"
+          },
+          "ProductDataForInventoryItem": {
+            "description": "Product details container (limited-field version).\nThe structure follows the Create/Replace Inventory Item schema but only\nexposes the keys required/allowed by InventoryItemRequired_Limited.json.",
+            "examples": [],
+            "properties": {
+              "title": {
+                "description": "Title of the item exactly as it will appear on the eBay listing (max 80 characters).",
+                "examples": [
+                  "Apple iPhone 15 Pro 256GB Natural Titanium"
+                ],
+                "maxLength": 80,
+                "title": "Title",
+                "type": "string"
+              },
+              "description": {
+                "description": "Full description of the product or lot in HTML or plain text (max 4000 characters).",
+                "maxLength": 4000,
+                "title": "Description",
+                "type": "string"
+              },
+              "aspects": {
+                "anyOf": [
+                  {
+                    "additionalProperties": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "type": "object"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Dictionary mapping aspect names (e.g. Colour, Size) to arrays of values. Must match category-specific allowed aspect names. Use the get_item_aspects_for_category MCP tool to retrieve the allowed and required aspect names for a specific category.",
+                "examples": [
+                  {
+                    "Colour": [
+                      "Black"
+                    ],
+                    "Size": [
+                      "XL"
+                    ]
+                  }
+                ],
+                "title": "Aspects"
+              },
+              "brand": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Brand or manufacturer of the item. If you know this, you can provide it, otherwise leave it out.",
+                "examples": [
+                  "Apple"
+                ],
+                "title": "Brand"
+              },
+              "mpn": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Manufacturer Part Number identifying the product.",
+                "title": "Manufacturer Part Number (MPN)"
+              },
+              "ean": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Array of European Article Numbers associated with the product.",
+                "examples": [
+                  [
+                    "190199098702"
+                  ]
+                ],
+                "title": "EAN List"
+              },
+              "upc": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Array of Universal Product Codes associated with the product.",
+                "examples": [
+                  [
+                    "190199098719"
+                  ]
+                ],
+                "title": "UPC List"
+              },
+              "isbn": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Array of International Standard Book Numbers associated with the product (books/media only).",
+                "title": "ISBN List"
+              },
+              "imageUrls": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Array of fully-qualified image URLs. First image is treated as the primary gallery image. If no image is provided use https://ebayimages.s3.us-east-005.backblazeb2.com/ebay_images/awaiting_image_holding.png. Warn the user that this image will be used if no image is provided.",
+                "examples": [
+                  [
+                    "https://example.com/image1.jpg",
+                    "https://example.com/image2.jpg",
+                    "https://example.com/image3.jpg"
+                  ]
+                ],
+                "title": "Image URLs"
+              }
+            },
+            "required": [
+              "title",
+              "description"
+            ],
+            "title": "ProductDataForInventoryItem",
+            "type": "object"
+          },
+          "ShipToLocationAvailability": {
+            "description": "Quantity available for ship-to-home orders.\nBased on the Inventory API docs – this container specifies how many items can\nbe purchased on the marketplace. \"quantity\" must be a non-negative integer.",
+            "examples": [],
+            "properties": {
+              "quantity": {
+                "description": "Total purchasable quantity of the inventory item for ship-to-home fulfilment. Must be greater than or equal to 0.",
+                "examples": [
+                  10
+                ],
+                "minimum": 0,
+                "title": "Available Quantity",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "quantity"
+            ],
+            "title": "ShipToLocationAvailability",
+            "type": "object"
+          }
+        }
+      }
+    },
+    {
+      "name": "inventoryAPI_get_inventory_items",
+      "description": "Retrieve multiple inventory items with pagination support.\n\nArgs:\n    limit: The maximum number of inventory items to return per page (1-200, default: 25).\n    offset: The number of inventory items to skip before starting to return results (default: 0).\n",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "default": 25,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "default": 0,
+            "title": "Offset",
+            "type": "integer"
+          }
+        }
+      }
+    }
+  ]
+}

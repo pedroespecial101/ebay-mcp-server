@@ -1,3 +1,16 @@
+## Updates in TrajectoryID <fix_fastmcp_instantiation, (1b2c3d4e)>, 12062025 - 18:29:46
+
+- **Fix:** Corrected the instantiation of the `FastMCP` server in `src/ebay_mcp/prompts/server.py`.
+- **Reason:** The `FastMCP` constructor was being called with incorrect keyword arguments. It only accepts a single positional string argument for the server's title. This was causing a `TypeError` on startup.
+- **Change:** Modified the `FastMCP` call to use the correct signature: `prompts_mcp = FastMCP("Custom Prompts Server")`.
+
+## Updates in TrajectoryID <refactor_default_offer_settings_to_config, (refactor_default_offer_settings_to_config)>, 12062025 - 18:19:12
+
+- **Refactored Default Offer Settings**: Moved hardcoded default eBay offer values from business logic into a centralized Pydantic `BaseSettings` configuration.
+  - Created `src/ebay_mcp/config.py` to define an `EbayOfferDefaults` class that loads settings from the `.env` file.
+  - Updated the `create` action in `src/ebay_mcp/inventory/manage_offer.py` to use this configuration class.
+  - The tool now applies these defaults automatically, while allowing user-provided values to override them, keeping the MCP tool interface clean and unchanged.
+
 ## Updates in TrajectoryID <add default eBay settings to .env, (add_ebay_settings)>, 12062025 - 17:50:39
 
 - Added default eBay marketplace, listing, and tax settings to the `.env` file.
