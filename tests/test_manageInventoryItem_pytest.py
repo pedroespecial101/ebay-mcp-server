@@ -27,7 +27,6 @@ async def mcp_client():
 
 # Test 1: Clean up - Delete inventory item if it exists
 @pytest.mark.asyncio
-@pytest.mark.order(1)
 async def test_01_cleanup_inventory_item(mcp_client):
     """Test 1: Delete inventory item if it exists (cleanup)"""
     try:
@@ -46,7 +45,6 @@ async def test_01_cleanup_inventory_item(mcp_client):
 
 # Test 2: Create inventory item
 @pytest.mark.asyncio
-@pytest.mark.order(2)
 async def test_02_create_inventory_item(mcp_client):
     """Test 2: Create a new inventory item"""
     # First, clean up any existing item
@@ -86,7 +84,6 @@ async def test_02_create_inventory_item(mcp_client):
 
 # Test 3: Get inventory item
 @pytest.mark.asyncio
-@pytest.mark.order(3)
 async def test_03_get_inventory_item(mcp_client):
     """Test 3: Get an existing inventory item"""
     result = await mcp_client.call_tool(
@@ -100,7 +97,6 @@ async def test_03_get_inventory_item(mcp_client):
 
 # Test 4: Modify inventory item
 @pytest.mark.asyncio
-@pytest.mark.order(4)
 async def test_04_modify_inventory_item(mcp_client):
     """Test 4: Modify an existing inventory item"""
     modified_data = {
@@ -128,7 +124,6 @@ async def test_04_modify_inventory_item(mcp_client):
 
 # Test 5: Verify modified inventory item
 @pytest.mark.asyncio
-@pytest.mark.order(5)
 async def test_05_verify_modified_item(mcp_client):
     """Test 5: Verify the modified inventory item"""
     # First, get the modified item
@@ -181,7 +176,6 @@ async def test_05_verify_modified_item(mcp_client):
 
 # Test 6: Delete inventory item
 @pytest.mark.asyncio
-@pytest.mark.order(6)
 async def test_06_delete_inventory_item(mcp_client):
     """Test 6: Delete the inventory item"""
     # First, delete the item
