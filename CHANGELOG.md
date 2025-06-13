@@ -1,3 +1,10 @@
+## Updates in TrajectoryID <convert_inventory_item_pytests, (convert_inventory_item_pytests)>, 13062025 - 17:59:53
+
+- **Added Pytest Inventory Item Tests**:
+  - Created `tests/test_manageInventoryItem_pytest.py` following the established pattern in `test_manageOffer_pytest.py`.
+  - Includes tests for create, get, modify, and delete actions via `inventoryAPI_manage_inventory_item`.
+  - Publish stage intentionally omitted as it is not applicable to inventory items.
+
 ## Updates in TrajectoryID <fix_fastmcp_instantiation, (1b2c3d4e)>, 12062025 - 18:29:46
 
 - **Fix:** Corrected the instantiation of the `FastMCP` server in `src/ebay_mcp/prompts/server.py`.

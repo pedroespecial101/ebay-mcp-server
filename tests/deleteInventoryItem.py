@@ -5,16 +5,20 @@ from fastmcp import Client
 async def main():
     # Connect via stdio to a local script
     async with Client("src/main_server.py") as client:
-        # Pass parameters as a dictionary
+        # Define the inventory item to delete
+        delete_item_data = {
+            "sku": "TT-01",
+            "action": "delete"
+        }
+
+        # Call the manage_inventory_item tool to delete the item
         result = await client.call_tool(
             "inventoryAPI_manage_inventory_item",
             {
-                "params": {
-                    "sku": "TT-01",
-                    "action": "get"
-                }
+                "params": delete_item_data
             }
         )
+        
         # Extract the text content and parse JSON
         try:
             # Get the first TextContent object and parse its text as JSON
