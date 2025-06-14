@@ -9,15 +9,21 @@ import json
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import Field
 
 # Add the project root directory to the Python path
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 sys.path.append(project_root)
 
-from models.base import EbayBaseModel, EbayResponse
-# Re-using UpdateOfferRequest fields for OfferDataForManage structure
-from models.ebay.inventory import UpdateOfferRequest
+from models.ebay.inventory import (
+    UpdateOfferRequest,
+    ManageOfferAction,
+    OfferFormat,
+    OfferDataForManage,
+    ManageOfferToolInput,
+    ManageOfferResponseDetails,
+    ManageOfferToolResponse,
+)
 from utils.api_utils import execute_ebay_api_call, get_standard_ebay_headers
 from utils.debug_httpx import create_debug_client
 from ..config import ebay_offer_defaults
@@ -81,79 +87,6 @@ def _deep_compare_list(list1: List[Any], list2: List[Any]) -> bool:
     return True
 
 
-class ManageOfferAction(str, Enum):
-    CREATE = "create"
-    MODIFY = "modify"
-    WITHDRAW = "withdraw"
-    PUBLISH = "publish"
-    GET = "get"
-
-
-class OfferFormat(str, Enum):
-    AUCTION = "AUCTION"
-    FIXED_PRICE = "FIXED_PRICE"
-
-
-class OfferDataForManage(EbayBaseModel):
-    """Data payload for creating or modifying an offer. Fields are based on the eBay Offer object structure, using camelCase as per eBay API.
-    This is a subset of the fields that are available in the eBay API. Only the fields that are required for creating or modifying an offer are included.
-    """
-    marketplaceId: Optional[str] = Field(None, description="This defaults to the marketplaceId set by the user and should not need to be changed.")
-    format: Optional[OfferFormat] = Field(None, description="The listing format of the offer.")
-    availableQuantity: Optional[int] = Field(None, ge=0, description="This integer value indicates the quantity of the inventory item (specified by the <strong>sku</strong> value) that will be available for purchase by buyers shopping on the eBay site specified in the <strong>marketplaceId</strong> field.")
-    pricingSummary: Optional[Dict[str, Any]] = Field(
-        None,
-        description="Pricing information for the offer.",
-        example={
-            'price': {
-                'value': '99.99',
-                'currency': 'GBP'
-            },
-        }
-    )
-    categoryId: Optional[str] = Field(
-        None, 
-        description="The unique identifier of the primary eBay category for the item. "
-        "Use the 'get_category_suggestions' tool to find the appropriate category ID for your item. "
-        "This field is required when creating a new offer."
-    )
-    listingDescription: Optional[str] = Field(None, max_length=500000, description="The description of the eBay listing that is part of the unpublished or published offer. This field is always returned for published offers, but is only returned if set for unpublished offers.<br><br><strong>Max Length</strong>: 500000 (which includes HTML markup/tags)")
-    listingDuration: Optional[str] = Field(None, description="This defaults to the marketplaceId set by the user and should not need to be changed.")
-    merchantLocationKey: Optional[str] = Field(None, max_length=36, description="This defaults to the marketplaceId set by the user and should not need to be changed.")
-    listingPolicies: Optional[Dict[str, Any]] = Field(None, description="This defaults to the marketplaceId set by the user and should not need to be changed.")
-    secondaryCategoryId: Optional[str] = Field(None, description="Rarely used")
-    includeCatalogProductDetails: Optional[bool] = Field(None, description="This defaults to the marketplaceId set by the user and should not need to be changed.")
- 
-
-    class Config:
-        allow_population_by_field_name = True # Allows populating with snake_case keys if needed, serializes with attribute names (now camelCase)
-
-
-# This model will be used by FastMCP for schema generation and input validation
-class ManageOfferToolInput(EbayBaseModel):
-    sku: str = Field(..., description="Inventory item SKU.")
-    action: ManageOfferAction = Field(..., description="Action to perform on the offer ('create', 'modify', 'withdraw', 'publish', 'get').")
-    offer_data: Optional[OfferDataForManage] = Field(None, description="Data for create/modify actions. See OfferDataForManage schema.")
-
-    @model_validator(mode='after')
-    def check_offer_data_for_action(self):
-        action = self.action
-        offer_data = self.offer_data
-        if action in [ManageOfferAction.CREATE, ManageOfferAction.MODIFY] and offer_data is None:
-            raise ValueError("offer_data is required for 'create' or 'modify' actions.")
-        if action in [ManageOfferAction.WITHDRAW, ManageOfferAction.PUBLISH, ManageOfferAction.GET] and offer_data is not None:
-            raise ValueError(f"offer_data must NOT be provided for '{action.value}' action.")
-        return self
-
-
-class ManageOfferResponseDetails(EbayBaseModel):
-    offer_id: Optional[str] = None
-    status_code: Optional[int] = None
-    message: str
-    details: Optional[Any] = None # To store raw response from eBay if needed
-
-class ManageOfferToolResponse(EbayResponse[ManageOfferResponseDetails]):
-    pass
 
 
 async def _get_offer_by_sku(sku: str, access_token: str, client: httpx.AsyncClient) -> Optional[Dict[str, Any]]:
