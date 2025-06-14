@@ -1,3 +1,16 @@
+## Updates in TrajectoryID <remove_unused_inventory_models, (remove_unused_inventory_models_14062025_1345)>, 14062025 - 13:45:35
+
+- **Removed Unused Inventory Models**:
+  - Deleted legacy Pydantic classes (`OfferPriceQuantity`, `OfferDetails`, `OfferRequest`, `OfferResponse`, `WithdrawOfferRequest`, `ListingFeeRequest`, `Fee`, `OfferFees`, `ListingFeeResponse`, `CreateOrReplaceInventoryItemResponse`).
+  - Re-implemented `src/models/ebay/inventory.py` to include only actively used models: `UpdateOfferRequest`, `InventoryItemDetails`, and `InventoryItemsListResponse`.
+- **Code Cleanup**: Removed stale comment reference to `WithdrawOfferRequest` in `src/ebay_mcp/inventory/manage_offer.py`.
+- **Verification**: All tests pass (`pytest`).
+
+## Updates in TrajectoryID <mark_unused_inventory_models, (mark_unused_inventory_models_14062025_1014)>, 14062025 - 10:14:00
+
+- **Documentation Update**: Added usage comments to `src/models/ebay/inventory.py` for each class to indicate whether they are used elsewhere in the active codebase or appear unused.
+- No functional code changes; comments only.
+
 ## Updates in TrajectoryID <convert_inventory_item_pytests, (convert_inventory_item_pytests)>, 13062025 - 17:59:53
 
 - **Added Pytest Inventory Item Tests**:

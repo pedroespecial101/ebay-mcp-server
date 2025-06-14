@@ -374,7 +374,7 @@ async def manage_offer_tool(inventory_mcp):
                 url = f"https://api.ebay.com/sell/inventory/v1/offer/{offer_id_from_current}/withdraw"
                 logger.debug(f"manage_offer (WITHDRAW): URL: {url}")
                 # Withdraw request typically has an empty body, but API might expect Content-Type: application/json
-                # The withdraw_offer.py example uses an empty WithdrawOfferRequest().dict()
+                # The withdraw_offer.py example sends an empty JSON body {}
                 # Let's ensure Content-Type is set if sending json={} even if empty.
                 headers_withdraw = headers.copy()
                 headers_withdraw['Content-Type'] = 'application/json' # Often required even for empty body POSTs
