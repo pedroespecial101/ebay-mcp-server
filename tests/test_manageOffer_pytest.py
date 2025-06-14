@@ -64,7 +64,7 @@ async def test_modify_offer(mcp_client, test_offer):
             "offer_data": {
                 "availableQuantity": 2,
                 "pricingSummary": {"price": {"value": "19.99", "currency": "GBP"}},
-                "condition": "USED_EXCELLENT"
+                "condition": "USED_GOOD"
             }
         }
     })
