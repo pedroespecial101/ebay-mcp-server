@@ -121,7 +121,7 @@ class ProductDataForInventoryItem(EbayBaseModel):
         max_length=80,
         title="Title",
         description="Title of the item exactly as it will appear on the eBay listing (max 80 characters).",
-        examples=["Apple iPhone 15 Pro 256GB Natural Titanium"],
+        examples=["Apple iPhone 17 Pro 256GB Natural Titanium"],
     )
     description: str = Field(
         ...,

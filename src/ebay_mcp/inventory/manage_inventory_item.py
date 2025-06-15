@@ -87,9 +87,6 @@ def _deep_compare_list(list1: List[Any], list2: List[Any]) -> bool:
                 return False
     return True
 
-
-
-
 async def _get_inventory_item_by_sku(sku: str, access_token: str, client: httpx.AsyncClient) -> Optional[Dict[str, Any]]:
     """Helper to fetch an inventory item by SKU."""
     headers = get_standard_ebay_headers(access_token)

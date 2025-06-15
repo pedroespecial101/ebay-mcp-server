@@ -9,11 +9,16 @@ TEST_ITEM_DATA = {
     "product": {
         "title": "Copeland Spode Queen Elizabeth II 1953 Coronation Cup and Saucer",
         "description": "This is a Copeland Spode cup and saucer commemorating the coronation of Queen Elizabeth II on June 2nd, 1953.",
-        "imageUrls": [
-            "https://eBayImages.s3.us-east-005.backblazeb2.com/ebay_images/Cup-2/Cup-2-1_81.jpg"
-        ],
+                    "imageUrls": [
+                        "https://eBayImages.s3.us-east-005.backblazeb2.com/ebay_images/Cup-2/Cup-2-1_81.jpg",
+                        "https://eBayImages.s3.us-east-005.backblazeb2.com/ebay_images/Cup-2/Cup-2-1_78.jpg",
+                        "https://eBayImages.s3.us-east-005.backblazeb2.com/ebay_images/Cup-2/Cup-2-1_80.jpg",
+                        "https://eBayImages.s3.us-east-005.backblazeb2.com/ebay_images/Cup-2/Cup-2-1_82.jpg",
+                        "https://eBayImages.s3.us-east-005.backblazeb2.com/ebay_images/Cup-2/Cup-2-1_79.jpg",
+                        "https://eBayImages.s3.us-east-005.backblazeb2.com/ebay_images/Cup-2/Cup-2-1_77.jpg"
+                    ]   
     },
-    "condition": "USED_GOOD",
+    "condition": "USED_EXCELLENT",
     "conditionDescription": "Used condition with staining and minor chips around the rims.",
     "availability": {"shipToLocationAvailability": {"quantity": 1}},
 }
