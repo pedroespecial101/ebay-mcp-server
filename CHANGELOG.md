@@ -1,3 +1,12 @@
+## Updates in TrajectoryID <filled_by_user_or_system>, (trajectoryID <filled_by_user_or_system>) - 15062025 - 11:16.21
+
+- **User Modified:** `/Users/petetreadaway/Projects/ebay-mcp-server/tests/test_manageOffer_pytest.py`
+  - Updated `TEST_SKU` and `TEST_CATEGORY_ID`.
+  - Added `TEST_INVENTORY_ITEM_DATA`, `INITIAL_OFFER_DATA`, and `MODIFIED_OFFER_DATA` constants for test configuration.
+  - Refined `_get_offer_details` helper function.
+  - Significantly updated `test_01_cleanup_prepare_offer` to include inventory item creation if not exists, and more robust offer withdrawal logic.
+  - Updated `test_02_create_offer`, `test_03_get_offer`, `test_04_modify_offer`, `test_05_publish_offer`, and `test_06_withdraw_offer` to use the new data constants and refined logic, including more specific assertions and print statements for progress.
+
 ## Updates in TrajectoryID <pydantic_model_refactor, (pydantic_model_refactor_14062025_1345)>, 14062025 - 13:45:35
 
 - **Pydantic Model Refactoring (`src/models/ebay/inventory.py`)**:
