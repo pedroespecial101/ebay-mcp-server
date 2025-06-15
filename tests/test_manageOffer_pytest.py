@@ -36,7 +36,7 @@ INITIAL_OFFER_DATA = {
         "price": {
             "value": "19.99",
             "currency": "GBP"
-        }
+        },
     },
 }
 

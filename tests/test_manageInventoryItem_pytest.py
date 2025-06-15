@@ -8,8 +8,8 @@ TEST_SKU = "TT-01"
 TEST_ITEM_DATA = {
     "product": {
         "title": "Copeland Spode Queen Elizabeth II 1953 Coronation Cup and Saucer",
-        "description": "This is a Copeland Spode cup and saucer commemorating the coronation of Queen Elizabeth II on June 2nd, 1953.",
-                    "imageUrls": [
+        "description": "This is a Copeland Spode cup and saucer commemorating the coronation of Queen Elizabeth II on June 2nd, 1953. IV MODIFIED",
+        "imageUrls": [
                         "https://eBayImages.s3.us-east-005.backblazeb2.com/ebay_images/Cup-2/Cup-2-1_81.jpg",
                         "https://eBayImages.s3.us-east-005.backblazeb2.com/ebay_images/Cup-2/Cup-2-1_78.jpg",
                         "https://eBayImages.s3.us-east-005.backblazeb2.com/ebay_images/Cup-2/Cup-2-1_80.jpg",
@@ -110,7 +110,7 @@ async def test_04_modify_inventory_item(mcp_client):
             "description": "MODIFIED description for test purposes.",
         },
         "condition": "USED_EXCELLENT",
-        "availability": {"shipToLocationAvailability": {"quantity": 2}},
+        "availability": {"shipToLocationAvailability": {"quantity": 3}},
     }
 
     result = await mcp_client.call_tool(

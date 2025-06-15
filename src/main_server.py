@@ -103,7 +103,34 @@ from ebay_mcp.inventory.server import inventory_mcp
 from ebay_mcp.prompts.server import prompts_mcp
 
 # Create the main MCP server
-mcp = FastMCP("eBay API")
+instruction_text = """This MCP server provides tools to interact with various eBay APIs.
+
+PRIMARY WORKFLOW:
+1. Create Inventory Item (inventoryAPI_manage_inventory_item::create)
+2. Create Offer (inventoryAPI_manage_offer::create) 
+3. Publish Offer (inventoryAPI_manage_offer::publish)
+
+AVAILABLE OPERATIONS:
+• Inventory Items: CREATE, GET, MODIFY, DELETE
+• Offers: CREATE, GET, MODIFY, PUBLISH, WITHDRAW
+
+KEY CONCEPTS:
+• One-to-One Relationship: 1 Inventory Item maps to 1 Offer
+• Inheritance: Offers inherit the Inventory Item Description (no separate Offer Description needed)
+• Modification Rule: Modify Item/Offer attributes at the level where they were created
+• Minimum Fields: Only minimum required fields are necessary
+
+CATEGORY & ASPECTS:
+• Use 'Get Category Suggestions' to find appropriate categories
+• Use 'Get Aspects for Category' to get required/recommended item attributes
+
+WORKFLOW FLEXIBILITY:
+While the primary workflow above is typical, you can use inventoryAPI_manage_inventory_item and inventoryAPI_manage_offer tools independently to GET, MODIFY, or DELETE existing items and WITHDRAW offers as needed."""
+
+mcp = FastMCP(
+    name="eBay API",
+    instructions=instruction_text
+)
 
 # Mount sub-servers
 def mount_servers():

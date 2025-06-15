@@ -260,4 +260,21 @@ This update transforms the Update Offer tool from a basic price/quantity updater
     - Modified `src/ebay_mcp/inventory/manage_offer.py` (publish action) to correctly populate the dedicated `listing_id` field in its response structure (`ManageOfferResponseDetails`).
     - Updated `tests/test_manageOffer_pytest.py` (`test_05_publish_offer`) to access `listing_id` from the correct path (`data.listing_id`) in the MCP tool's JSON response.
 
-{{ ... }}
+## Updates in TrajectoryID <User Request Summary (ID)>, <2025-06-15 - 17:29.00>
+
+- **Refactor eBay Offer Models to Use Inheritance (`src/models/ebay/inventory.py`)**:
+    - Modified `OfferDataForManage` to inherit from `OfferDataForLLM`.
+    - Removed redundant field definitions from `OfferDataForManage` that are now inherited from the parent `OfferDataForLLM` class.
+    - Updated the `Config` class in `OfferDataForManage` to also inherit from `OfferDataForLLM.Config`.
+    - This change improves code organization, reduces duplication, and clarifies the relationship between the LLM-facing model and the full API model.
+
+## Updates in TrajectoryID <Refactor Offer Models for Flexible Modify and Robust Create, (current_trajectory_id)>, <15062025 - 17:45.00>
+
+- **Models (`src/models/ebay/inventory.py`)**:
+    - Made all fields in `OfferDataForLLM` (e.g., `format`, `available_quantity`, `category_id`, `pricing_summary`) `Optional`.
+    - This change allows the LLM to send sparse payloads for `MODIFY` actions, providing only the fields that need to be updated, enhancing flexibility.
+- **Tool Logic (`src/ebay_mcp/inventory/manage_offer.py`)**:
+    - Confirmed that for the `CREATE` action, the `format` field is reliably populated from `EbayOfferDefaults` if not provided by the LLM.
+    - The existing validation for `CREATE` continues to ensure essential fields not covered by defaults (i.e., `availableQuantity`, `categoryId`, `pricingSummary`) are present in the final payload.
+    - This ensures that while `OfferDataForLLM` is flexible for modifications, `CREATE` operations remain robust and send complete data to the eBay API.
+

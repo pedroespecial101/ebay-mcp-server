@@ -34,26 +34,21 @@ class OfferFormat(str, Enum):
     AUCTION = "AUCTION"
     FIXED_PRICE = "FIXED_PRICE"
 
-class OfferDataForManage(EbayBaseModel):
-    """Data payload for creating or modifying an eBay offer.
-    
-    This model represents the data needed to create or modify an offer on eBay.
-    It maps to the eBay Offer object structure with commonly used fields.
+class OfferDataForLLM(EbayBaseModel):
+    """Data payload for an eBay offer, containing only fields intended for LLM interaction.
+    All fields are optional to allow sparse updates for MODIFY actions.
+    For CREATE, required fields are enforced by the tool's internal logic after merging defaults.
     """
-    marketplace_id: Optional[str] = Field(
-        None,
-        title="Marketplace ID",
-        description=(
-            "The ID of the eBay marketplace where the offer will be listed. "
-            "Defaults to the marketplaceId set in the user's configuration."
-        ),
-    )
-    format: Optional[OfferFormat] = Field(
-        None,
-        title="Listing Format",
-        description="The format of the eBay listing (e.g., auction or fixed price).",
-        examples=[OfferFormat.FIXED_PRICE],
-    )
+    # format: Optional[OfferFormat] = Field(
+    #     None,
+    #     title="Listing Format",
+    #     description=(
+    #         "The format of the eBay listing. Must be one of the OfferFormat enum values: "
+    #         f"{', '.join([e.value for e in OfferFormat])}. "
+    #         "AUCTION for auction-style listings or FIXED_PRICE for Buy It Now listings."
+    #     ),
+    #     examples=[OfferFormat.FIXED_PRICE, OfferFormat.AUCTION],
+    # )
     available_quantity: Optional[int] = Field(
         None,
         ge=0,
@@ -83,14 +78,43 @@ class OfferDataForManage(EbayBaseModel):
         ),
         examples=["9355"],
     )
-    listing_description: Optional[str] = Field(
+    # listing_description: Optional[str] = Field(
+    #     None,
+    #     max_length=500000,
+    #     title="Listing Description",
+    #     description=(
+    #         "The HTML or plain text description of the eBay listing. "
+    #         "Maximum length is 500,000 characters including HTML markup/tags. "
+    #         "Always returned for published offers, only returned if set for unpublished offers."
+    #     ),
+    # )
+    # secondary_category_id: Optional[str] = Field(
+    #     None,
+    #     title="Secondary Category ID",
+    #     description=(
+    #         "The unique identifier of the secondary eBay category for the item. "
+    #         "Optional and rarely used in most listing scenarios."
+    #     ),
+    # )
+
+    class Config:
+        alias_generator = to_camel
+        populate_by_name = True
+
+class OfferDataForManage(OfferDataForLLM):
+    """Data payload for creating or modifying an eBay offer (Full model for API interaction).
+
+    These are not passed the the LLM, but are used to create the final payload for API calls.
+
+    This model extends OfferDataForLLM with additional fields required for direct API calls,
+    which are typically populated from system defaults rather than direct LLM input.
+    """
+    marketplace_id: Optional[str] = Field(
         None,
-        max_length=500000,
-        title="Listing Description",
+        title="Marketplace ID",
         description=(
-            "The HTML or plain text description of the eBay listing. "
-            "Maximum length is 500,000 characters including HTML markup/tags. "
-            "Always returned for published offers, only returned if set for unpublished offers."
+            "The ID of the eBay marketplace where the offer will be listed. "
+            "Defaults to the marketplaceId set in the user's configuration."
         ),
     )
     listing_duration: Optional[str] = Field(
@@ -119,14 +143,6 @@ class OfferDataForManage(EbayBaseModel):
             "and fulfillment policy. If not provided, eBay will use the seller's default policies."
         ),
     )
-    secondary_category_id: Optional[str] = Field(
-        None,
-        title="Secondary Category ID",
-        description=(
-            "The unique identifier of the secondary eBay category for the item. "
-            "Optional and rarely used in most listing scenarios."
-        ),
-    )
     include_catalog_product_details: Optional[bool] = Field(
         None,
         title="Include Catalog Product Details",
@@ -135,14 +151,14 @@ class OfferDataForManage(EbayBaseModel):
             "Defaults to true for items listed with an eBay catalog product."
         ),
     )
-    class Config:
-        alias_generator = to_camel
-        populate_by_name = True
+
+    class Config(OfferDataForLLM.Config):  # Inherit Config as well
+        pass
 
 class ManageOfferToolInput(EbayBaseModel):
     sku: str = sku_field
     action: ManageOfferAction = Field(..., description="Action to perform on the offer ('create', 'modify', 'withdraw', 'publish', 'get').")
-    offer_data: Optional[OfferDataForManage] = Field(None, description="Data for create/modify actions. See OfferDataForManage schema.")
+    offer_data: Optional[OfferDataForLLM] = Field(None, description="Data for create/modify actions. See OfferDataForLLM schema for available fields.")
     @model_validator(mode='after')
     def check_offer_data_for_action(self):
         action = self.action
@@ -228,19 +244,19 @@ class ProductDataForInventoryItem(EbayBaseModel):
     ean: Optional[List[str]] = Field(
         None,
         title="EAN List",
-        description="Array of European Article Numbers associated with the product.",
+        description="Array of European Article Numbers associated with the product. Great if you know it - don't worry if not.",
         examples=[["190199098702"]],
     )
     upc: Optional[List[str]] = Field(
         None,
         title="UPC List",
-        description="Array of Universal Product Codes associated with the product.",
+        description="Array of Universal Product Codes associated with the product. Great if you know it - don't worry if not.",
         examples=[["190199098719"]],
     )
     isbn: Optional[List[str]] = Field(
         None,
         title="ISBN List",
-        description="Array of International Standard Book Numbers associated with the product (books/media only).",
+        description="Array of International Standard Book Numbers associated with the product (books/media only). Pretty important if you're selling books, so try and find it!",
     )
     image_urls: Optional[List[str]] = Field(
         None,

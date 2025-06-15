@@ -193,6 +193,7 @@ async def manage_offer_tool(inventory_mcp):
                 payload['sku'] = params.sku
 
                 # Final validation for fields not covered by defaults
+                # NOTE any REQUIRED fields that move from defaults will need to be specified here in order to create a valid full payload for createOffer
                 required_fields_after_merge = ['availableQuantity', 'categoryId', 'pricingSummary']
                 for field in required_fields_after_merge:
                     if field not in payload or payload[field] is None:
