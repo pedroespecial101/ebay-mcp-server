@@ -35,19 +35,106 @@ class OfferFormat(str, Enum):
     FIXED_PRICE = "FIXED_PRICE"
 
 class OfferDataForManage(EbayBaseModel):
-    """Data payload for creating or modifying an offer. Fields are based on the eBay Offer object structure."""
-    marketplace_id: Optional[str] = Field(None, description="This defaults to the marketplaceId set by the user and should not need to be changed.")
-    format: Optional[OfferFormat] = Field(None, description="The listing format of the offer.")
-    available_quantity: Optional[int] = Field(None, ge=0, description="This integer value indicates the quantity of the inventory item (specified by the <strong>sku</strong> value) that will be available for purchase by buyers shopping on the eBay site specified in the <strong>marketplaceId</strong> field.")
-    pricing_summary: Optional[Dict[str, Any]] = Field(None, description="Pricing information for the offer.", example={'price': {'value': '99.99', 'currency': 'GBP'}})
-    category_id: Optional[str] = Field(None, description="The unique identifier of the primary eBay category for the item. Use the 'get_category_suggestions' tool to find the appropriate category ID for your item. This field is required when creating a new offer.")
-    listing_description: Optional[str] = Field(None, max_length=500000, description="The description of the eBay listing that is part of the unpublished or published offer. This field is always returned for published offers, but is only returned if set for unpublished offers.<br><br><strong>Max Length</strong>: 500000 (which includes HTML markup/tags)")
-    listing_duration: Optional[str] = Field(None, description="This defaults to the marketplaceId set by the user and should not need to be changed.")
-    merchant_location_key: Optional[str] = Field(None, max_length=36, description="This defaults to the marketplaceId set by the user and should not need to be changed.")
-    listing_policies: Optional[Dict[str, Any]] = Field(None, description="This defaults to the marketplaceId set by the user and should not need to be changed.")
-    secondary_category_id: Optional[str] = Field(None, description="Rarely used")
-    include_catalog_product_details: Optional[bool] = Field(None, description="This defaults to the marketplaceId set by the user and should not need to be changed.")
-
+    """Data payload for creating or modifying an eBay offer.
+    
+    This model represents the data needed to create or modify an offer on eBay.
+    It maps to the eBay Offer object structure with commonly used fields.
+    """
+    marketplace_id: Optional[str] = Field(
+        None,
+        title="Marketplace ID",
+        description=(
+            "The ID of the eBay marketplace where the offer will be listed. "
+            "Defaults to the marketplaceId set in the user's configuration."
+        ),
+    )
+    format: Optional[OfferFormat] = Field(
+        None,
+        title="Listing Format",
+        description="The format of the eBay listing (e.g., auction or fixed price).",
+        examples=[OfferFormat.FIXED_PRICE],
+    )
+    available_quantity: Optional[int] = Field(
+        None,
+        ge=0,
+        title="Available Quantity",
+        description=(
+            "The quantity of the inventory item (specified by SKU) that will be "
+            "available for purchase on the specified marketplace."
+        ),
+        examples=[5],
+    )
+    pricing_summary: Optional[Dict[str, Any]] = Field(
+        None,
+        title="Pricing Summary",
+        description=(
+            "Container for pricing information including price and currency. "
+            "For example: {'price': {'value': '99.99', 'currency': 'GBP'}}"
+        ),
+        examples=[{'price': {'value': '99.99', 'currency': 'GBP'}}],
+    )
+    category_id: Optional[str] = Field(
+        None,
+        title="Primary Category ID",
+        description=(
+            "The unique identifier of the primary eBay category for the item. "
+            "Required when creating a new offer. Use the 'get_category_suggestions' "
+            "tool to find the appropriate category ID."
+        ),
+        examples=["9355"],
+    )
+    listing_description: Optional[str] = Field(
+        None,
+        max_length=500000,
+        title="Listing Description",
+        description=(
+            "The HTML or plain text description of the eBay listing. "
+            "Maximum length is 500,000 characters including HTML markup/tags. "
+            "Always returned for published offers, only returned if set for unpublished offers."
+        ),
+    )
+    listing_duration: Optional[str] = Field(
+        None,
+        title="Listing Duration",
+        description=(
+            "The length of time the listing will be active on eBay. "
+            "Defaults to the marketplace's standard duration if not specified."
+        ),
+        examples=["GTC"],  # Good 'Til Cancelled
+    )
+    merchant_location_key: Optional[str] = Field(
+        None,
+        max_length=36,
+        title="Merchant Location Key",
+        description=(
+            "The unique identifier of the merchant's location where the item is stored. "
+            "Defaults to the primary location if not specified."
+        ),
+    )
+    listing_policies: Optional[Dict[str, Any]] = Field(
+        None,
+        title="Listing Policies",
+        description=(
+            "Container for various listing policies including return policy, payment policy, "
+            "and fulfillment policy. If not provided, eBay will use the seller's default policies."
+        ),
+    )
+    secondary_category_id: Optional[str] = Field(
+        None,
+        title="Secondary Category ID",
+        description=(
+            "The unique identifier of the secondary eBay category for the item. "
+            "Optional and rarely used in most listing scenarios."
+        ),
+    )
+    include_catalog_product_details: Optional[bool] = Field(
+        None,
+        title="Include Catalog Product Details",
+        description=(
+            "If true, eBay will include catalog product details in the listing. "
+            "Defaults to true for items listed with an eBay catalog product."
+        ),
+    )
     class Config:
         alias_generator = to_camel
         populate_by_name = True
