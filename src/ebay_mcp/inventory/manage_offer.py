@@ -16,7 +16,6 @@ project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(o
 sys.path.append(project_root)
 
 from models.ebay.inventory import (
-    UpdateOfferRequest,
     ManageOfferAction,
     OfferFormat,
     OfferDataForManage,
@@ -177,8 +176,8 @@ async def manage_offer_tool(inventory_mcp):
                     },
                 }
 
-                # User-provided data takes precedence
-                user_payload = params.offer_data.model_dump(exclude_none=True)
+                # User-provided data takes precedence, dumped with aliases for camelCase JSON
+                user_payload = params.offer_data.model_dump(exclude_none=True, by_alias=True)
 
                 # Deep merge user payload into defaults
                 if 'listingPolicies' in user_payload and 'listingPolicies' in defaults:
@@ -238,11 +237,10 @@ async def manage_offer_tool(inventory_mcp):
                 # Merge current_offer with new data. eBay's updateOffer is a full replacement.
                 # Start with all fields from current_offer, then update with provided non-None fields.
                 update_payload = current_offer.copy() # Start with all fields from the fetched offer
-                provided_updates = params.offer_data.model_dump(exclude_none=True)
+                provided_updates = params.offer_data.model_dump(exclude_none=True, by_alias=True)
                 update_payload.update(provided_updates) # Override with new values
                 
-                # Ensure critical fields are not accidentally wiped if not in provided_updates but were in current_offer
-                # (The above .update() should handle this correctly by design of UpdateOfferRequest model)
+                # The above .update() merges the camelCase keys from the API with the aliased camelCase keys from our model.
 
                 url = f"https://api.ebay.com/sell/inventory/v1/offer/{offer_id_from_current}"
                 logger.debug(f"manage_offer (MODIFY): URL: {url}, Payload: {update_payload}")

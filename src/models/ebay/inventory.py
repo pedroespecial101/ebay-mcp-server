@@ -8,36 +8,20 @@ Legacy/unused models were removed on 2025-06-14.
 from typing import Any, Dict, List, Optional
 from enum import Enum
 from pydantic import Field, model_validator
+from pydantic.alias_generators import to_camel
 from ..base import EbayBaseModel, EbayResponse
+
+# Reusable field definition for SKU to adhere to DRY principle.
+sku_field = Field(
+    ...,
+    description="Seller-defined Stock Keeping Unit for the inventory item.",
+    max_length=50,
+    alias="sku"
+)
 
 # -------------------------------------------------
 # Offer models
 # -------------------------------------------------
-
-class UpdateOfferRequest(EbayBaseModel):
-    """Full-replacement payload for the eBay updateOffer endpoint."""
-    offer_id: str = Field(..., description="The unique identifier of the offer to update.")
-    sku: Optional[str] = Field(None, max_length=50, description="The seller-defined SKU for the inventory item (≤50 chars).")
-    marketplace_id: Optional[str] = Field(None, description="The eBay marketplace ID (e.g., EBAY_US, EBAY_GB).")
-    format: Optional[str] = Field(None, description="Listing format. FIXED_PRICE (default) or AUCTION.")
-    available_quantity: Optional[int] = Field(None, ge=0, description="Quantity available for purchase. Must be ≥1 for fixed-price; exactly 1 for auctions.")
-    pricing_summary: Optional[Dict[str, Any]] = Field(None, description="Price container (price, MAP, strikethrough price). Required for published offers.")
-    category_id: Optional[str] = Field(None, description="Primary eBay category ID. Required before publishing.")
-    secondary_category_id: Optional[str] = Field(None, description="Secondary category ID for dual-category listings.")
-    listing_description: Optional[str] = Field(None, max_length=500_000, description="HTML description of the listing (max 500k chars). Required before publishing.")
-    listing_duration: Optional[str] = Field(None, description="Listing duration (e.g., 'GTC' for fixed price).")
-    listing_start_date: Optional[str] = Field(None, description="Optional scheduled start time in UTC ISO format.")
-    merchant_location_key: Optional[str] = Field(None, max_length=36, description="Merchant inventory location identifier (max 36 chars). Required before publishing.")
-    listing_policies: Optional[Dict[str, Any]] = Field(None, description="Business policies container (payment, return, fulfilment). Required before publishing.")
-    store_category_names: Optional[List[str]] = Field(None, max_items=2, description="eBay store category paths (max 2). Format: ['/Category/Subcategory']")
-    quantity_limit_per_buyer: Optional[int] = Field(None, ge=1, description="Max quantity a single buyer can purchase across all transactions.")
-    lot_size: Optional[int] = Field(None, ge=1, description="Number of items in a lot listing.")
-    hide_buyer_details: Optional[bool] = Field(None, description="True for private listings that hide buyer IDs.")
-    include_catalog_product_details: Optional[bool] = Field(None, description="Apply eBay catalog product details (defaults to True).")
-    charity: Optional[Dict[str, Any]] = Field(None, description="Charitable organisation container.")
-    extended_producer_responsibility: Optional[Dict[str, Any]] = Field(None, description="Eco-participation fee container (EPR).")
-    regulatory: Optional[Dict[str, Any]] = Field(None, description="Regulatory information and compliance documents container.")
-    tax: Optional[Dict[str, Any]] = Field(None, description="Tax configuration container.")
 
 class ManageOfferAction(str, Enum):
     CREATE = "create"
@@ -51,23 +35,25 @@ class OfferFormat(str, Enum):
     FIXED_PRICE = "FIXED_PRICE"
 
 class OfferDataForManage(EbayBaseModel):
-    """Data payload for creating or modifying an offer. Fields are based on the eBay Offer object structure, using camelCase as per eBay API."""
-    marketplaceId: Optional[str] = Field(None, description="This defaults to the marketplaceId set by the user and should not need to be changed.")
+    """Data payload for creating or modifying an offer. Fields are based on the eBay Offer object structure."""
+    marketplace_id: Optional[str] = Field(None, description="This defaults to the marketplaceId set by the user and should not need to be changed.")
     format: Optional[OfferFormat] = Field(None, description="The listing format of the offer.")
-    availableQuantity: Optional[int] = Field(None, ge=0, description="This integer value indicates the quantity of the inventory item (specified by the <strong>sku</strong> value) that will be available for purchase by buyers shopping on the eBay site specified in the <strong>marketplaceId</strong> field.")
-    pricingSummary: Optional[Dict[str, Any]] = Field(None, description="Pricing information for the offer.", example={'price': {'value': '99.99', 'currency': 'GBP'}})
-    categoryId: Optional[str] = Field(None, description="The unique identifier of the primary eBay category for the item. Use the 'get_category_suggestions' tool to find the appropriate category ID for your item. This field is required when creating a new offer.")
-    listingDescription: Optional[str] = Field(None, max_length=500000, description="The description of the eBay listing that is part of the unpublished or published offer. This field is always returned for published offers, but is only returned if set for unpublished offers.<br><br><strong>Max Length</strong>: 500000 (which includes HTML markup/tags)")
-    listingDuration: Optional[str] = Field(None, description="This defaults to the marketplaceId set by the user and should not need to be changed.")
-    merchantLocationKey: Optional[str] = Field(None, max_length=36, description="This defaults to the marketplaceId set by the user and should not need to be changed.")
-    listingPolicies: Optional[Dict[str, Any]] = Field(None, description="This defaults to the marketplaceId set by the user and should not need to be changed.")
-    secondaryCategoryId: Optional[str] = Field(None, description="Rarely used")
-    includeCatalogProductDetails: Optional[bool] = Field(None, description="This defaults to the marketplaceId set by the user and should not need to be changed.")
+    available_quantity: Optional[int] = Field(None, ge=0, description="This integer value indicates the quantity of the inventory item (specified by the <strong>sku</strong> value) that will be available for purchase by buyers shopping on the eBay site specified in the <strong>marketplaceId</strong> field.")
+    pricing_summary: Optional[Dict[str, Any]] = Field(None, description="Pricing information for the offer.", example={'price': {'value': '99.99', 'currency': 'GBP'}})
+    category_id: Optional[str] = Field(None, description="The unique identifier of the primary eBay category for the item. Use the 'get_category_suggestions' tool to find the appropriate category ID for your item. This field is required when creating a new offer.")
+    listing_description: Optional[str] = Field(None, max_length=500000, description="The description of the eBay listing that is part of the unpublished or published offer. This field is always returned for published offers, but is only returned if set for unpublished offers.<br><br><strong>Max Length</strong>: 500000 (which includes HTML markup/tags)")
+    listing_duration: Optional[str] = Field(None, description="This defaults to the marketplaceId set by the user and should not need to be changed.")
+    merchant_location_key: Optional[str] = Field(None, max_length=36, description="This defaults to the marketplaceId set by the user and should not need to be changed.")
+    listing_policies: Optional[Dict[str, Any]] = Field(None, description="This defaults to the marketplaceId set by the user and should not need to be changed.")
+    secondary_category_id: Optional[str] = Field(None, description="Rarely used")
+    include_catalog_product_details: Optional[bool] = Field(None, description="This defaults to the marketplaceId set by the user and should not need to be changed.")
+
     class Config:
-        validate_by_name = True
+        alias_generator = to_camel
+        populate_by_name = True
 
 class ManageOfferToolInput(EbayBaseModel):
-    sku: str = Field(..., description="Inventory item SKU.")
+    sku: str = sku_field
     action: ManageOfferAction = Field(..., description="Action to perform on the offer ('create', 'modify', 'withdraw', 'publish', 'get').")
     offer_data: Optional[OfferDataForManage] = Field(None, description="Data for create/modify actions. See OfferDataForManage schema.")
     @model_validator(mode='after')
@@ -81,10 +67,13 @@ class ManageOfferToolInput(EbayBaseModel):
         return self
 
 class ManageOfferResponseDetails(EbayBaseModel):
-    offer_id: Optional[str] = None
-    status_code: Optional[int] = None
+    offer_id: Optional[str] = Field(None, alias="offerId")
+    status_code: Optional[int] = Field(None, alias="statusCode")
     message: str
     details: Optional[Any] = None # To store raw response from eBay if needed
+
+    class Config:
+        populate_by_name = True
 
 class ManageOfferToolResponse(EbayResponse[ManageOfferResponseDetails]):
     pass
@@ -108,11 +97,14 @@ class ShipToLocationAvailability(EbayBaseModel):
 
 class AvailabilityData(EbayBaseModel):
     """Top-level availability container (limited to shipToLocationAvailability)."""
-    shipToLocationAvailability: ShipToLocationAvailability = Field(
+    ship_to_location_availability: ShipToLocationAvailability = Field(
         ...,
+        alias="shipToLocationAvailability",
         title="Ship-To-Location Availability",
         description="Container for quantity available for domestic fulfilment instructions.",
     )
+    class Config:
+        populate_by_name = True
 
 class ProductDataForInventoryItem(EbayBaseModel):
     """Product details container (limited-field version)."""
@@ -163,8 +155,9 @@ class ProductDataForInventoryItem(EbayBaseModel):
         title="ISBN List",
         description="Array of International Standard Book Numbers associated with the product (books/media only).",
     )
-    imageUrls: Optional[List[str]] = Field(
+    image_urls: Optional[List[str]] = Field(
         None,
+        alias="imageUrls",
         title="Image URLs",
         description="Array of fully-qualified image URLs. First image is treated as the primary gallery image. If no image is provided use https://ebayimages.s3.us-east-005.backblazeb2.com/ebay_images/awaiting_image_holding.png. Warn the user that this image will be used if no image is provided.",
         examples=[
@@ -176,7 +169,7 @@ class ProductDataForInventoryItem(EbayBaseModel):
         ],
     )
     class Config:
-        validate_by_name = True
+        populate_by_name = True
 
 class ConditionEnum(str, Enum):
     NEW = "NEW"
@@ -208,8 +201,9 @@ class InventoryItemDataForManage(EbayBaseModel):
         ),
         examples=[ConditionEnum.NEW, ConditionEnum.USED_GOOD],
     )
-    conditionDescription: Optional[str] = Field(
+    condition_description: Optional[str] = Field(
         None,
+        alias="conditionDescription",
         title="Condition Description",
         description=(
             "More detailed, human-readable condition notes. Allowed for all "
@@ -223,7 +217,7 @@ class InventoryItemDataForManage(EbayBaseModel):
         description="Container defining quantity available for purchase.",
     )
     class Config:
-        validate_by_name = True
+        populate_by_name = True
 
 class ManageInventoryItemAction(str, Enum):
     CREATE = "create"
@@ -232,7 +226,7 @@ class ManageInventoryItemAction(str, Enum):
     DELETE = "delete"
 
 class ManageInventoryItemToolInput(EbayBaseModel):
-    sku: str = Field(..., description="Inventory item SKU.", max_length=50)
+    sku: str = sku_field
     action: ManageInventoryItemAction = Field(..., description="Action to perform on the inventory item ('create', 'modify', 'get', 'delete').")
     item_data: Optional[InventoryItemDataForManage] = Field(None, description="Data for create/modify actions. See InventoryItemDataForManage schema.")
     @model_validator(mode='after')
@@ -247,9 +241,12 @@ class ManageInventoryItemToolInput(EbayBaseModel):
 
 class ManageInventoryItemResponseDetails(EbayBaseModel):
     sku: Optional[str] = None
-    status_code: Optional[int] = None
+    status_code: Optional[int] = Field(None, alias="statusCode")
     message: str
     details: Optional[Any] = None # To store raw response from eBay if needed
+
+    class Config:
+        populate_by_name = True
 
 class ManageInventoryItemToolResponse(EbayResponse[ManageInventoryItemResponseDetails]):
     pass
@@ -262,14 +259,17 @@ class InventoryItemDetails(EbayBaseModel):
     sku: str = Field(..., description="Seller-defined SKU.")
     locale: Optional[str] = Field(None, description="Locale of the inventory item.")
     condition: Optional[str] = Field(None, description="Condition code of the item.")
-    condition_description: Optional[str] = Field(None, description="Free-text description elaborating on the condition.")
-    package_weight_and_size: Optional[Dict[str, Any]] = Field(None, description="Package weight & dimensions.")
+    condition_description: Optional[str] = Field(None, alias="conditionDescription", description="Free-text description elaborating on the condition.")
+    package_weight_and_size: Optional[Dict[str, Any]] = Field(None, alias="packageWeightAndSize", description="Package weight & dimensions.")
     product: Optional[Dict[str, Any]] = Field(None, description="Product data such as title, aspects, etc.")
     availability: Optional[Dict[str, Any]] = Field(None, description="Quantity information for the item.")
-    group_ids: Optional[List[str]] = Field(None, description="Inventory item group IDs the item belongs to.")
+    group_ids: Optional[List[str]] = Field(None, alias="groupIds", description="Inventory item group IDs the item belongs to.")
+
+    class Config:
+        populate_by_name = True
 
 class InventoryItemsListResponse(EbayBaseModel):
-    inventory_items: List[InventoryItemDetails] = Field(default_factory=list, description="List of inventory items.")
+    inventory_items: List[InventoryItemDetails] = Field(default_factory=list, alias="inventoryItems", description="List of inventory items.")
     total: Optional[int] = Field(None, description="Total number of inventory items.")
     size: Optional[int] = Field(None, description="Number of items in this response.")
     offset: Optional[int] = Field(None, description="Pagination offset.")
@@ -277,6 +277,10 @@ class InventoryItemsListResponse(EbayBaseModel):
     href: Optional[str] = Field(None, description="URL of this page of results.")
     next: Optional[str] = Field(None, description="URL of the next page of results.")
     prev: Optional[str] = Field(None, description="URL of the previous page of results.")
+
+    class Config:
+        populate_by_name = True
+
     @classmethod
     def success_response(cls, data: Dict[str, Any]):
         items = [

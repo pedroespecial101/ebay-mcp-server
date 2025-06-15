@@ -182,13 +182,13 @@ async def manage_inventory_item_tool(inventory_mcp):
                     else availability_model
                 )
 
-                ship_to_location = avail_dict.get('shipToLocationAvailability')
+                ship_to_location = avail_dict.get('ship_to_location_availability') # Internal check uses snake_case
                 if not ship_to_location or ship_to_location.get('quantity') is None:
                     raise ValueError(
-                        "availability.shipToLocationAvailability.quantity is required for 'create' action."
+                        "availability.ship_to_location_availability.quantity is required for 'create' action."
                     )
 
-                payload = params.item_data.model_dump(exclude_none=True)
+                payload = params.item_data.model_dump(exclude_none=True, by_alias=True) # API payload needs camelCase
                 
                 url = f"https://api.ebay.com/sell/inventory/v1/inventory_item/{params.sku}"
                 logger.debug(f"manage_inventory_item (CREATE): URL: {url}, Payload: {payload}")
@@ -218,11 +218,11 @@ async def manage_inventory_item_tool(inventory_mcp):
                 # Merge current_item with new data. eBay's PUT is a full replacement.
                 # Start with all fields from current_item, then update with provided non-None fields.
                 update_payload = current_item.copy() # Start with all fields from the fetched item
-                provided_updates = params.item_data.model_dump(exclude_none=True)
+                provided_updates = params.item_data.model_dump(exclude_none=True, by_alias=True) # Get updates with camelCase keys
                 update_payload.update(provided_updates) # Override with new values
                 
                 # Remove eBay-managed fields that shouldn't be sent in updates
-                ebay_managed_fields = ['sku', 'locale', 'groupIds']
+                ebay_managed_fields = ['sku', 'locale', 'groupIds'] # These are camelCase as they come from current_item or provided_updates
                 for field in ebay_managed_fields:
                     update_payload.pop(field, None)
 

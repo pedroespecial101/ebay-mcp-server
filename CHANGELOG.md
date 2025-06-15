@@ -1,3 +1,13 @@
+## Updates in TrajectoryID <pydantic_model_refactor, (pydantic_model_refactor_14062025_1345)>, 14062025 - 13:45:35
+
+- **Pydantic Model Refactoring (`src/models/ebay/inventory.py`)**:
+  - Standardized all Pydantic model field names to `snake_case` for Python code, while using `alias_generator = to_camel` and `Field(alias=...)` to ensure `camelCase` JSON for eBay API compatibility.
+  - Removed the unused `UpdateOfferRequest` Pydantic model to simplify the codebase.
+  - Introduced a reusable `sku_field = Field(...)` for the common SKU attribute to improve maintainability and consistency.
+- **Tool Implementation Updates for Model Refactor**:
+  - Updated `src/ebay_mcp/inventory/manage_offer.py` and `src/ebay_mcp/inventory/manage_inventory_item.py` to use `model_dump(by_alias=True, exclude_none=True)` when preparing JSON payloads. This ensures that the `camelCase` aliases are correctly used for API communication.
+  - Verified that `src/ebay_mcp/inventory/get_inventory_items.py` did not require changes due to its existing handling of response parsing.
+
 ## Updates in TrajectoryID <remove_unused_inventory_models, (remove_unused_inventory_models_14062025_1345)>, 14062025 - 13:45:35
 
 - **Removed Unused Inventory Models**:
