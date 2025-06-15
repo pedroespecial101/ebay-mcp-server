@@ -248,3 +248,16 @@
 - `tests/test_update_offer_comprehensive.py`: New comprehensive test suite
 
 This update transforms the Update Offer tool from a basic price/quantity updater into a comprehensive offer management solution supporting all eBay Inventory API capabilities while maintaining safety through prominent warnings and data preservation features.
+
+## Updates in TrajectoryID <UserRequest_Simplify_test_manageOffer_pytest_Assertions, (Step ID 3)>, 15062025 - 11:44.21
+
+- Refactored `tests/test_manageOffer_pytest.py` to simplify success criteria.
+- Test assertions for `test_02_create_offer`, `test_03_get_offer`, `test_04_modify_offer`, `test_05_publish_offer`, and `test_06_withdraw_offer` now primarily check for a `success: true` status in the MCP tool's JSON response.
+- Removed detailed data validation and post-action verification steps to focus tests on MCP tool endpoint health rather than intricate API behavior.
+- Updated docstrings in the test functions to reflect the new, simpler success conditions.
+- Specifically, in `test_05_publish_offer`, the assertion for the presence of a `listingId` in the response was reinstated as a key indicator of successful publishing, in addition to the general `success: true` check.
+- Corrected an issue where `test_05_publish_offer` failed to find the `listingId`:
+    - Modified `src/ebay_mcp/inventory/manage_offer.py` (publish action) to correctly populate the dedicated `listing_id` field in its response structure (`ManageOfferResponseDetails`).
+    - Updated `tests/test_manageOffer_pytest.py` (`test_05_publish_offer`) to access `listing_id` from the correct path (`data.listing_id`) in the MCP tool's JSON response.
+
+{{ ... }}

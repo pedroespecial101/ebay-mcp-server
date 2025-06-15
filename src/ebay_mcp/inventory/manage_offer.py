@@ -329,7 +329,7 @@ async def manage_offer_tool(inventory_mcp):
                 listing_id = response_json.get('listingId')
                 logger.info(f"manage_offer (PUBLISH): Successfully published offer '{offer_id_from_current}' for SKU '{params.sku}'. ListingId: {listing_id}")
                 return ManageOfferToolResponse.success_response(
-                    ManageOfferResponseDetails(offer_id=offer_id_from_current, status_code=response.status_code, message=f"Offer published successfully. ListingId: {listing_id}", details=response_json)
+                    ManageOfferResponseDetails(offer_id=offer_id_from_current, status_code=response.status_code, message=f"Offer published successfully. ListingId: {listing_id}", details=response_json, listing_id=listing_id)
                 ).model_dump_json(indent=2)
 
             # --- GET Action ---
