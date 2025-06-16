@@ -148,45 +148,49 @@ async def manage_inventory_item_tool(inventory_mcp):
                 if not params.item_data:
                     raise ValueError("item_data is unexpectedly None for 'create' action despite validator.")
                 
-                # Specific field requirements for 'create' action within item_data
-                required_fields_create = ['condition', 'product', 'availability']
-                for field in required_fields_create:
-                    if getattr(params.item_data, field, None) is None:
-                        raise ValueError(f"Missing required field '{field}' in item_data for 'create' action.")
-
-                product_model = params.item_data.product
-                if not product_model:
-                    raise ValueError("product must be supplied for 'create' action.")
-
-                # Convert to dict for simple key checks
-                product_dict = (
-                    product_model.model_dump(exclude_none=True)
-                    if hasattr(product_model, "model_dump")
-                    else product_model
-                )
-
-                product_required_fields = ['title', 'description']
-                for field in product_required_fields:
-                    if not product_dict.get(field):
-                        raise ValueError(
-                            f"Missing required product field '{field}' in item_data for 'create' action."
-                        )
-                 
-                availability_model = params.item_data.availability
-                if not availability_model:
-                    raise ValueError("availability must be provided for 'create' action.")
-
-                avail_dict = (
-                    availability_model.model_dump(exclude_none=True)
-                    if hasattr(availability_model, "model_dump")
-                    else availability_model
-                )
-
-                ship_to_location = avail_dict.get('ship_to_location_availability') # Internal check uses snake_case
-                if not ship_to_location or ship_to_location.get('quantity') is None:
-                    raise ValueError(
-                        "availability.ship_to_location_availability.quantity is required for 'create' action."
-                    )
+                # --- TEST: Temporarily disabled validation to test minimal API requirements (2025-06-16) ---
+                # The following block was commented out to allow sending a create request with only an SKU.
+                #
+                # # Specific field requirements for 'create' action within item_data
+                # required_fields_create = ['condition', 'product', 'availability']
+                # for field in required_fields_create:
+                #     if getattr(params.item_data, field, None) is None:
+                #         raise ValueError(f"Missing required field '{field}' in item_data for 'create' action.")
+                #
+                # product_model = params.item_data.product
+                # if not product_model:
+                #     raise ValueError("product must be supplied for 'create' action.")
+                #
+                # # Convert to dict for simple key checks
+                # product_dict = (
+                #     product_model.model_dump(exclude_none=True)
+                #     if hasattr(product_model, "model_dump")
+                #     else product_model
+                # )
+                #
+                # product_required_fields = ['title', 'description']
+                # for field in product_required_fields:
+                #     if not product_dict.get(field):
+                #         raise ValueError(
+                #             f"Missing required product field '{field}' in item_data for 'create' action."
+                #         )
+                #  
+                # availability_model = params.item_data.availability
+                # if not availability_model:
+                #     raise ValueError("availability must be provided for 'create' action.")
+                #
+                # avail_dict = (
+                #     availability_model.model_dump(exclude_none=True)
+                #     if hasattr(availability_model, "model_dump")
+                #     else availability_model
+                # )
+                #
+                # ship_to_location = avail_dict.get('ship_to_location_availability') # Internal check uses snake_case
+                # if not ship_to_location or ship_to_location.get('quantity') is None:
+                #     raise ValueError(
+                #         "availability.ship_to_location_availability.quantity is required for 'create' action."
+                #     )
+                # --- END of temporarily disabled validation ---
 
                 payload = params.item_data.model_dump(exclude_none=True, by_alias=True) # API payload needs camelCase
                 

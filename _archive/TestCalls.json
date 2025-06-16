@@ -12,6 +12,23 @@
 
 
 {
+  "sku": "NEW_MIN_SKU",
+  "action": "create",
+  "item_data": {
+    "product": {
+      "imageUrls": [
+        "https://eBayImages.s3.us-east-005.backblazeb2.com/ebay_images/Cup-2/Cup-2-1_81.jpg",
+        "https://eBayImages.s3.us-east-005.backblazeb2.com/ebay_images/Cup-2/Cup-2-1_78.jpg",
+        "https://eBayImages.s3.us-east-005.backblazeb2.com/ebay_images/Cup-2/Cup-2-1_80.jpg",
+        "https://eBayImages.s3.us-east-005.backblazeb2.com/ebay_images/Cup-2/Cup-2-1_82.jpg",
+        "https://eBayImages.s3.us-east-005.backblazeb2.com/ebay_images/Cup-2/Cup-2-1_79.jpg",
+        "https://eBayImages.s3.us-east-005.backblazeb2.com/ebay_images/Cup-2/Cup-2-1_77.jpg"
+      ]
+    }
+  }
+}
+
+{
   "sku": "Coffee-1",
   "action": "create",
   "item_data": {

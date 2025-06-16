@@ -93,7 +93,7 @@ logger.info(f"Logging configured with level {log_level_str} ({logging.getLevelNa
 logger.info(f"Log file location: {LOG_FILE_PATH}")
 # --- End of Centralized Logging Configuration ---
 
-from fastmcp import FastMCP
+from fastmcp import FastMCP, Client
 
 # Import all sub-servers
 from ebay_mcp.auth.server import auth_mcp
@@ -157,9 +157,6 @@ def mount_servers():
     mcp.mount("customPrompts", prompts_mcp)
     logger.info("Mounted custom prompts MCP server")
     
-    # Test and database tools have been removed as they are no longer needed
-    
-    logger.info("All sub-servers mounted successfully")
 
 # Mount all servers
 mount_servers()

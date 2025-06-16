@@ -187,8 +187,8 @@ class ManageOfferToolResponse(EbayResponse[ManageOfferResponseDetails]):
 
 class ShipToLocationAvailability(EbayBaseModel):
     """Quantity available for ship-to-home orders."""
-    quantity: int = Field(
-        ...,
+    quantity: Optional[int] = Field(
+        None,
         ge=0,
         title="Available Quantity",
         description=(
@@ -200,8 +200,8 @@ class ShipToLocationAvailability(EbayBaseModel):
 
 class AvailabilityData(EbayBaseModel):
     """Top-level availability container (limited to shipToLocationAvailability)."""
-    ship_to_location_availability: ShipToLocationAvailability = Field(
-        ...,
+    ship_to_location_availability: Optional[ShipToLocationAvailability] = Field(
+        None,
         alias="shipToLocationAvailability",
         title="Ship-To-Location Availability",
         description="Container for quantity available for domestic fulfilment instructions.",
@@ -211,15 +211,15 @@ class AvailabilityData(EbayBaseModel):
 
 class ProductDataForInventoryItem(EbayBaseModel):
     """Product details container (limited-field version)."""
-    title: str = Field(
-        ...,
+    title: Optional[str] = Field(
+        None,
         max_length=80,
         title="Title",
         description="Title of the item exactly as it will appear on the eBay listing (max 80 characters).",
         examples=["Apple iPhone 17 Pro 256GB Natural Titanium"],
     )
-    description: str = Field(
-        ...,
+    description: Optional[str] = Field(
+        None,
         max_length=4000,
         title="Description",
         description="Full description of the product or lot in HTML or plain text (max 4000 characters).",

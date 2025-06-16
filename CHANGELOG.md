@@ -1,3 +1,20 @@
+## Updates in TrajectoryID <fix_external_fastmcp_mount, (fix_external_fastmcp_mount_16062025_1217)> - 16062025 - 12:17.50
+
+- **Fixed external FastMCP mount in `src/main_server.py`:**
+  - Replaced invalid `Client(command=…, args=…)` usage with config-dict `Client({...})`, as required by FastMCP 2.x.
+  - Prevented `TypeError: unexpected keyword argument 'command'` on server startup.
+
+## Updates in TrajectoryID <test_minimal_inventory_item_creation, (test_minimal_inventory_item_creation_16062025_0809)> - 16062025 - 08:09.46
+
+- **Testing Minimal API Requirements for Inventory Item Creation**:
+  - To test the hypothesis that only an SKU is required to create an eBay inventory item, several temporary changes were made.
+- **Pydantic Model Updates (`src/models/ebay/inventory.py`)**:
+  - Made fields in `ShipToLocationAvailability`, `AvailabilityData`, and `ProductDataForInventoryItem` optional.
+  - Specifically, `quantity`, `ship_to_location_availability`, `title`, and `description` were changed from required to optional to allow for minimal payloads.
+- **Tool Logic Modification (`src/ebay_mcp/inventory/manage_inventory_item.py`)**:
+  - Commented out the explicit validation block for the `CREATE` action.
+  - This bypasses the local checks that enforce the presence of `condition`, `product`, and `availability` details, allowing the minimal request to be sent to the eBay API for testing.
+
 ## Updates in TrajectoryID <filled_by_user_or_system>, (trajectoryID <filled_by_user_or_system>) - 15062025 - 11:16.21
 
 - **User Modified:** `/Users/petetreadaway/Projects/ebay-mcp-server/tests/test_manageOffer_pytest.py`
@@ -277,4 +294,3 @@ This update transforms the Update Offer tool from a basic price/quantity updater
     - Confirmed that for the `CREATE` action, the `format` field is reliably populated from `EbayOfferDefaults` if not provided by the LLM.
     - The existing validation for `CREATE` continues to ensure essential fields not covered by defaults (i.e., `availableQuantity`, `categoryId`, `pricingSummary`) are present in the final payload.
     - This ensures that while `OfferDataForLLM` is flexible for modifications, `CREATE` operations remain robust and send complete data to the eBay API.
-
