@@ -294,3 +294,10 @@ This update transforms the Update Offer tool from a basic price/quantity updater
     - Confirmed that for the `CREATE` action, the `format` field is reliably populated from `EbayOfferDefaults` if not provided by the LLM.
     - The existing validation for `CREATE` continues to ensure essential fields not covered by defaults (i.e., `availableQuantity`, `categoryId`, `pricingSummary`) are present in the final payload.
     - This ensures that while `OfferDataForLLM` is flexible for modifications, `CREATE` operations remain robust and send complete data to the eBay API.
+
+## Updates in TrajectoryID <remove_get_inventory_items_tool, (remove_get_inventory_items_tool_16062025_1242)> - 16062025 - 12:42.35
+
+- **Removed `inventoryAPI_get_inventory_items` Tool**:
+  - Deleted the tool definition file: `src/ebay_mcp/inventory/get_inventory_items.py`.
+  - Removed the tool's registration from the inventory server in `src/ebay_mcp/inventory/server.py`.
+  - This tool was identified as unused within the active codebase.
