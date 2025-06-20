@@ -101,6 +101,7 @@ from ebay_mcp.browse.server import browse_mcp
 from ebay_mcp.taxonomy.server import taxonomy_mcp
 from ebay_mcp.inventory.server import inventory_mcp
 from ebay_mcp.prompts.server import prompts_mcp
+from ebay_mcp.catalog.server import catalog_mcp
 
 # Create the main MCP server
 instruction_text = """This MCP server provides tools to interact with various eBay APIs.
@@ -113,6 +114,7 @@ PRIMARY WORKFLOW:
 AVAILABLE OPERATIONS:
 • Inventory Items: CREATE, GET, MODIFY, DELETE
 • Offers: CREATE, GET, MODIFY, PUBLISH, WITHDRAW
+• Catalog: SEARCH BY GTIN (catalogAPI_search_by_gtin)
 
 KEY CONCEPTS:
 • One-to-One Relationship: 1 Inventory Item maps to 1 Offer
@@ -123,6 +125,7 @@ KEY CONCEPTS:
 CATEGORY & ASPECTS:
 • Use 'Get Category Suggestions' to find appropriate categories
 • Use 'Get Aspects for Category' to get required/recommended item attributes
+• If you have a GTIN (EAN, ISBN, UPC) for the item you want to sell, use 'Search by GTIN' to check if there is an eBay catalog product that matches the GTIN of the item you want to sell.
 
 WORKFLOW FLEXIBILITY:
 While the primary workflow above is typical, you can use inventoryAPI_manage_inventory_item and inventoryAPI_manage_offer tools independently to GET, MODIFY, or DELETE existing items and WITHDRAW offers as needed."""
@@ -156,6 +159,10 @@ def mount_servers():
     # Mount custom prompts server
     mcp.mount("customPrompts", prompts_mcp)
     logger.info("Mounted custom prompts MCP server")
+
+    # Mount catalog API tools
+    mcp.mount("catalogAPI", catalog_mcp)
+    logger.info("Mounted catalog API MCP server")
     
 
 # Mount all servers

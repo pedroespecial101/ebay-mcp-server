@@ -98,6 +98,7 @@ def get_standard_ebay_headers(access_token: str, additional_headers: dict = None
         "Content-Type": "application/json",
         "Content-Language": "en-GB",  # Required for ALL eBay API requests (hyphen format)
         "Accept-Language": "en-GB",   # Required for ALL eBay API requests (hyphen format)
+        "X-EBAY-C-MARKETPLACE-ID": "EBAY_GB", # Required for Catalog API calls and hopefully doesnt break other API calls
     }
 
     if additional_headers:
