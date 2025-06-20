@@ -13,6 +13,7 @@ if project_root not in sys.path:
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastmcp_mount import MountFastMCP  # Add this import
 
 # Import the MCP server instance from main_server
 from src.main_server import mcp
@@ -40,8 +41,8 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
-# Mount MCP server
-app.mount("/mcp-server", mcp_app)
+# Mount MCP server with the fix
+app.mount("/mcp-server", MountFastMCP(app=mcp_app))  # Wrap with MountFastMCP
 logger.info("MCP server mounted at /mcp-server/mcp")
 
 # Root endpoint
