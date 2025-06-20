@@ -100,7 +100,7 @@ from ebay_mcp.auth.server import auth_mcp
 from ebay_mcp.browse.server import browse_mcp
 from ebay_mcp.taxonomy.server import taxonomy_mcp
 from ebay_mcp.inventory.server import inventory_mcp
-from ebay_mcp.prompts.server import prompts_mcp
+# from ebay_mcp.prompts.server import prompts_mcp
 from ebay_mcp.catalog.server import catalog_mcp
 
 # Create the main MCP server
@@ -156,9 +156,9 @@ def mount_servers():
     mcp.mount("inventoryAPI", inventory_mcp)
     logger.info("Mounted inventory API MCP server")
 
-    # Mount custom prompts server
-    mcp.mount("customPrompts", prompts_mcp)
-    logger.info("Mounted custom prompts MCP server")
+    # # Mount custom prompts server
+    # mcp.mount("customPrompts", prompts_mcp)
+    # logger.info("Mounted custom prompts MCP server")
 
     # Mount catalog API tools
     mcp.mount("catalogAPI", catalog_mcp)
