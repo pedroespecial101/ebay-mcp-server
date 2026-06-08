@@ -1,3 +1,26 @@
+## Updates in TrajectoryID <refactor_search_by_image_ui, (refactor_search_by_image_ui_21062025_0628)> - 21062025 - 06:28.44
+
+- **Refactored Search By Image Tool to Improve MCP Inspector UI**:
+  - Changed `search_by_image` tool in `src/ebay_mcp/browse/server.py` to accept a single Pydantic model parameter instead of individual parameters.
+  - Updated tests in `tests/test_search_by_image_pytest.py` to match the new function signature.
+  - Fixed Pydantic validation errors for optional string fields by using a single model parameter approach.
+  - The tool now shows as a JSON object input in MCP Inspector, matching the behavior of other tools like `manage_offer`.
+
+## Updates in TrajectoryID <enhance_search_by_image_tool, (enhance_search_by_image_tool_20062025_2230)> - 20062025 - 22:30.07
+
+- **Enhanced Search By Image Tool to Accept Image URLs**:
+  - Updated `SearchByImageParams` in `src/models/mcp_tools.py` to use `image_url` instead of `image` and added URL validation.
+  - Added new utility function `url_to_base64_image` in `src/utils/api_utils.py` to download images from URLs and convert them to Base64.
+  - Modified the `search_by_image` tool in `src/ebay_mcp/browse/server.py` to automatically download and convert images from URLs.
+  - The enhancement allows users to provide an image URL instead of manually encoding the image as Base64.
+
+## Updates in TrajectoryID <add_search_by_image_tool, (add_search_by_image_tool_20062025_2212)> - 20062025 - 22:12.53
+
+- **Added Search By Image Tool to Browse API**:
+  - Added new Pydantic model `SearchByImageParams` in `src/models/mcp_tools.py` for the search_by_image tool parameters.
+  - Added new `search_by_image` MCP tool in `src/ebay_mcp/browse/server.py` that allows searching for eBay items using an image.
+  - The tool accepts optional parameters for category_ids, limit, filter, and aspect_filter to refine search results.
+
 ## Updates in TrajectoryID <fix_external_fastmcp_mount, (fix_external_fastmcp_mount_16062025_1217)> - 16062025 - 12:17.50
 
 - **Fixed external FastMCP mount in `src/main_server.py`:**

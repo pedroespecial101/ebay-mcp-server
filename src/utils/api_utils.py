@@ -7,6 +7,7 @@ import httpx
 import os
 import sys
 import json
+import base64
 from dotenv import load_dotenv
 
 # Add the project root directory to the Python path
@@ -105,6 +106,54 @@ def get_standard_ebay_headers(access_token: str, additional_headers: dict = None
         standard_headers.update(additional_headers)
 
     return standard_headers
+
+async def url_to_base64_image(url: str, client: httpx.AsyncClient = None) -> str:
+    """
+    Download an image from a URL and convert it to a Base64 string.
+    
+    Args:
+        url: The image URL to download
+        client: Optional httpx.AsyncClient. If not provided, a new one will be created.
+        
+    Returns:
+        Base64 encoded string of the image
+        
+    Raises:
+        httpx.HTTPError: If there's an issue with the HTTP request
+        ValueError: If there's an issue with the image conversion
+    """
+    logger.debug(f"Downloading image from URL: {url}")
+    
+    close_client = False
+    try:
+        if client is None:
+            client = httpx.AsyncClient()
+            close_client = True
+            
+        response = await client.get(url)
+        response.raise_for_status()
+        
+        # Get content type to validate it's an image
+        content_type = response.headers.get('content-type', '')
+        if not content_type.startswith('image/'):
+            raise ValueError(f"URL did not return an image (content-type: {content_type})")
+            
+        # Convert the image content to Base64
+        image_content = response.content
+        base64_image = base64.b64encode(image_content).decode('utf-8')
+        logger.debug(f"Successfully converted image to Base64 (length: {len(base64_image)})")
+        
+        return base64_image
+        
+    except httpx.HTTPError as e:
+        logger.error(f"HTTP error while downloading image: {e}")
+        raise
+    except Exception as e:
+        logger.error(f"Error converting image to Base64: {e}")
+        raise ValueError(f"Failed to convert image to Base64: {str(e)}") 
+    finally:
+        if close_client and client:
+            await client.aclose()
 
 async def execute_ebay_api_call(tool_name: str, client: httpx.AsyncClient, api_call_logic: callable):
     """

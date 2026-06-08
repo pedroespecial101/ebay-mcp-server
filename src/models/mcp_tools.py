@@ -132,3 +132,29 @@ class GetInventoryItemsParams(EbayBaseModel):
         if v < 0:
             raise ValueError("Offset cannot be negative")
         return v
+
+
+class SearchByImageParams(EbayBaseModel):
+    """Parameters for the search_by_image tool."""
+    
+    image_url: str = Field(..., description="The URL of the image to search with.")
+    category_ids: Optional[str] = Field(None, description="The category ID to limit search results.")
+    limit: Optional[int] = Field(10, description="The number of items to return per page.")
+    filter: Optional[str] = Field(None, description="Filter results (e.g. price range, condition).")
+    aspect_filter: Optional[str] = Field(None, description="Filter by item aspects.")
+    
+    @field_validator('limit')
+    @classmethod
+    def validate_limit(cls, v):
+        """Validate that limit is within acceptable range."""
+        if v is not None and (v < 1 or v > 200):
+            raise ValueError("Limit must be between 1 and 200")
+        return v
+        
+    @field_validator('image_url')
+    @classmethod
+    def validate_image_url(cls, v):
+        """Validate that the image URL is properly formatted."""
+        if not v.startswith('http://') and not v.startswith('https://'):
+            raise ValueError("Image URL must start with http:// or https://")
+        return v

@@ -39,8 +39,13 @@ couldflared tunnel create dev-tunnel
 For each subdomain you want to use (e.g., `dev.petetreadaway.com`, `api.petetreadaway.com`):
 
 ```bash
-couldflared tunnel route dns dev-tunnel dev.petetreadaway.com
-couldflared tunnel route dns dev-tunnel api.petetreadaway.com
+cloudflared tunnel route dns dev-tunnel dev.petetreadaway.com
+cloudflared tunnel route dns dev-tunnel api.petetreadaway.com
+cloudflared tunnel route dns dev-tunnel inboxzero.petetreadaway.com
+cloudflared tunnel route dns dev-tunnel ebayauth.petetreadaway.com
+cloudflared tunnel route dns dev-tunnel capacitor.petetreadaway.com
+cloudflared tunnel route dns dev-tunnel mcp.petetreadaway.com
+cloudflared tunnel route dns dev-tunnel wwwdev.petetreadaway.com
 ```
 - This creates CNAME records in Cloudflare DNS pointing to your tunnel.
 
