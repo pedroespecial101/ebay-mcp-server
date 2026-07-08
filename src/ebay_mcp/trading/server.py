@@ -39,30 +39,49 @@ async def get_item(input: GetSellerItemInput) -> EditableSellerListing:
 
 @trading_mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "openWorldHint": True})
 async def view_item_images(input: ViewItemImagesInput) -> ToolResult:
-    """Return seller-listing photographs as vision-readable MCP images for identification and condition review."""
+    """Inspect seller-listing photographs as safe MCP images.
+
+    Returns one image by default and at most three per response. All listing
+    photographs remain available: follow has_more and next_start_index with
+    repeated calls until the complete ordered set has been reviewed. Use
+    max_px=768 first and retry max_px=512 if a client blocks an image.
+    """
     result = await fetch_item_images(input)
     next_index = result.start_index + len(result.images)
+    successful = [image for image in result.images if image.data is not None]
     metadata = {
         "item_id": result.item_id,
-        "title": result.title,
         "total_images": result.total_images,
         "start_index": result.start_index,
-        "returned_count": len(result.images),
+        "attempted_count": len(result.images),
+        "returned_count": len(successful),
         "next_start_index": next_index if next_index < result.total_images else None,
         "has_more": next_index < result.total_images,
         "images": [
-            {"index": image.index, "url": image.url, "width": image.width, "height": image.height}
+            {
+                "index": image.index,
+                "status": "ok" if image.data is not None else "failed",
+                "width": image.width,
+                "height": image.height,
+                "error_code": image.error_code,
+            }
             for image in result.images
         ],
     }
     content = [TextContent(
         type="text",
-        text=f"{result.title} — showing photographs {result.start_index + 1}-{next_index} of {result.total_images}.",
+        text=f"Listing photographs {result.start_index + 1}-{next_index} of {result.total_images}.",
     )]
     for image in result.images:
+        if image.data is None:
+            content.append(TextContent(
+                type="text",
+                text=f"Photograph {image.index + 1} could not be prepared; continue with the remaining images.",
+            ))
+            continue
         content.append(TextContent(
             type="text",
-            text=f"Photograph {image.index + 1} of {result.total_images}: {image.url}",
+            text=f"Photograph {image.index + 1} of {result.total_images}.",
         ))
         content.append(Image(data=image.data, format="jpeg").to_image_content())
     return ToolResult(content=content, structured_content=metadata)

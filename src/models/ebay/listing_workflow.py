@@ -2,7 +2,7 @@
 
 from decimal import Decimal
 from enum import Enum
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -20,6 +20,17 @@ class ImageSource(BaseModel):
 
 class StageImagesInput(BaseModel):
     sources: list[ImageSource] = Field(min_length=1, max_length=24)
+
+
+class ViewEbayImageInput(BaseModel):
+    url: str = Field(
+        min_length=1,
+        description="Public HTTPS image URL hosted on eBay's approved image CDN.",
+    )
+    max_px: Literal[512, 768, 1024] = Field(
+        default=768,
+        description="Maximum width or height after safe JPEG normalization.",
+    )
 
 
 class StagedImage(BaseModel):

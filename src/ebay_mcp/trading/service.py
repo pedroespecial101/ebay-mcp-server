@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import json
+import logging
 import os
 import re
 import secrets
@@ -16,7 +17,7 @@ from urllib.parse import quote
 from xml.etree import ElementTree as ET
 
 from ebay_mcp.media.ebay import upload_staged_pictures
-from ebay_mcp.media.storage import download_public_image, prepare_model_image
+from ebay_mcp.media.storage import EBAY_IMAGE_HOSTS, download_public_image, prepare_model_image
 from ebay_mcp.trading.client import (
     TradingAPIError, TradingClient, element, find, findall, value,
 )
@@ -34,21 +35,21 @@ INVENTORY_OFFERS_URL = "https://api.ebay.com/sell/inventory/v1/offer"
 VERIFICATION_TTL = timedelta(minutes=15)
 SUPPORTED_LISTING_TYPES = {"FixedPriceItem", "StoresFixedPrice"}
 _VERIFICATIONS: dict[str, dict[str, Any]] = {}
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
 class ModelListingImage:
     index: int
-    url: str
-    data: bytes
-    width: int
-    height: int
+    data: bytes | None = None
+    width: int | None = None
+    height: int | None = None
+    error_code: str | None = None
 
 
 @dataclass(frozen=True)
 class ModelListingImages:
     item_id: str
-    title: str
     total_images: int
     start_index: int
     images: list[ModelListingImage]
@@ -249,15 +250,52 @@ async def view_item_images(
         start=params.start_index,
     ))
 
+    logger.info(
+        "Preparing seller listing images item_id=%s start_index=%d limit=%d max_px=%d.",
+        params.item_id,
+        params.start_index,
+        params.limit,
+        params.max_px,
+    )
+
     async def fetch(index: int, url: str) -> ModelListingImage:
-        data, filename = await download_public_image(url)
-        prepared, width, height = await asyncio.to_thread(prepare_model_image, data, filename)
-        return ModelListingImage(index=index, url=url, data=prepared, width=width, height=height)
+        try:
+            data, filename = await download_public_image(url, allowed_hosts=EBAY_IMAGE_HOSTS)
+            prepared, width, height = await asyncio.to_thread(
+                prepare_model_image,
+                data,
+                filename,
+                params.max_px,
+            )
+            logger.info(
+                "Prepared seller listing image item_id=%s index=%d width=%d height=%d bytes=%d.",
+                params.item_id,
+                index,
+                width,
+                height,
+                len(prepared),
+            )
+            return ModelListingImage(index=index, data=prepared, width=width, height=height)
+        except Exception as exc:
+            logger.warning(
+                "Could not prepare seller listing image item_id=%s index=%d error_type=%s.",
+                params.item_id,
+                index,
+                exc.__class__.__name__,
+            )
+            return ModelListingImage(index=index, error_code="image_unavailable")
 
     images = await asyncio.gather(*(fetch(index, url) for index, url in selected))
+    successes = sum(1 for image in images if image.data is not None)
+    logger.info(
+        "Prepared seller listing image batch item_id=%s attempted=%d returned=%d total=%d.",
+        params.item_id,
+        len(images),
+        successes,
+        total,
+    )
     return ModelListingImages(
         item_id=listing.item_id,
-        title=listing.title,
         total_images=total,
         start_index=params.start_index,
         images=list(images),

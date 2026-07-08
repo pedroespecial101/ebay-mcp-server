@@ -23,6 +23,7 @@ EXPECTED_TOOLS = {
     "media_open_image_uploader",
     "media_list_staged_images",
     "media_stage_images",
+    "media_view_ebay_image",
     "listing_validate",
     "listing_create",
     "listing_publish",

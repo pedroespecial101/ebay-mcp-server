@@ -246,7 +246,10 @@ The server implements the Model Context Protocol, allowing AI assistants and oth
 
 - `trading_get_recent_seller_listings`: Find recent active UK quantity-one fixed-price listings suitable for takeover.
 - `trading_get_item`: Return the complete editable state and optimistic-concurrency revision token.
-- `trading_view_item_images`: Return a paged set of actual listing photographs as model-vision image blocks.
+- `trading_view_item_images`: Return actual seller-listing photographs as
+  normalized model-vision image blocks. It defaults to one image and returns at
+  most three per call; follow `has_more` and `next_start_index` to review the
+  complete ordered photo set.
 - `trading_revise_fixed_price_item`: Apply an explicitly confirmed essentials-only patch, then read the listing back.
 - `trading_upload_listing_pictures`: Move privately staged images to EPS using the Media API.
 - `trading_verify_add_fixed_price_item`: Validate a direct Trading proposal and return fees plus a short-lived token.
@@ -263,6 +266,13 @@ Trading calls automatically refresh an expired seller access token once and
 retry the original request. `browseAPI_search_by_image` is a visual similarity
 search for finding other live listings; it does not display an item's source
 photographs to the model.
+
+For visual inspection from a known eBay CDN image URL, use
+`media_view_ebay_image`. It accepts approved eBay image hosts only, fetches one
+image, strips metadata, resizes it to a safe bound, re-encodes it as JPEG, and
+does not return the source URL. This is separate from `media_stage_images`,
+which stages photographs for listing creation but deliberately keeps image
+bytes out of the model context.
 
 ### Safe validation
 

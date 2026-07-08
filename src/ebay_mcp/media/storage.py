@@ -24,10 +24,11 @@ from models.ebay.listing_workflow import ImageSource, ImageSourceKind, StagedIma
 register_heif_opener()
 MAX_INPUT_BYTES = 12 * 1024 * 1024
 MAX_OUTPUT_BYTES = 12 * 1024 * 1024
-MAX_MODEL_IMAGE_BYTES = 750 * 1024
-MAX_MODEL_IMAGE_EDGE = 1280
+MAX_MODEL_IMAGE_BYTES = 400 * 1024
+MAX_MODEL_IMAGE_EDGE = 1024
 MAX_IMAGE_PIXELS = 50_000_000
 ALLOWED_FORMATS = {"JPEG", "PNG", "WEBP", "HEIF", "HEIC"}
+EBAY_IMAGE_HOSTS = {"i.ebayimg.com"}
 
 
 class MediaStorageError(ValueError):
@@ -95,10 +96,16 @@ def normalize_image(data: bytes, filename: str | None = None) -> tuple[bytes, in
     raise MediaStorageError("Normalized image remains larger than 12 MiB.")
 
 
-def prepare_model_image(data: bytes, filename: str | None = None) -> tuple[bytes, int, int]:
+def prepare_model_image(
+    data: bytes,
+    filename: str | None = None,
+    max_edge: int = MAX_MODEL_IMAGE_EDGE,
+) -> tuple[bytes, int, int]:
     """Create a compact, metadata-free JPEG suitable for an MCP image content block."""
     if not data or len(data) > MAX_INPUT_BYTES:
         raise MediaStorageError("Image must be between 1 byte and 12 MiB.")
+    if max_edge not in {512, 768, 1024}:
+        raise MediaStorageError("Model images must use a 512, 768 or 1024 pixel maximum edge.")
     try:
         with Image.open(BytesIO(data)) as source:
             if (source.format or "").upper() not in ALLOWED_FORMATS:
@@ -115,7 +122,7 @@ def prepare_model_image(data: bytes, filename: str | None = None) -> tuple[bytes
                 image = background
             else:
                 image = image.convert("RGB")
-            image.thumbnail((MAX_MODEL_IMAGE_EDGE, MAX_MODEL_IMAGE_EDGE), Image.Resampling.LANCZOS)
+            image.thumbnail((max_edge, max_edge), Image.Resampling.LANCZOS)
             for quality in (85, 75, 65, 55, 45):
                 output = BytesIO()
                 image.save(output, "JPEG", quality=quality, optimize=True, progressive=True, icc_profile=None, exif=b"")
@@ -191,13 +198,18 @@ def _validate_public_host(host: str) -> None:
         raise MediaStorageError("Image URL resolves to a private or unsafe network address.")
 
 
-async def download_public_image(url: str) -> tuple[bytes, str]:
+async def download_public_image(
+    url: str,
+    allowed_hosts: set[str] | None = None,
+) -> tuple[bytes, str]:
     current = url
     async with httpx.AsyncClient(follow_redirects=False, timeout=20) as client:
         for _ in range(4):
             parsed = urlparse(current)
             if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password:
                 raise MediaStorageError("Image URLs must be public HTTPS URLs without credentials.")
+            if allowed_hosts is not None and parsed.hostname.casefold() not in allowed_hosts:
+                raise MediaStorageError("Image URL is not hosted on an approved image domain.")
             await asyncio.to_thread(_validate_public_host, parsed.hostname)
             async with client.stream("GET", current) as response:
                 if response.status_code in {301, 302, 303, 307, 308}:

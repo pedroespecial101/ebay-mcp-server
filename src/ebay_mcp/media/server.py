@@ -2,11 +2,16 @@
 
 import asyncio
 import base64
+import logging
 from typing import Any
+from urllib.parse import urlparse
 
 from fastmcp import FastMCP
 from fastmcp.apps.file_upload import FileUpload, _b64_decoded_size, _format_size
 from fastmcp.server.context import Context
+from fastmcp.tools.base import ToolResult
+from fastmcp.utilities.types import Image
+from mcp.types import TextContent
 from prefab_ui.actions import SetState, ShowToast
 from prefab_ui.actions.mcp import CallTool
 from prefab_ui.app import PrefabApp
@@ -14,8 +19,32 @@ from prefab_ui.components import Badge, Button, Card, CardContent, CardHeader, C
 from prefab_ui.components.control_flow import ForEach, If
 from prefab_ui.rx import ERROR, RESULT, STATE, Rx
 
-from ebay_mcp.media.storage import MAX_INPUT_BYTES, list_staged, stage_bytes, stage_source
-from models.ebay.listing_workflow import StageImagesInput, StagedImage
+from ebay_mcp.media.storage import (
+    EBAY_IMAGE_HOSTS,
+    MAX_INPUT_BYTES,
+    download_public_image,
+    list_staged,
+    prepare_model_image,
+    stage_bytes,
+    stage_source,
+)
+from models.ebay.listing_workflow import StageImagesInput, StagedImage, ViewEbayImageInput
+
+
+logger = logging.getLogger(__name__)
+
+
+def _approved_ebay_image_url(url: str) -> str:
+    parsed = urlparse(url)
+    host = (parsed.hostname or "").casefold()
+    if (
+        parsed.scheme != "https"
+        or parsed.username
+        or parsed.password
+        or host not in EBAY_IMAGE_HOSTS
+    ):
+        raise ValueError("Only public HTTPS URLs on approved eBay image domains can be viewed.")
+    return host
 
 
 class EbayImageUpload(FileUpload):
@@ -99,3 +128,47 @@ async def stage_images(input: StageImagesInput) -> list[StagedImage]:
     for source in input.sources:
         results.append(await stage_source(source))
     return results
+
+
+@media_mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "openWorldHint": True})
+async def view_ebay_image(input: ViewEbayImageInput) -> ToolResult:
+    """View one approved eBay CDN image URL as a normalized MCP image.
+
+    This is a model-vision viewer for eBay image URLs returned by Browse or
+    Trading results. It is not a staging/upload tool and not a general web image
+    proxy. The server fetches only approved eBay image hosts, strips metadata,
+    resizes to max_px, re-encodes as JPEG, and omits the source URL from the
+    result. Prefer max_px=768; if a client blocks an image, retry with 512.
+    """
+    host = _approved_ebay_image_url(input.url)
+    logger.info(
+        "Preparing eBay CDN image for model inspection host=%s max_px=%d.",
+        host,
+        input.max_px,
+    )
+    data, filename = await download_public_image(input.url, allowed_hosts=EBAY_IMAGE_HOSTS)
+    prepared, width, height = await asyncio.to_thread(
+        prepare_model_image,
+        data,
+        filename,
+        input.max_px,
+    )
+    logger.info(
+        "Prepared eBay CDN image for model inspection width=%d height=%d bytes=%d.",
+        width,
+        height,
+        len(prepared),
+    )
+    return ToolResult(
+        content=[
+            TextContent(type="text", text="One normalized eBay image for visual inspection."),
+            Image(data=prepared, format="jpeg").to_image_content(),
+        ],
+        structured_content={
+            "source": "ebay_image_cdn",
+            "width": width,
+            "height": height,
+            "max_px": input.max_px,
+            "mime_type": "image/jpeg",
+        },
+    )

@@ -1,6 +1,8 @@
 # 2026-07-08 - Trading image vision and durable authentication
 
 - Added `trading_view_item_images`, returning bounded, metadata-free JPEG content blocks so MCP clients can inspect a seller listing's actual photographs.
+- Made image viewing default to one normalized photograph per call, with safe pagination metadata so clients can review the full ordered photo set in repeated calls.
+- Added `media_view_ebay_image` for viewing one approved eBay CDN image URL as a resized, metadata-stripped MCP image block without echoing the source URL.
 - Added one-shot Trading API access-token refresh and retry for HTTP and XML-body authentication expiry responses.
 - Clarified that Browse `search_by_image` finds visually similar live listings rather than displaying source images to the model.
 - Removed image payload fragments and full token-endpoint error bodies from logs.

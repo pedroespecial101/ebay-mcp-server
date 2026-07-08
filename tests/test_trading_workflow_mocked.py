@@ -11,6 +11,7 @@ from xml.etree import ElementTree as ET
 
 import httpx
 import pytest
+from pydantic import ValidationError
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
@@ -237,15 +238,13 @@ def test_view_item_images_returns_real_image_content_without_bytes_in_metadata(m
     async def fetch(_):
         return service.ModelListingImages(
             item_id="123456789012",
-            title="Test listing",
             total_images=2,
             start_index=0,
             images=[service.ModelListingImage(
                 index=0,
-                url="https://i.ebayimg.com/images/g/one/s-l1600.jpg",
                 data=b"jpeg-image-bytes",
-                width=1200,
-                height=800,
+                width=768,
+                height=512,
             )],
         )
 
@@ -256,8 +255,17 @@ def test_view_item_images_returns_real_image_content_without_bytes_in_metadata(m
     assert image_blocks[0].mimeType == "image/jpeg"
     assert image_blocks[0].data
     assert result.structured_content["has_more"] is True
-    assert result.structured_content["images"][0]["url"].startswith("https://i.ebayimg.com/")
+    assert result.structured_content["next_start_index"] == 1
+    assert result.structured_content["images"][0]["status"] == "ok"
+    assert result.structured_content["images"][0]["width"] == 768
     assert "jpeg-image-bytes" not in str(result.structured_content)
+    assert "i.ebayimg.com" not in str(result.structured_content)
+
+
+def test_view_item_images_defaults_to_one_and_rejects_large_batches():
+    assert ViewItemImagesInput(item_id="123456789012").limit == 1
+    with pytest.raises(ValidationError):
+        ViewItemImagesInput(item_id="123456789012", limit=4)
 
 
 def test_variation_listing_is_flagged_and_rejected_for_narrow_revision():

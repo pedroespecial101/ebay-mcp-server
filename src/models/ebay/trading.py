@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from decimal import Decimal
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -91,9 +91,22 @@ class GetSellerItemInput(BaseModel):
 
 
 class ViewItemImagesInput(BaseModel):
-    item_id: str = Field(pattern=r"^\d{8,20}$")
-    start_index: int = Field(default=0, ge=0)
-    limit: int = Field(default=4, ge=1, le=6)
+    item_id: str = Field(pattern=r"^\d{8,20}$", description="The seller listing to inspect.")
+    start_index: int = Field(
+        default=0,
+        ge=0,
+        description="Zero-based first photograph. Use next_start_index from the previous response to continue.",
+    )
+    limit: int = Field(
+        default=1,
+        ge=1,
+        le=3,
+        description="Photographs in this response only. Repeat calls can retrieve every image in the listing.",
+    )
+    max_px: Literal[512, 768, 1024] = Field(
+        default=768,
+        description="Maximum width or height after safe JPEG normalization.",
+    )
 
 
 class FixedPriceRevisionPatch(BaseModel):

@@ -117,7 +117,10 @@ PRIMARY WORKFLOW:
 4. Review the structured result. Call listing_publish only after approving any non-zero fee ceiling.
 
 ACTIVE LISTING TAKEOVER:
-Use trading_get_recent_seller_listings to find a newly published placeholder, trading_get_item to inspect its editable data, and trading_view_item_images to return its actual photographs to model vision. Present a human-readable diff before trading_revise_fixed_price_item. browseAPI_search_by_image finds visually similar live listings; it is not an image viewer.
+Use trading_get_recent_seller_listings to find a newly published placeholder, trading_get_item to inspect its editable data, and trading_view_item_images to return its actual photographs to model vision. Present a human-readable diff before trading_revise_fixed_price_item.
+
+VISUAL INSPECTION:
+For a seller listing's actual photographs, call trading_view_item_images with limit=1 and max_px=768 first. If the MCP client blocks a returned image, retry that same image with max_px=512. The per-call maximum is three images, but this is not a listing maximum: use total_images, has_more and next_start_index to continue until every photograph has been reviewed. media_stage_images and media_open_image_uploader are for listing creation; staged image refs bypass model vision. Use media_view_ebay_image only for public eBay image CDN URLs returned by Browse or Trading metadata. browseAPI_search_by_image finds visually similar live listings; it is not an image viewer for the source item.
 
 Use the mandatory SKU as the idempotency and recovery key. Retry the same SKU and unchanged content after a partial failure; mismatched content is never overwritten. Partial drafts are preserved. Use listing_discard_draft only for explicit cleanup of a verified unpublished draft. The first image is the gallery image.
 
