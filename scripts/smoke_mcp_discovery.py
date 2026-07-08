@@ -29,6 +29,7 @@ EXPECTED_TOOLS = {
     "listing_discard_draft",
     "trading_get_recent_seller_listings",
     "trading_get_item",
+    "trading_view_item_images",
     "trading_revise_fixed_price_item",
     "trading_upload_listing_pictures",
     "trading_verify_add_fixed_price_item",

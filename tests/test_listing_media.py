@@ -28,6 +28,16 @@ def test_normalize_rejects_non_image():
         storage.normalize_image(b"not an image", "bad.txt")
 
 
+def test_prepare_model_image_outputs_small_vision_safe_jpeg():
+    result, width, height = storage.prepare_model_image(jpeg_bytes((5000, 2000)), "photo.jpg")
+    assert max(width, height) <= storage.MAX_MODEL_IMAGE_EDGE
+    assert len(result) <= storage.MAX_MODEL_IMAGE_BYTES
+    with Image.open(BytesIO(result)) as image:
+        assert image.format == "JPEG"
+        assert image.mode == "RGB"
+        assert not image.getexif()
+
+
 def test_private_network_hosts_are_rejected(monkeypatch):
     monkeypatch.setattr(storage.socket, "getaddrinfo", lambda *args, **kwargs: [(None, None, None, None, ("127.0.0.1", 443))])
     with pytest.raises(storage.MediaStorageError, match="private or unsafe"):

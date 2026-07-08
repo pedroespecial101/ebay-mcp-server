@@ -446,7 +446,6 @@ def refresh_access_token(client_id=None, client_secret=None, refresh_token_val=N
 
         if not new_access_token:
             logging.error("Failed to get new access token. No 'access_token' in response.")
-            logging.debug(f"Full response from token endpoint: {token_data}")
             return None
 
         logging.info("Successfully refreshed access token.")
@@ -466,9 +465,8 @@ def refresh_access_token(client_id=None, client_secret=None, refresh_token_val=N
         return new_access_token
 
     except requests.exceptions.HTTPError as e:
-        logging.error(f"HTTP error refreshing token: {e}")
-        if e.response is not None:
-            logging.error(f"Response content: {e.response.text}")
+        status = e.response.status_code if e.response is not None else "unknown"
+        logging.error("eBay token refresh returned HTTP %s.", status)
         return None
     except requests.exceptions.RequestException as e:
         logging.error(f"Request failed refreshing token: {e}")

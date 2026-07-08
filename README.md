@@ -5,7 +5,8 @@ For new second-hand listings, use the high-level `media_*` and `listing_*` tools
 For listings started with **Sell one like this** in the eBay app, use the narrow
 `trading_*` tools. Publish a truthful quantity-one fixed-price placeholder first,
 then call `trading_get_recent_seller_listings`, inspect it with
-`trading_get_item`, present the proposed diff to the seller, and only then call
+`trading_get_item`, view its photographs with `trading_view_item_images`, present
+the proposed diff to the seller, and only then call
 `trading_revise_fixed_price_item` with the returned revision token. App/Seller
 Hub drafts and scheduled listings are not supported by this workflow.
 
@@ -245,6 +246,7 @@ The server implements the Model Context Protocol, allowing AI assistants and oth
 
 - `trading_get_recent_seller_listings`: Find recent active UK quantity-one fixed-price listings suitable for takeover.
 - `trading_get_item`: Return the complete editable state and optimistic-concurrency revision token.
+- `trading_view_item_images`: Return a paged set of actual listing photographs as model-vision image blocks.
 - `trading_revise_fixed_price_item`: Apply an explicitly confirmed essentials-only patch, then read the listing back.
 - `trading_upload_listing_pictures`: Move privately staged images to EPS using the Media API.
 - `trading_verify_add_fixed_price_item`: Validate a direct Trading proposal and return fees plus a short-lived token.
@@ -256,6 +258,11 @@ the city/postcode resolved from that merchant location. They create no Inventory
 API item, SKU, or Offer. `UploadSiteHostedPictures` is deliberately
 not implemented because eBay is decommissioning it; image uploads use the Media
 API replacement.
+
+Trading calls automatically refresh an expired seller access token once and
+retry the original request. `browseAPI_search_by_image` is a visual similarity
+search for finding other live listings; it does not display an item's source
+photographs to the model.
 
 ### Safe validation
 

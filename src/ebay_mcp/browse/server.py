@@ -31,22 +31,6 @@ DEBUG_MODE = os.getenv('MCP_LOG_LEVEL', 'NORMAL').upper() == 'DEBUG'
 # Get logger
 logger = logging.getLogger(__name__)
 
-def truncate_string(long_string: str, head_len: int = 100, tail_len: int = 100) -> str:
-    """Truncate a long string, keeping the head and tail parts.
-    
-    Args:
-        long_string: Long string to truncate
-        head_len: Length of the head part to keep
-        tail_len: Length of the tail part to keep
-        
-    Returns:
-        Truncated string with ... in the middle
-    """
-    if len(long_string) <= head_len + tail_len + 3:
-        return long_string
-        
-    return f"{long_string[:head_len]}...{long_string[-tail_len:]}"
-
 # Create Browse MCP server
 browse_mcp = FastMCP("eBay Browse API")
 
@@ -97,7 +81,11 @@ async def search_ebay_items(query: str, limit: int = 10) -> str:
     annotations={"readOnlyHint": True, "openWorldHint": False, "destructiveHint": False}
 )
 async def search_by_image(params: SearchByImageParams) -> str:
-    """Search items on eBay using an image from a URL
+    """Find visually similar live eBay listings using an image URL.
+
+    This is a similarity-search tool, not an image viewer. It does not return the
+    supplied image for model vision. To inspect photographs on one of the seller's
+    own listings, use trading_view_item_images.
     
     Args:
         params (SearchByImageParams): Pydantic model containing image URL and optional filters
@@ -123,9 +111,9 @@ async def search_by_image(params: SearchByImageParams) -> str:
             
             # Download image and convert to Base64
             try:
-                logger.info(f"Downloading image from URL: {params.image_url}")
+                logger.info("Downloading the image for eBay visual similarity search.")
                 base64_image = await url_to_base64_image(params.image_url, client)
-                logger.info(f"Successfully converted image to Base64 (length: {len(base64_image)}), truncated content: {truncate_string(base64_image)}")
+                logger.info("Successfully prepared the image for eBay visual similarity search.")
             except Exception as e:
                 error_msg = f"Failed to download or convert image from URL: {str(e)}"
                 logger.error(error_msg)

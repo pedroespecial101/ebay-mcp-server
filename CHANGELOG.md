@@ -1,3 +1,10 @@
+# 2026-07-08 - Trading image vision and durable authentication
+
+- Added `trading_view_item_images`, returning bounded, metadata-free JPEG content blocks so MCP clients can inspect a seller listing's actual photographs.
+- Added one-shot Trading API access-token refresh and retry for HTTP and XML-body authentication expiry responses.
+- Clarified that Browse `search_by_image` finds visually similar live listings rather than displaying source images to the model.
+- Removed image payload fragments and full token-endpoint error bodies from logs.
+
 # 2026-07-08 - Narrow Trading API listing takeover
 
 - Added authenticated Trading `GetSellerList`, `GetItem`, and active fixed-price revision tools for app-created quantity-one listings.

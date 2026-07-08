@@ -24,6 +24,9 @@ from models.ebay.listing_workflow import ImageSource, ImageSourceKind, StagedIma
 register_heif_opener()
 MAX_INPUT_BYTES = 12 * 1024 * 1024
 MAX_OUTPUT_BYTES = 12 * 1024 * 1024
+MAX_MODEL_IMAGE_BYTES = 750 * 1024
+MAX_MODEL_IMAGE_EDGE = 1280
+MAX_IMAGE_PIXELS = 50_000_000
 ALLOWED_FORMATS = {"JPEG", "PNG", "WEBP", "HEIF", "HEIC"}
 
 
@@ -92,6 +95,40 @@ def normalize_image(data: bytes, filename: str | None = None) -> tuple[bytes, in
     raise MediaStorageError("Normalized image remains larger than 12 MiB.")
 
 
+def prepare_model_image(data: bytes, filename: str | None = None) -> tuple[bytes, int, int]:
+    """Create a compact, metadata-free JPEG suitable for an MCP image content block."""
+    if not data or len(data) > MAX_INPUT_BYTES:
+        raise MediaStorageError("Image must be between 1 byte and 12 MiB.")
+    try:
+        with Image.open(BytesIO(data)) as source:
+            if (source.format or "").upper() not in ALLOWED_FORMATS:
+                raise MediaStorageError("Only JPEG, PNG, WebP and HEIC images are accepted.")
+            if source.width * source.height > MAX_IMAGE_PIXELS:
+                raise MediaStorageError("Image dimensions are too large to inspect safely.")
+            image = ImageOps.exif_transpose(source)
+            if image.mode not in ("RGB", "L"):
+                background = Image.new("RGB", image.size, "white")
+                if "A" in image.getbands():
+                    background.paste(image, mask=image.getchannel("A"))
+                else:
+                    background.paste(image.convert("RGB"))
+                image = background
+            else:
+                image = image.convert("RGB")
+            image.thumbnail((MAX_MODEL_IMAGE_EDGE, MAX_MODEL_IMAGE_EDGE), Image.Resampling.LANCZOS)
+            for quality in (85, 75, 65, 55, 45):
+                output = BytesIO()
+                image.save(output, "JPEG", quality=quality, optimize=True, progressive=True, icc_profile=None, exif=b"")
+                result = output.getvalue()
+                if len(result) <= MAX_MODEL_IMAGE_BYTES:
+                    return result, image.width, image.height
+    except MediaStorageError:
+        raise
+    except Exception as exc:
+        raise MediaStorageError(f"Could not decode {filename or 'image'} as an image.") from exc
+    raise MediaStorageError("Image remains too large for model inspection after normalization.")
+
+
 def stage_bytes(data: bytes, filename: str | None = None) -> StagedImage:
     normalized, width, height = normalize_image(data, filename)
     name = _safe_name(filename)
@@ -154,7 +191,7 @@ def _validate_public_host(host: str) -> None:
         raise MediaStorageError("Image URL resolves to a private or unsafe network address.")
 
 
-async def _download(url: str) -> tuple[bytes, str]:
+async def download_public_image(url: str) -> tuple[bytes, str]:
     current = url
     async with httpx.AsyncClient(follow_redirects=False, timeout=20) as client:
         for _ in range(4):
@@ -186,7 +223,7 @@ async def _download(url: str) -> tuple[bytes, str]:
 
 async def stage_source(source: ImageSource) -> StagedImage:
     if source.kind == ImageSourceKind.URL:
-        data, inferred = await _download(source.value)
+        data, inferred = await download_public_image(source.value)
         return await asyncio.to_thread(stage_bytes, data, source.filename or inferred)
     root = Path(os.getenv("EBAY_IMAGE_IMPORT_DIR", "~/Pictures/eBay Listing Inbox")).expanduser().resolve()
     path = Path(source.value).expanduser().resolve()

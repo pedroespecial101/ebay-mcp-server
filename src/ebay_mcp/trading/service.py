@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import json
 import os
 import re
 import secrets
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Any
@@ -14,6 +16,7 @@ from urllib.parse import quote
 from xml.etree import ElementTree as ET
 
 from ebay_mcp.media.ebay import upload_staged_pictures
+from ebay_mcp.media.storage import download_public_image, prepare_model_image
 from ebay_mcp.trading.client import (
     TradingAPIError, TradingClient, element, find, findall, value,
 )
@@ -23,6 +26,7 @@ from models.ebay.trading import (
     RecentSellerListingsResult, ReviseFixedPriceItemInput, ReviseFixedPriceItemResult,
     SellerListingSummary, SellerPolicyReferences, TradingFee, TradingIssue,
     UploadedListingPicture, VerifyAddFixedPriceItemResult,
+    ViewItemImagesInput,
 )
 from utils.api_utils import get_standard_ebay_headers
 
@@ -30,6 +34,24 @@ INVENTORY_OFFERS_URL = "https://api.ebay.com/sell/inventory/v1/offer"
 VERIFICATION_TTL = timedelta(minutes=15)
 SUPPORTED_LISTING_TYPES = {"FixedPriceItem", "StoresFixedPrice"}
 _VERIFICATIONS: dict[str, dict[str, Any]] = {}
+
+
+@dataclass(frozen=True)
+class ModelListingImage:
+    index: int
+    url: str
+    data: bytes
+    width: int
+    height: int
+
+
+@dataclass(frozen=True)
+class ModelListingImages:
+    item_id: str
+    title: str
+    total_images: int
+    start_index: int
+    images: list[ModelListingImage]
 
 
 def _parse_datetime(raw: str | None) -> datetime | None:
@@ -211,6 +233,35 @@ async def get_item(item_id: str, client: TradingClient | None = None) -> Editabl
     if item is None:
         raise TradingAPIError("eBay returned no item for that item ID.")
     return await _parse_editable_item(client, item)
+
+
+async def view_item_images(
+    params: ViewItemImagesInput, client: TradingClient | None = None
+) -> ModelListingImages:
+    listing = await get_item(params.item_id, client)
+    total = len(listing.picture_urls)
+    if not total:
+        raise ValueError("This listing has no photographs to inspect.")
+    if params.start_index >= total:
+        raise ValueError(f"start_index must be less than the listing's {total} photographs.")
+    selected = list(enumerate(
+        listing.picture_urls[params.start_index:params.start_index + params.limit],
+        start=params.start_index,
+    ))
+
+    async def fetch(index: int, url: str) -> ModelListingImage:
+        data, filename = await download_public_image(url)
+        prepared, width, height = await asyncio.to_thread(prepare_model_image, data, filename)
+        return ModelListingImage(index=index, url=url, data=prepared, width=width, height=height)
+
+    images = await asyncio.gather(*(fetch(index, url) for index, url in selected))
+    return ModelListingImages(
+        item_id=listing.item_id,
+        title=listing.title,
+        total_images=total,
+        start_index=params.start_index,
+        images=list(images),
+    )
 
 
 async def get_recent_seller_listings(

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
 from dataclasses import dataclass
@@ -9,6 +10,7 @@ from xml.etree import ElementTree as ET
 
 import httpx
 
+from ebay_auth.ebay_auth import refresh_access_token
 from ebay_service import get_ebay_access_token
 from models.ebay.trading import TradingIssue
 from utils.api_utils import is_token_error
@@ -91,6 +93,17 @@ def parse_issues(root: ET.Element) -> list[TradingIssue]:
     return issues
 
 
+def _is_expired_token_response(issues: list[TradingIssue]) -> bool:
+    """Recognize Trading API auth failures returned inside an HTTP 200 XML body."""
+    auth_phrases = ("iaf token", "access token", "oauth token")
+    expiry_phrases = ("expired", "invalid", "not valid")
+    return any(
+        any(auth in issue.message.casefold() for auth in auth_phrases)
+        and any(expiry in issue.message.casefold() for expiry in expiry_phrases)
+        for issue in issues
+    )
+
+
 class TradingClient:
     def __init__(self, client: httpx.AsyncClient | None = None, access_token: str | None = None):
         self.client = client or httpx.AsyncClient(timeout=30)
@@ -108,7 +121,14 @@ class TradingClient:
         if self.owned_client:
             await self.client.aclose()
 
-    async def call(self, call_name: str, request: ET.Element) -> TradingResponse:
+    async def _refresh_access_token(self) -> None:
+        token = await asyncio.to_thread(refresh_access_token)
+        if not token or is_token_error(token):
+            raise TradingAPIError("Seller authentication expired and could not be refreshed; run the eBay login tool.")
+        self.access_token = token
+        logger.info("Refreshed seller authentication after an eBay Trading API auth failure.")
+
+    async def _call_once(self, call_name: str, payload: bytes) -> TradingResponse:
         if not self.access_token:
             raise TradingAPIError("TradingClient must be entered before making a request.")
         headers = {
@@ -119,7 +139,6 @@ class TradingClient:
             "X-EBAY-API-IAF-TOKEN": self.access_token,
             "Accept-Language": os.getenv("EBAY_LOCALE", "en-GB"),
         }
-        payload = ET.tostring(request, encoding="utf-8", xml_declaration=True)
         logger.info("Calling eBay Trading API operation %s.", call_name)
         try:
             response = await self.client.post(ENDPOINT, headers=headers, content=payload)
@@ -136,3 +155,13 @@ class TradingClient:
             message = result.blocking_errors[0].message if result.blocking_errors else "eBay rejected the Trading API request."
             raise TradingAPIError(message, result.errors, root=root)
         return result
+
+    async def call(self, call_name: str, request: ET.Element) -> TradingResponse:
+        payload = ET.tostring(request, encoding="utf-8", xml_declaration=True)
+        try:
+            return await self._call_once(call_name, payload)
+        except TradingAPIError as exc:
+            if exc.status_code != 401 and not _is_expired_token_response(exc.issues):
+                raise
+        await self._refresh_access_token()
+        return await self._call_once(call_name, payload)

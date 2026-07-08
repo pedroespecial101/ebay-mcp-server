@@ -9,19 +9,35 @@ from pathlib import Path
 import sys
 from xml.etree import ElementTree as ET
 
+import httpx
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT))
 
-from ebay_mcp.trading.client import TradingAPIError, TradingResponse, element, find, findall, value
+from ebay_mcp.trading import client as trading_client
+from ebay_mcp.trading import server as trading_server
+from ebay_mcp.trading.client import TradingAPIError, TradingClient, TradingResponse, element, find, findall, value
 from ebay_mcp.trading import service
 from ebay_mcp.media import ebay as media_api
 from models.ebay.trading import (
     AddFixedPriceItemInput, FixedPriceListingProposal, FixedPriceRevisionPatch,
     RecentSellerListingsInput, ReviseFixedPriceItemInput,
+    ViewItemImagesInput,
 )
+
+
+def trading_xml(ack: str, message: str | None = None) -> bytes:
+    root = element("GetItemResponse")
+    element("Ack", ack, root)
+    if message:
+        error = element("Errors", parent=root)
+        element("ShortMessage", message, error)
+        element("LongMessage", message, error)
+        element("ErrorCode", "21917053", error)
+        element("SeverityCode", "Error", error)
+    return ET.tostring(root, encoding="utf-8", xml_declaration=True)
 
 
 def response(name: str, *, ack: str = "Success", issues=None) -> TradingResponse:
@@ -169,6 +185,79 @@ def test_get_item_returns_revision_token_and_complete_editable_state():
     assert len(listing.revision_token) == 64
     assert listing.item_specifics == {"Brand": ["Acme"], "Colour": ["Red"]}
     assert listing.picture_urls[0].startswith("https://i.ebayimg.com/")
+
+
+def test_trading_client_refreshes_once_for_xml_token_expiry(monkeypatch):
+    requests = []
+
+    def handler(request):
+        requests.append(request)
+        if len(requests) == 1:
+            return httpx.Response(200, content=trading_xml("Failure", "IAF token supplied is expired."))
+        return httpx.Response(200, content=trading_xml("Success"))
+
+    monkeypatch.setattr(trading_client, "refresh_access_token", lambda: "fresh-token")
+    http = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+
+    async def run():
+        try:
+            client = TradingClient(client=http, access_token="expired-token")
+            return await client.call("GetItem", element("GetItemRequest"))
+        finally:
+            await http.aclose()
+
+    result = asyncio.run(run())
+    assert result.ack == "Success"
+    assert len(requests) == 2
+    assert requests[0].headers["X-EBAY-API-IAF-TOKEN"] == "expired-token"
+    assert requests[1].headers["X-EBAY-API-IAF-TOKEN"] == "fresh-token"
+
+
+def test_trading_client_does_not_refresh_for_unrelated_failure(monkeypatch):
+    refresh_calls = []
+    monkeypatch.setattr(trading_client, "refresh_access_token", lambda: refresh_calls.append(True))
+    transport = httpx.MockTransport(
+        lambda request: httpx.Response(200, content=trading_xml("Failure", "The item cannot be revised."))
+    )
+    http = httpx.AsyncClient(transport=transport)
+
+    async def run():
+        try:
+            client = TradingClient(client=http, access_token="valid-token")
+            await client.call("GetItem", element("GetItemRequest"))
+        finally:
+            await http.aclose()
+
+    with pytest.raises(TradingAPIError, match="cannot be revised"):
+        asyncio.run(run())
+    assert not refresh_calls
+
+
+def test_view_item_images_returns_real_image_content_without_bytes_in_metadata(monkeypatch):
+    async def fetch(_):
+        return service.ModelListingImages(
+            item_id="123456789012",
+            title="Test listing",
+            total_images=2,
+            start_index=0,
+            images=[service.ModelListingImage(
+                index=0,
+                url="https://i.ebayimg.com/images/g/one/s-l1600.jpg",
+                data=b"jpeg-image-bytes",
+                width=1200,
+                height=800,
+            )],
+        )
+
+    monkeypatch.setattr(trading_server, "fetch_item_images", fetch)
+    result = asyncio.run(trading_server.view_item_images(ViewItemImagesInput(item_id="123456789012")))
+    image_blocks = [block for block in result.content if block.type == "image"]
+    assert len(image_blocks) == 1
+    assert image_blocks[0].mimeType == "image/jpeg"
+    assert image_blocks[0].data
+    assert result.structured_content["has_more"] is True
+    assert result.structured_content["images"][0]["url"].startswith("https://i.ebayimg.com/")
+    assert "jpeg-image-bytes" not in str(result.structured_content)
 
 
 def test_variation_listing_is_flagged_and_rejected_for_narrow_revision():

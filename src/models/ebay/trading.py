@@ -90,6 +90,12 @@ class GetSellerItemInput(BaseModel):
     item_id: str = Field(pattern=r"^\d{8,20}$")
 
 
+class ViewItemImagesInput(BaseModel):
+    item_id: str = Field(pattern=r"^\d{8,20}$")
+    start_index: int = Field(default=0, ge=0)
+    limit: int = Field(default=4, ge=1, le=6)
+
+
 class FixedPriceRevisionPatch(BaseModel):
     title: str | None = Field(default=None, min_length=1, max_length=80)
     description: str | None = Field(default=None, min_length=1, max_length=500_000)

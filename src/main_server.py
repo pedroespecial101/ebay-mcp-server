@@ -116,6 +116,9 @@ PRIMARY WORKFLOW:
 3. Call listing_create in draft mode. This validates, uploads to EPS, creates and verifies inventory/offer state, and estimates fees.
 4. Review the structured result. Call listing_publish only after approving any non-zero fee ceiling.
 
+ACTIVE LISTING TAKEOVER:
+Use trading_get_recent_seller_listings to find a newly published placeholder, trading_get_item to inspect its editable data, and trading_view_item_images to return its actual photographs to model vision. Present a human-readable diff before trading_revise_fixed_price_item. browseAPI_search_by_image finds visually similar live listings; it is not an image viewer.
+
 Use the mandatory SKU as the idempotency and recovery key. Retry the same SKU and unchanged content after a partial failure; mismatched content is never overwritten. Partial drafts are preserved. Use listing_discard_draft only for explicit cleanup of a verified unpublished draft. The first image is the gallery image.
 
 AVAILABLE OPERATIONS:
