@@ -31,7 +31,7 @@ async def test_search_by_gtin_valid(mcp_client):
     })
     
     # Parse the response
-    response_text = result[0].text
+    response_text = result.content[0].text
     
     # Check if the response is an error
     assert not is_error_response(response_text), f"Expected successful response, got error: {response_text}"
@@ -74,7 +74,7 @@ async def test_search_by_gtin_no_results(mcp_client):
     })
     
     # Parse the response
-    response_text = result[0].text
+    response_text = result.content[0].text
     
     # The response should still be successful even with no results
     json_data = json.loads(response_text)
@@ -103,7 +103,7 @@ async def test_search_by_gtin_invalid_empty(mcp_client):
     })
     
     # Parse the response
-    response_text = result[0].text
+    response_text = result.content[0].text
     
     # Check that the response indicates an error
     assert is_error_response(response_text), \
@@ -129,7 +129,7 @@ async def test_search_by_gtin_invalid_format(mcp_client):
     })
     
     # Parse the response
-    response_text = result[0].text
+    response_text = result.content[0].text
     json_data = json.loads(response_text)
     
     # For invalid format, we might get either a validation error or an API error

@@ -25,9 +25,13 @@ else
     exit 1
 fi
 
-echo "Unsetting EBAY_USER_REFRESH_TOKEN and EBAY_USER_ACCESS_TOKEN..."
-unset EBAY_USER_REFRESH_TOKEN
-unset EBAY_USER_ACCESS_TOKEN
+if [ "${CLEAR_EBAY_USER_TOKENS:-0}" = "1" ]; then
+    echo "CLEAR_EBAY_USER_TOKENS=1, unsetting EBAY_USER_REFRESH_TOKEN and EBAY_USER_ACCESS_TOKEN..."
+    unset EBAY_USER_REFRESH_TOKEN
+    unset EBAY_USER_ACCESS_TOKEN
+else
+    echo "Preserving any injected EBAY_USER_REFRESH_TOKEN and EBAY_USER_ACCESS_TOKEN values."
+fi
 
 
 # Create logs directory if it doesn't exist
@@ -55,7 +59,7 @@ if ps -p "$SERVER_PID" > /dev/null; then
     echo ""
     echo "===== REMINDER: TESTING MODE ONLY ====="
     echo "This server instance is separate from your IDE's MCP integration."
-    echo "Any code changes will require restarting this server using ./start.sh"
+    echo "Any code changes will require restarting this server using ./start_mcp_server_instance.sh"
     echo "AND separately restarting your IDE's MCP integration for changes to take effect there."
     echo "========================================="
 elif grep -q "Traceback (most recent call last):" "$LOG_FILE" || grep -q "Error:" "$LOG_FILE"; then

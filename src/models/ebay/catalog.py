@@ -20,7 +20,7 @@ class GTINSearchRequest(EbayBaseModel):
     )
     marketplace_id: Optional[str] = Field(
         None,
-        description="The eBay marketplace identifier. Default is EBAY_US if not specified.",
+        description="The eBay marketplace identifier. This installation defaults to EBAY_GB.",
         examples=["EBAY_US", "EBAY_GB", "EBAY_DE"]
     )
 

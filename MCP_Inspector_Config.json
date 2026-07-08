@@ -1,8 +1,17 @@
 {
   "mcpServers": {
     "ebayAPI-mcp-server": {
-      "command": "/Users/petetreadaway/Projects/ebay-mcp-server/.venv/bin/python",
-      "args": ["/Users/petetreadaway/Projects/ebay-mcp-server/src/main_server.py"],
+      "command": "doppler",
+      "args": [
+        "run",
+        "--project",
+        "ebay-mcp",
+        "--config",
+        "dev",
+        "--",
+        "/Users/petetreadaway/Projects/ebay-mcp-server/.venv/bin/python",
+        "/Users/petetreadaway/Projects/ebay-mcp-server/src/main_server.py"
+      ],
       "env": {}
     },
     "eBayUI-mcp-server": {

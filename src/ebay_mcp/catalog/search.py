@@ -29,7 +29,9 @@ async def search_by_gtin_tool(catalog_mcp):
     Args:
         catalog_mcp: The FastMCP instance for the catalog tools
     """
-    @catalog_mcp.tool()
+    @catalog_mcp.tool(
+        annotations={"readOnlyHint": True, "openWorldHint": False, "destructiveHint": False}
+    )
     async def search_by_gtin(gtin: str) -> str:
         """Search the eBay catalog for products matching a specific GTIN.
         
@@ -59,7 +61,7 @@ async def search_by_gtin_tool(catalog_mcp):
             # Make the API call
             response = await client.get(url, headers=headers)
             log_headers = headers.copy()
-            log_headers['Authorization'] = f"Bearer {access_token[:20]}...<truncated>"
+            log_headers['Authorization'] = "[REDACTED]"
             logger.debug(f"search_by_gtin: Headers: {log_headers}, URL: {url}")
             logger.debug(f"search_by_gtin: Response status: {response.status_code}, text: {response.text[:500]}...")
             

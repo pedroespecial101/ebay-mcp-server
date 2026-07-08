@@ -64,7 +64,7 @@ async def _get_offer_details(mcp_client, sku):
         result = await mcp_client.call_tool("inventoryAPI_manage_offer", {
             "params": {"sku": sku, "action": "get"}
         })
-        response_text = result[0].text
+        response_text = result.content[0].text
         json_data = json.loads(response_text)
         if json_data.get('success') and json_data.get('data', {}).get('details'):
             return json_data['data']['details'] # This is the raw offer data from eBay
@@ -82,7 +82,7 @@ async def test_01_cleanup_prepare_offer(mcp_client):
         inv_item_result = await mcp_client.call_tool("inventoryAPI_manage_inventory_item", {
             "params": {"sku": TEST_SKU, "action": "get"}
         })
-        inv_item_json = json.loads(inv_item_result[0].text)
+        inv_item_json = json.loads(inv_item_result.content[0].text)
         if not (inv_item_json.get('success') and inv_item_json.get('data', {}).get('details')):
             print(f"Inventory item {TEST_SKU} not found, creating...")
             create_inv_result = await mcp_client.call_tool("inventoryAPI_manage_inventory_item", {
@@ -92,7 +92,7 @@ async def test_01_cleanup_prepare_offer(mcp_client):
                     "item_data": TEST_INVENTORY_ITEM_DATA
                 }
             })
-            create_inv_json = json.loads(create_inv_result[0].text)
+            create_inv_json = json.loads(create_inv_result.content[0].text)
             assert create_inv_json.get('success'), f"Failed to create inventory item {TEST_SKU}: {create_inv_json.get('error')}"
             print(f"Inventory item {TEST_SKU} created.")
         else:
@@ -114,7 +114,7 @@ async def test_01_cleanup_prepare_offer(mcp_client):
             withdraw_result = await mcp_client.call_tool("inventoryAPI_manage_offer", {
                 "params": {"sku": TEST_SKU, "action": "withdraw"}
             })
-            withdraw_json = json.loads(withdraw_result[0].text)
+            withdraw_json = json.loads(withdraw_result.content[0].text)
             assert withdraw_json.get('success'), f"Failed to withdraw offer for {TEST_SKU}: {withdraw_json.get('error')}"
             print(f"Offer for {TEST_SKU} withdrawn.")
         else:
@@ -139,7 +139,7 @@ async def test_02_create_offer(mcp_client):
             "offer_data": INITIAL_OFFER_DATA
         }
     })
-    json_data = json.loads(result[0].text)
+    json_data = json.loads(result.content[0].text)
     assert json_data.get('success'), f"test_02_create_offer: MCP tool call failed - {json_data.get('error', {}).get('message', 'Unknown error')}"
     offer_id = json_data.get('data', {}).get('offer_id', 'N/A')
     print(f"test_02_create_offer: MCP tool call successful. Offer ID (if available): {offer_id}")
@@ -151,7 +151,7 @@ async def test_03_get_offer(mcp_client):
     result = await mcp_client.call_tool("inventoryAPI_manage_offer", {
         "params": {"sku": TEST_SKU, "action": "get"}
     })
-    json_data = json.loads(result[0].text)
+    json_data = json.loads(result.content[0].text)
     assert json_data.get('success'), f"test_03_get_offer: MCP tool call failed - {json_data.get('error', {}).get('message', 'Unknown error')}"
     # Attempt to get offerId from common path, adjust if your 'get' response structure is different
     offer_id = json_data.get('data', {}).get('details', {}).get('offerId', 'N/A')
@@ -172,7 +172,7 @@ async def test_04_modify_offer(mcp_client):
             "offer_data": MODIFIED_OFFER_DATA
         }
     })
-    json_data = json.loads(result[0].text)
+    json_data = json.loads(result.content[0].text)
     assert json_data.get('success'), f"test_04_modify_offer: MCP tool call failed - {json_data.get('error', {}).get('message', 'Unknown error')}"
     modified_offer_id = json_data.get('data', {}).get('offer_id', 'N/A') # The modify response might return the offer_id
     print(f"test_04_modify_offer: MCP tool call successful. Modified Offer ID (if available): {modified_offer_id}")
@@ -188,7 +188,7 @@ async def test_05_publish_offer(mcp_client):
     result = await mcp_client.call_tool("inventoryAPI_manage_offer", {
         "params": {"sku": TEST_SKU, "action": "publish"} # manage_offer tool can use SKU to find offerId
     })
-    json_data = json.loads(result[0].text)
+    json_data = json.loads(result.content[0].text)
     assert json_data.get('success'), f"test_05_publish_offer: MCP tool call failed - {json_data.get('error', {}).get('message', 'Unknown error')}"
     
     # Verify listingId is present in the response, indicating successful publishing with eBay
@@ -210,6 +210,6 @@ async def test_06_withdraw_offer(mcp_client):
     result = await mcp_client.call_tool("inventoryAPI_manage_offer", {
         "params": {"sku": TEST_SKU, "action": "withdraw"} # manage_offer tool can use SKU to find offerId
     })
-    json_data = json.loads(result[0].text)
+    json_data = json.loads(result.content[0].text)
     assert json_data.get('success'), f"test_06_withdraw_offer: MCP tool call failed - {json_data.get('error', {}).get('message', 'Unknown error')}"
     print(f"test_06_withdraw_offer: MCP tool call successful. Offer for {TEST_SKU} withdrawal initiated.")

@@ -3,12 +3,14 @@ import requests
 import argparse
 import logging
 from base64 import b64encode
-from dotenv import load_dotenv, set_key, get_key, find_dotenv
+from dotenv import load_dotenv, set_key, find_dotenv
 import webbrowser
 import threading
 import http.server
 import socketserver
 import queue
+import shutil
+import subprocess
 from urllib.parse import urlparse, parse_qs, urlencode
 import uuid # For state parameter
 
@@ -29,22 +31,30 @@ DEFAULT_SCOPES = (
 LOCAL_SERVER_PORT = 9292 
 LOCAL_CALLBACK_PATH = "/oauth/callback" # Must match eBay RuName redirection and local server path Cloudflare forwards to
 
-DOTENV_PATH = find_dotenv()
+def _resolve_dotenv_path():
+    credentials_file = os.getenv("EBAY_CREDENTIALS_FILE")
+    if credentials_file:
+        return os.path.expanduser(credentials_file)
 
-if not DOTENV_PATH:
+    if os.getenv("EBAY_TOKEN_STORE", "").lower() == "doppler":
+        return None
+
+    dotenv_path = find_dotenv()
+    if dotenv_path:
+        return dotenv_path
+
     script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root_env = os.path.join(os.path.dirname(script_dir), '.env')
     if os.path.exists(project_root_env):
-        DOTENV_PATH = project_root_env
-    else:
-        DOTENV_PATH = os.path.join(script_dir, '.env')
-        logging.warning(f".env file not found. Attempting to use/create at: {DOTENV_PATH}")
-        if not os.path.exists(DOTENV_PATH):
-            with open(DOTENV_PATH, 'a') as f:
-                pass # Create empty file
-            logging.info(f"Created empty .env file at {DOTENV_PATH}")
+        return project_root_env
 
-load_dotenv(DOTENV_PATH)
+    return None
+
+
+DOTENV_PATH = _resolve_dotenv_path()
+
+if DOTENV_PATH:
+    load_dotenv(DOTENV_PATH)
 
 # Global queue to pass authorization code/error from HTTP server thread to main thread
 auth_response_queue = queue.Queue()
@@ -64,49 +74,68 @@ def get_env_variable(var_name, default=None):
     return value
 
 def _save_to_env(key_values):
-    """Saves or updates multiple key-value pairs in the .env file."""
+    """Update process auth state and persist it to the configured token store."""
+    values = {key: str(value) for key, value in key_values.items() if value is not None}
+    os.environ.update(values)
+
+    if os.getenv("EBAY_TOKEN_STORE", "").lower() == "doppler":
+        return _save_to_doppler(values)
+
     if not DOTENV_PATH:
-        logging.error("Cannot save to .env file: Path not determined.")
-        return False
+        logging.info("Updated eBay auth state for the current process only.")
+        return True
+
     try:
-        # Get current values for comparison if username is changing
-        current_username = get_key(DOTENV_PATH, "EBAY_USER_NAME")
-        new_username = key_values.get("EBAY_USER_NAME")
+        parent_dir = os.path.dirname(DOTENV_PATH)
+        if parent_dir:
+            os.makedirs(parent_dir, exist_ok=True)
 
-        if new_username and current_username and new_username != current_username:
-            logging.info(f"Username changing from '{current_username}' to '{new_username}'. Comparing tokens:")
-            
-            old_access_token = get_key(DOTENV_PATH, "EBAY_USER_ACCESS_TOKEN")
-            new_access_token = key_values.get("EBAY_USER_ACCESS_TOKEN")
-            if old_access_token and new_access_token:
-                logging.info(f"  Access Token OLD: {old_access_token[:15]}... {'DIFFERENT' if old_access_token != new_access_token else 'SAME'} NEW: {new_access_token[:15]}...")
-            elif new_access_token:
-                logging.info(f"  New Access Token: {new_access_token[:15]}... (No old token found to compare)")
-
-            old_refresh_token = get_key(DOTENV_PATH, "EBAY_USER_REFRESH_TOKEN")
-            new_refresh_token = key_values.get("EBAY_USER_REFRESH_TOKEN")
-            if old_refresh_token and new_refresh_token:
-                logging.info(f"  Refresh Token OLD: {old_refresh_token[:15]}... {'DIFFERENT' if old_refresh_token != new_refresh_token else 'SAME'} NEW: {new_refresh_token[:15]}...")
-            elif new_refresh_token:
-                logging.info(f"  New Refresh Token: {new_refresh_token[:15]}... (No old token found to compare)")
-        
-        for key, value in key_values.items():
-            if value is not None:
-                set_key_result = set_key(DOTENV_PATH, key, str(value)) # Ensure value is string
-                # set_key returns a tuple: (success_boolean, key_written, value_written)
-                success, key_written, value_written = set_key_result 
-                if success:
-                    logging.info(f"set_key reported SUCCESS for {key_written}. Value (truncated): {str(value_written)[:15]}...")
-                else:
-                    # Log the original key and value attempted, and the full result from set_key
-                    logging.error(f"set_key reported FAILURE for {key} (attempted value: {str(value)[:15]}...). Result: {set_key_result}")
+        for key, value in values.items():
+            success, key_written, _ = set_key(DOTENV_PATH, key, value)
+            if success:
+                logging.info("Saved %s to the configured credentials file.", key_written)
             else:
-                logging.warning(f"Skipped saving {key} to .env as its value is None.")
+                logging.error("Failed to save %s to the configured credentials file.", key)
         load_dotenv(DOTENV_PATH, override=True) # Reload .env to reflect changes
         return True
     except Exception as e:
         logging.error(f"Error saving to .env file at {DOTENV_PATH}: {e}")
         return False
+
+
+def _save_to_doppler(key_values):
+    """Persist durable seller auth state without storing short-lived access tokens."""
+    durable_keys = {"EBAY_USER_REFRESH_TOKEN", "EBAY_USER_ID", "EBAY_USER_NAME"}
+    values = {key: value for key, value in key_values.items() if key in durable_keys}
+    if not values:
+        return True
+
+    project = os.getenv("DOPPLER_PROJECT")
+    config = os.getenv("DOPPLER_CONFIG")
+    if not project or not config or not shutil.which("doppler"):
+        logging.error("Doppler token persistence requires DOPPLER_PROJECT, DOPPLER_CONFIG, and the Doppler CLI.")
+        return False
+
+    for key, value in values.items():
+        command = [
+            "doppler", "secrets", "set", key,
+            "--project", project,
+            "--config", config,
+            "--silent",
+        ]
+        try:
+            subprocess.run(
+                command,
+                input=value,
+                text=True,
+                capture_output=True,
+                check=True,
+            )
+            logging.info("Saved %s to Doppler project %s/%s.", key, project, config)
+        except subprocess.CalledProcessError:
+            logging.exception("Failed to save %s to Doppler project %s/%s.", key, project, config)
+            return False
+    return True
 
 # --- Local HTTP Server for OAuth Callback ---
 class OAuthCallbackHandler(http.server.BaseHTTPRequestHandler):
@@ -125,7 +154,7 @@ class OAuthCallbackHandler(http.server.BaseHTTPRequestHandler):
         if 'code' in query_params:
             auth_code = query_params['code'][0]
             state_received = query_params.get('state', [None])[0]
-            logging.info(f"Authorization code received by local server: {auth_code[:10]}...")
+            logging.info("Authorization code received by local server.")
             # TODO: Validate state_received against a stored state if implementing CSRF protection fully
             response_data = {'auth_code': auth_code, 'error': None, 'state': state_received}
             html_content = f"""<html><head><title>eBay Auth In Progress</title></head><body>
@@ -190,7 +219,7 @@ def _start_local_http_server(port, path_segment):
 
 def _exchange_auth_code_and_get_user_details(auth_code):
     """Exchanges authorization code for tokens and fetches user details."""
-    logging.info(f"Exchanging authorization code for token: {auth_code[:10]}...")
+    logging.info("Exchanging authorization code for tokens.")
 
     client_id = get_env_variable("EBAY_CLIENT_ID")
     client_secret = get_env_variable("EBAY_CLIENT_SECRET")
@@ -226,12 +255,11 @@ def _exchange_auth_code_and_get_user_details(auth_code):
 
         if not access_token:
             logging.error("Access token not found in eBay response during code exchange.")
-            logging.debug(f"Full token exchange response: {token_data}")
             return {"status": "error", "message": "Access token not found in eBay response.", "error_details": token_data}
 
-        logging.info(f"Access token received: {access_token[:10]}...")
+        logging.info("Access token received.")
         if refresh_token:
-            logging.info(f"Refresh token received: {refresh_token[:10]}...")
+            logging.info("Refresh token received.")
         else:
             logging.warning("Refresh token NOT received during initial code exchange. This is unusual.")
 
@@ -239,7 +267,7 @@ def _exchange_auth_code_and_get_user_details(auth_code):
         user_id, user_name = get_user_details(access_token=access_token)
 
         if access_token and user_id and user_name:
-            logging.info(f"Successfully fetched tokens and user details: UserID={user_id}, UserName={user_name}, AccessToken={access_token[:10]}..., RefreshToken={(refresh_token[:10] + '...') if refresh_token else 'N/A'}")
+            logging.info("Successfully fetched tokens and user details for user %s.", user_name)
             env_vars_to_save = {
                 "EBAY_USER_ACCESS_TOKEN": access_token,
                 "EBAY_USER_ID": user_id,
@@ -249,12 +277,12 @@ def _exchange_auth_code_and_get_user_details(auth_code):
                 env_vars_to_save["EBAY_USER_REFRESH_TOKEN"] = refresh_token
             
             if _save_to_env(env_vars_to_save):
-                logging.info("All user credentials saved to .env successfully.")
+                logging.info("Seller authentication state saved successfully.")
             else:
-                logging.error("Failed to save all user credentials to .env.")
+                logging.error("Failed to save all seller authentication state.")
                 # Decide if we should return None here if saving fails critically
         elif access_token: # We got tokens but not user details
-            logging.warning(f"Obtained tokens (AccessToken={access_token[:10]}...) but failed to fetch user details. Saving tokens only.")
+            logging.warning("Obtained tokens but failed to fetch user details. Saving tokens only.")
             env_vars_to_save = {"EBAY_USER_ACCESS_TOKEN": access_token}
             if refresh_token:
                 env_vars_to_save["EBAY_USER_REFRESH_TOKEN"] = refresh_token
@@ -269,7 +297,7 @@ def _exchange_auth_code_and_get_user_details(auth_code):
             # For now, assume if we got here with details, it's mostly successful.
             return {"status": "success", "message": "Tokens and user details obtained.", "user_name": user_name}
         elif access_token: # Got tokens, but not full user details
-            return {"status": "partial_success", "message": "Access token obtained, but user details incomplete.", "access_token_preview": access_token[:10]}
+            return {"status": "partial_success", "message": "Access token obtained, but user details incomplete."}
         else: # Failed to get access_token
             return {"status": "error", "message": "Failed to obtain access token during exchange."}
 
@@ -367,14 +395,13 @@ def initiate_user_login():
         # Keep the print statements for direct script execution feedback
         print(f"\n--- eBay Login Successful ---")
         print(f"User Name: {exchange_result.get('user_name', 'N/A')}")
-        # Potentially add User ID to print if returned by _exchange_auth_code_and_get_user_details
-        print(f"Access Token: {exchange_result.get('access_token_preview', 'N/A')}... (details saved to .env)")
+        print("Seller authentication state saved successfully.")
         print("-----------------------------")
     elif exchange_result.get("status") == "partial_success":
         logging.warning(f"eBay login partially successful: {exchange_result.get('message')}")
         print(f"\n--- eBay Login Partially Successful ---")
         print(f"{exchange_result.get('message')}")
-        print(f"Access Token: {exchange_result.get('access_token_preview', 'N/A')}... (details saved to .env)")
+        print("Available seller authentication state was saved.")
         print("-----------------------------")
     else: # Error case
         logging.error(f"Failed to obtain tokens or user details after authorization: {exchange_result.get('message')}")
@@ -411,7 +438,7 @@ def refresh_access_token(client_id=None, client_secret=None, refresh_token_val=N
     }
 
     try:
-        logging.info(f"Requesting new access token from {TOKEN_ENDPOINT} using refresh token: {current_refresh_token[:10]}...")
+        logging.info("Requesting a new access token from %s.", TOKEN_ENDPOINT)
         response = requests.post(TOKEN_ENDPOINT, data=payload, headers=headers)
         response.raise_for_status()
         token_data = response.json()
@@ -422,13 +449,13 @@ def refresh_access_token(client_id=None, client_secret=None, refresh_token_val=N
             logging.debug(f"Full response from token endpoint: {token_data}")
             return None
 
-        logging.info(f"Successfully refreshed access token: {new_access_token[:10]}...")
+        logging.info("Successfully refreshed access token.")
         
         new_refresh_token = token_data.get("refresh_token")
         
         env_vars_to_save = {"EBAY_USER_ACCESS_TOKEN": new_access_token}
         if new_refresh_token and new_refresh_token != current_refresh_token:
-            logging.info(f"New refresh token received and saved: {new_refresh_token[:10]}...")
+            logging.info("A rotated refresh token was received and will be saved.")
             env_vars_to_save["EBAY_USER_REFRESH_TOKEN"] = new_refresh_token
         elif new_refresh_token:
             logging.info("Refresh token re-issued but is the same as current. Not re-saving unless different.")
@@ -463,7 +490,7 @@ def get_user_details(access_token=None):
             logging.error("Failed to obtain access token for fetching user details.")
             return None, None
     
-    logging.info(f"Using access token for user details: {access_token_to_use[:10]}...")
+    logging.info("Using the current access token to fetch user details.")
     headers = {
         "Authorization": f"Bearer {access_token_to_use}",
         "Accept": "application/json"
@@ -513,74 +540,34 @@ def get_user_details(access_token=None):
 # --- Command-Line Interface --- 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="eBay Authentication Helper.")
+    parser = argparse.ArgumentParser(description="eBay authentication helper.")
+    parser.add_argument("action", choices=["get_user", "refresh_token", "login"])
     parser.add_argument(
-        "action", 
-        choices=["get_user", "refresh_token", "login"], 
-        help="Action to perform: 'login' to initiate full OAuth flow, 'get_user' to fetch eBay UserID/UserName, 'refresh_token' to refresh access token."
-    )
-
-    args = parser.parse_args()
-
-    if args.action == "login":
-        initiate_user_login()
-    elif args.action == "get_user":
-        user_id, user_name = get_user_details()
-        if user_id and user_name:
-            print(f"\n--- eBay User Details ---")
-            print(f"User Name: {user_name}")
-            print(f"User ID: {user_id}")
-            print(f"(Fetched from .env or API)")
-            print("-------------------------")
-        else:
-            print("Could not retrieve eBay user details. Check logs.")
-    elif args.action == "refresh_token":
-        new_token = refresh_access_token()
-        if new_token:
-            print(f"\n--- Token Refresh Successful ---")
-            print(f"New Access Token: {new_token[:15]}... (saved to .env)")
-            print("------------------------------")
-        else:
-            print("Failed to refresh access token. Check logs.")
-    parser.add_argument(
+        "--env-path",
         "--env_path",
-        type=str,
-        default=None,
-        help="Path to the .env file. If not provided, will search for .env in standard locations."
+        dest="env_path",
+        help="Optional path to a dotenv credentials file.",
     )
-
     args = parser.parse_args()
 
     if args.env_path:
-        if os.path.exists(args.env_path):
-            DOTENV_PATH = args.env_path
-            load_dotenv(DOTENV_PATH, override=True)
-            logging.info(f"Using .env file specified at: {DOTENV_PATH}")
-        else:
-            logging.error(f".env file specified at {args.env_path} not found. Exiting.")
-            exit(1)
-    elif not DOTENV_PATH or not os.path.exists(DOTENV_PATH):
-        logging.error("Could not find or determine a .env file path. Please specify with --env_path or ensure .env exists. Exiting.")
-        exit(1)
-    
-    logging.info(f"Using .env file at: {DOTENV_PATH}")
+        DOTENV_PATH = os.path.expanduser(args.env_path)
+        if not os.path.isfile(DOTENV_PATH):
+            parser.error(f"Credentials file not found: {DOTENV_PATH}")
+        load_dotenv(DOTENV_PATH, override=True)
 
-    if args.action == "get_user":
-        print("Fetching eBay User ID and User Name...")
+    if args.action == "login":
+        result = initiate_user_login()
+        if not result or result.get("status") not in {"success", "partial_success"}:
+            raise SystemExit(1)
+    elif args.action == "get_user":
         user_id, user_name = get_user_details()
-        if user_id and user_name:
-            print(f"\n--- eBay User Information ---")
-            print(f"eBay User ID:   {user_id}")
-            print(f"eBay User Name: {user_name}")
-            print(f"(These details have also been updated in {DOTENV_PATH})\n")
-        else:
-            print("\nFailed to retrieve eBay user information. Check logs for details.\n")
-    
-    elif args.action == "refresh_token":
-            print("Attempting to refresh eBay access token...")
-            new_token = refresh_access_token()
-            if new_token:
-                print(f"\nAccess token refreshed successfully: {new_token[:10]}...")
-                print(f"(Token has been updated in {DOTENV_PATH})\n")
-            else:
-                print("\nFailed to refresh access token. Check logs for details.\n")
+        if not user_id or not user_name:
+            print("Could not retrieve eBay user details. Check logs.")
+            raise SystemExit(1)
+        print(f"eBay user authenticated: {user_name} ({user_id})")
+    else:
+        if not refresh_access_token():
+            print("Failed to refresh the eBay access token. Check logs.")
+            raise SystemExit(1)
+        print("eBay access token refreshed successfully.")

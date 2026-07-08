@@ -9,7 +9,8 @@ import os
 from dotenv import load_dotenv
 
 # Load environment variables
-load_dotenv()
+if os.getenv("EBAY_TOKEN_STORE", "").lower() != "doppler":
+    load_dotenv()
 
 # Get logger
 logger = logging.getLogger(__name__)

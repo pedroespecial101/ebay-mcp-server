@@ -1,10 +1,11 @@
 import os
+import asyncio
 import logging
 import logging.handlers 
 from typing import Optional, Union, Dict, Any
 from dotenv import load_dotenv
 import httpx
-from ebay_auth.ebay_auth import get_env_variable as get_ebay_auth_env_variable
+from ebay_auth.ebay_auth import refresh_access_token
 
 # Import Pydantic models
 from models.config.settings import EbayAuthConfig, ServerConfig
@@ -26,39 +27,58 @@ logger = logging.getLogger(__name__)
 
 # --- End Logging Setup ---
 
-# Load environment variables from .env file in the project root
-dotenv_path = os.path.join(project_root, '.env')
-logger.info(f"Attempting to load .env from: {dotenv_path}")
-if os.path.exists(dotenv_path):
+def _resolve_credentials_path() -> str | None:
+    credentials_file = os.getenv("EBAY_CREDENTIALS_FILE")
+    if credentials_file:
+        return os.path.expanduser(credentials_file)
+    if os.getenv("EBAY_TOKEN_STORE", "").lower() == "doppler":
+        return None
+    return os.path.join(project_root, '.env')
+
+
+# Load environment variables from the configured credentials source when present.
+dotenv_path = _resolve_credentials_path()
+if dotenv_path and os.path.exists(dotenv_path):
+    logger.info(f"Loading credentials from: {dotenv_path}")
     load_dotenv(dotenv_path)
-    logger.info(".env file loaded successfully.")
+    logger.info("Credentials file loaded successfully.")
+elif dotenv_path:
+    logger.warning(f"Credentials file not found at {dotenv_path}. Environment variables might not be set.")
 else:
-    logger.warning(f".env file not found at {dotenv_path}. Environment variables might not be set.")
+    logger.info("Using injected environment credentials without a local dotenv file.")
 
 
 async def get_ebay_access_token() -> str:
     """
-    Retrieves the current eBay User Access Token from the .env file.
-    This token is expected to be managed (e.g., refreshed) by the ebay_auth module.
+    Retrieve the current eBay user access token, refreshing it when necessary.
     
     Returns:
         str: The access token if available, otherwise an error message.
     """
-    logger.info("Attempting to retrieve EBAY_USER_ACCESS_TOKEN from .env via ebay_auth module.")
-    
-    # Get the auth configuration from environment variables
+    logger.info("Attempting to retrieve the eBay user access token.")
     auth_config = EbayAuthConfig.from_env(dotenv_path)
-    
+
     if auth_config.user_access_token:
         logger.info("Successfully retrieved EBAY_USER_ACCESS_TOKEN.")
-        logger.debug(f"get_ebay_access_token: EBAY_USER_ACCESS_TOKEN (first 10 chars): {auth_config.user_access_token[:10]}...")
         return auth_config.user_access_token
-    else:
-        error_msg = ("The user's EBAY_USER_ACCESS_TOKEN was not found. The user needs to authenticate with eBay before they can use this MCP. "
-                     "You can use the 'trigger_ebay_login' tool. This will open a browser window for eBay login by the user. "
-                     "Once they have completed this process, you should be able to try your request again!")
-        logger.error(error_msg)
-        return error_msg
+
+    if auth_config.is_app_configured() and auth_config.user_refresh_token:
+        logger.info("No access token is loaded; refreshing it from the stored refresh token.")
+        refreshed_token = await asyncio.to_thread(
+            refresh_access_token,
+            auth_config.client_id,
+            auth_config.client_secret,
+            auth_config.user_refresh_token,
+        )
+        if refreshed_token:
+            return refreshed_token
+
+    error_msg = (
+        "EBAY_USER_ACCESS_TOKEN not found and automatic refresh was unavailable. "
+        "Run the trigger_ebay_login tool to authenticate the seller account."
+    )
+    logger.error(error_msg)
+    return error_msg
 
 
 async def get_auth_config() -> EbayAuthConfig:

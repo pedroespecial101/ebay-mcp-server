@@ -51,9 +51,7 @@ Parameters for the get_item_aspects_for_category tool."""
 
 class TestAuthResponse(EbayResponse[str]):
     """Response for the test_auth tool."""
-    
-    token_prefix: Optional[str] = Field(None, description="First 50 characters of the token.")
-    token_length: Optional[int] = Field(None, description="Length of the token.")
+
     error_message: Optional[str] = Field(None, description="Error message if token acquisition failed.")
     
     @classmethod
@@ -61,9 +59,7 @@ class TestAuthResponse(EbayResponse[str]):
         """Create a success response with token information."""
         return cls(
             status="success",
-            data=f"Token found (first 50 chars): {token[:50]}...\nToken length: {len(token)}",
-            token_prefix=token[:50],
-            token_length=len(token)
+            data="eBay seller authentication is available.",
         )
     
     @classmethod

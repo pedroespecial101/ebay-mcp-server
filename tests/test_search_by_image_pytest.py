@@ -25,7 +25,7 @@ async def test_search_by_image_basic(mcp_client):
     })
     
     # Print the response for debugging
-    response_text = result[0].text
+    response_text = result.content[0].text
     print(f"Response from search_by_image: {response_text}")
     
     # Check if the response is an error
@@ -64,7 +64,7 @@ async def test_search_by_image_invalid_url(mcp_client):
     })
     
     # Print the response for debugging
-    response_text = result[0].text
+    response_text = result.content[0].text
     print(f"Response from search_by_image with invalid URL: {response_text}")
     
     # Check that the response indicates an error
@@ -80,7 +80,7 @@ async def test_search_by_image_non_image_url(mcp_client):
     })
     
     # Print the response for debugging
-    response_text = result[0].text
+    response_text = result.content[0].text
     print(f"Response from search_by_image with non-image URL: {response_text}")
     
     # Check that the response indicates an error
@@ -100,7 +100,7 @@ async def test_search_by_image_with_category(mcp_client):
     })
     
     # Print the response for debugging
-    response_text = result[0].text
+    response_text = result.content[0].text
     print(f"Response from search_by_image with category: {response_text}")
     
     # Check if the response is an error

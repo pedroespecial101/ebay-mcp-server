@@ -1,3 +1,24 @@
+# 2026-07-08 - Streamlined resumable listing workflow
+
+- Upgraded to `fastmcp[apps]` 3.4.3 and `prefab-ui` 0.20.2 while preserving mounted tool names.
+- Added MCP Apps image upload plus safe HTTPS and restricted-local-folder ingress.
+- Added private Cloudflare R2 staging, image normalization, EXIF removal, and eBay Media API/EPS upload.
+- Added read-only listing validation and resumable draft, publish, fee-approval, and explicit cleanup tools.
+- Added conservative SKU conflict detection, partial-draft recovery manifests, structured sanitized results, and publication verification.
+- Provisioned the private `ebay-listing-staging` bucket with seven-day lifecycle deletion and bucket-scoped credentials in Doppler.
+- Verified a production draft end-to-end with a synthetic image, then deleted its offer, inventory item, R2 image, and manifest without publishing.
+
+# 2026-07-07 - Local-first seller MCP with Doppler
+
+- Registered the seller MCP separately from the read-only UK Browse MCP.
+- Made Doppler `ebay-mcp/dev` the source of truth for shared app credentials, seller refresh auth, UK defaults, and offer policy/location IDs.
+- Added refresh-token bootstrap so a short-lived access token does not need to be stored in Doppler.
+- Added Doppler write-back for new or rotated seller refresh tokens while keeping access tokens process-local.
+- Pinned active headers and offer defaults to `EBAY_GB`, `en-GB`, `GBP`, and `GB`.
+- Removed credential fragments from active logs and auth-tool responses.
+- Added focused credentials and localization tests and current setup documentation.
+- Added ChatGPT-safe tool annotations, remote auth-tool gating, optional HTTP transport, and an OpenAI Secure MCP Tunnel launch path.
+
 ## Updates in TrajectoryID <refactor_search_by_image_ui, (refactor_search_by_image_ui_21062025_0628)> - 21062025 - 06:28.44
 
 - **Refactored Search By Image Tool to Improve MCP Inspector UI**:

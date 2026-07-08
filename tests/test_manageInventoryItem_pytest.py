@@ -39,7 +39,7 @@ async def test_01_cleanup_inventory_item(mcp_client):
             "inventoryAPI_manage_inventory_item",
             {"params": {"sku": TEST_SKU, "action": "delete"}},
         )
-        json_data = json.loads(result[0].text)
+        json_data = json.loads(result.content[0].text)
         if json_data.get("success"):
             print(f"Deleted existing inventory item: {TEST_SKU}")
     except Exception as e:
@@ -75,9 +75,9 @@ async def test_02_create_inventory_item(mcp_client):
     
     # Handle the response
     try:
-        json_data = json.loads(result[0].text)
+        json_data = json.loads(result.content[0].text)
     except json.JSONDecodeError:
-        assert False, f"Invalid JSON response: {result[0].text}"
+        assert False, f"Invalid JSON response: {result.content[0].text}"
     
     # Check if creation was successful
     assert json_data.get("success"), f"Create inventory item failed: {json_data.get('error', 'Unknown error')}"
@@ -95,7 +95,7 @@ async def test_03_get_inventory_item(mcp_client):
         "inventoryAPI_manage_inventory_item",
         {"params": {"sku": TEST_SKU, "action": "get"}},
     )
-    json_data = json.loads(result[0].text)
+    json_data = json.loads(result.content[0].text)
     assert json_data.get("success"), f"Get inventory item failed: {json_data.get('error')}"
     assert json_data["data"]["sku"] == TEST_SKU
     return json_data["data"]
@@ -123,7 +123,7 @@ async def test_04_modify_inventory_item(mcp_client):
             }
         },
     )
-    json_data = json.loads(result[0].text)
+    json_data = json.loads(result.content[0].text)
     assert json_data.get("success"), f"Modify inventory item failed: {json_data.get('error')}"
     return json_data["data"]
 
@@ -139,9 +139,9 @@ async def test_05_verify_modified_item(mcp_client):
     
     # Handle potential empty or invalid JSON response
     try:
-        json_data = json.loads(result[0].text)
+        json_data = json.loads(result.content[0].text)
     except json.JSONDecodeError:
-        assert False, f"Invalid JSON response: {result[0].text}"
+        assert False, f"Invalid JSON response: {result.content[0].text}"
     
     # Check if the API call was successful
     assert json_data.get("success"), f"Get modified item failed: {json_data.get('error', 'Unknown error')}"
@@ -191,9 +191,9 @@ async def test_06_delete_inventory_item(mcp_client):
     
     # Handle potential empty or invalid JSON response
     try:
-        json_data = json.loads(result[0].text) if result[0].text else {}
+        json_data = json.loads(result.content[0].text) if result.content[0].text else {}
     except json.JSONDecodeError:
-        assert False, f"Invalid JSON response when deleting item: {result[0].text}"
+        assert False, f"Invalid JSON response when deleting item: {result.content[0].text}"
     
     # Check if deletion was successful
     assert json_data.get("success"), f"Delete inventory item failed: {json_data.get('error', 'Unknown error')}"
@@ -206,7 +206,7 @@ async def test_06_delete_inventory_item(mcp_client):
     
     # The get request for a non-existent item should not be successful
     try:
-        json_data = json.loads(result[0].text) if result[0].text else {}
+        json_data = json.loads(result.content[0].text) if result.content[0].text else {}
         assert not json_data.get("success"), \
             f"Expected item to be deleted, but it still exists: {json_data}"
     except json.JSONDecodeError:

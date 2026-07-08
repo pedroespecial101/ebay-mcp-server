@@ -23,7 +23,7 @@ async def test_search_items_basic(mcp_client):
     })
     
     # Parse the response
-    response_text = result[0].text
+    response_text = result.content[0].text
     
     # Check if the response is an error
     assert not is_error_response(response_text), f"Expected successful response, got error: {response_text}"
@@ -57,7 +57,7 @@ async def test_search_items_custom_limit(mcp_client):
     })
     
     # Parse the response
-    response_text = result[0].text
+    response_text = result.content[0].text
     
     # Check if the response is an error
     assert not is_error_response(response_text), f"Expected successful response, got error: {response_text}"
@@ -77,7 +77,7 @@ async def test_search_items_empty_query(mcp_client):
     })
     
     # Check that the response indicates an error
-    response_text = result[0].text
+    response_text = result.content[0].text
     assert is_error_response(response_text), f"Expected error response for empty query, got: {response_text}"
     
     # Check for either the Pydantic validation error or the eBay API error
@@ -95,7 +95,7 @@ async def test_search_items_invalid_limit(mcp_client):
     })
     
     # Check that the response indicates an error
-    response_text = result[0].text
+    response_text = result.content[0].text
     assert is_error_response(response_text), f"Expected error response for invalid limit, got: {response_text}"
     
     # Check that the error message contains validation-related text

@@ -15,7 +15,8 @@ from dotenv import load_dotenv
 import datetime
 
 # Load environment variables from .env file
-load_dotenv()
+if os.getenv("EBAY_TOKEN_STORE", "").lower() != "doppler":
+    load_dotenv()
 
 LOG_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'logs')
 LOG_FILE_PATH = os.path.join(LOG_DIR, 'fastmcp_server.log')
@@ -102,14 +103,19 @@ from ebay_mcp.taxonomy.server import taxonomy_mcp
 from ebay_mcp.inventory.server import inventory_mcp
 # from ebay_mcp.prompts.server import prompts_mcp
 from ebay_mcp.catalog.server import catalog_mcp
+from ebay_mcp.media.server import media_mcp
+from ebay_mcp.listing.server import listing_mcp
 
 # Create the main MCP server
-instruction_text = """This MCP server provides tools to interact with various eBay APIs.
+instruction_text = """This MCP server provides tools to interact with eBay UK seller APIs.
 
 PRIMARY WORKFLOW:
-1. Create Inventory Item (inventoryAPI_manage_inventory_item::create)
-2. Create Offer (inventoryAPI_manage_offer::create) 
-3. Publish Offer (inventoryAPI_manage_offer::publish)
+1. Stage 1-24 ordered photographs with media_open_image_uploader or media_stage_images.
+2. Call listing_validate with a complete proposal and explicit category ID.
+3. Call listing_create in draft mode. This validates, uploads to EPS, creates and verifies inventory/offer state, and estimates fees.
+4. Review the structured result. Call listing_publish only after approving any non-zero fee ceiling.
+
+Use the mandatory SKU as the idempotency and recovery key. Retry the same SKU and unchanged content after a partial failure; mismatched content is never overwritten. Partial drafts are preserved. Use listing_discard_draft only for explicit cleanup of a verified unpublished draft. The first image is the gallery image.
 
 AVAILABLE OPERATIONS:
 • Inventory Items: CREATE, GET, MODIFY, DELETE
@@ -127,8 +133,8 @@ CATEGORY & ASPECTS:
 • Use 'Get Aspects for Category' to get required/recommended item attributes
 • If you have a GTIN (EAN, ISBN, UPC) for the item you want to sell, use 'Search by GTIN' to check if there is an eBay catalog product that matches the GTIN of the item you want to sell.
 
-WORKFLOW FLEXIBILITY:
-While the primary workflow above is typical, you can use inventoryAPI_manage_inventory_item and inventoryAPI_manage_offer tools independently to GET, MODIFY, or DELETE existing items and WITHDRAW offers as needed."""
+LOW-LEVEL TOOLS:
+inventoryAPI_manage_inventory_item and inventoryAPI_manage_offer remain available for diagnosis and advanced operations. Prefer the listing_* workflow for ordinary second-hand, quantity-one, fixed-price listings."""
 
 mcp = FastMCP(
     name="eBay API",
@@ -141,19 +147,19 @@ def mount_servers():
     logger.info("Mounting all sub-servers")
     
     # Mount auth tools
-    mcp.mount("auth", auth_mcp)
+    mcp.mount(auth_mcp, namespace="auth")
     logger.info("Mounted auth MCP server")
     
     # Mount browse API tools
-    mcp.mount("browseAPI", browse_mcp)
+    mcp.mount(browse_mcp, namespace="browseAPI")
     logger.info("Mounted browse API MCP server")
     
     # Mount taxonomy API tools
-    mcp.mount("taxonomyAPI", taxonomy_mcp)
+    mcp.mount(taxonomy_mcp, namespace="taxonomyAPI")
     logger.info("Mounted taxonomy API MCP server")
     
     # Mount inventory API tools
-    mcp.mount("inventoryAPI", inventory_mcp)
+    mcp.mount(inventory_mcp, namespace="inventoryAPI")
     logger.info("Mounted inventory API MCP server")
 
     # # Mount custom prompts server
@@ -161,8 +167,14 @@ def mount_servers():
     # logger.info("Mounted custom prompts MCP server")
 
     # Mount catalog API tools
-    mcp.mount("catalogAPI", catalog_mcp)
+    mcp.mount(catalog_mcp, namespace="catalogAPI")
     logger.info("Mounted catalog API MCP server")
+
+    mcp.mount(media_mcp, namespace="media")
+    logger.info("Mounted private media MCP server")
+
+    mcp.mount(listing_mcp, namespace="listing")
+    logger.info("Mounted streamlined listing MCP server")
     
 
 # Mount all servers
@@ -170,6 +182,14 @@ mount_servers()
 
 # When running this file directly, start the MCP server
 if __name__ == "__main__":
-    logger.info("Starting FastMCP server with stdio transport...")
+    transport = os.getenv("MCP_TRANSPORT", "stdio")
+    transport_kwargs = {}
+    if transport in {"streamable-http", "sse"}:
+        transport_kwargs = {
+            "host": os.getenv("MCP_HOST", "127.0.0.1"),
+            "port": int(os.getenv("MCP_PORT", "8766")),
+        }
+
+    logger.info("Starting FastMCP server with %s transport...", transport)
     logger.info("Server is configured with dynamically mounted sub-servers")
-    mcp.run()
+    mcp.run(transport=transport, **transport_kwargs)

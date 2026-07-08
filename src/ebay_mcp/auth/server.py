@@ -24,7 +24,8 @@ from utils.api_utils import execute_ebay_api_call, is_token_error
 from utils.debug_httpx import create_debug_client
 
 # Load environment variables
-load_dotenv()
+if os.getenv("EBAY_TOKEN_STORE", "").lower() != "doppler":
+    load_dotenv()
 
 # Determine if we're in DEBUG mode
 DEBUG_MODE = os.getenv('MCP_LOG_LEVEL', 'NORMAL').upper() == 'DEBUG'
@@ -52,7 +53,9 @@ def is_token_error(token: str) -> bool:
     ]
     return any(token.startswith(prefix) for prefix in error_prefixes)
 
-@auth_mcp.tool()
+@auth_mcp.tool(
+    annotations={"readOnlyHint": True, "openWorldHint": False, "destructiveHint": False}
+)
 async def test_auth() -> str:
     """Test authentication and token retrieval"""
     logger.info("Executing test_auth MCP tool.")
@@ -76,14 +79,11 @@ async def test_auth() -> str:
         response = TestAuthResponse.error_response(f"Unexpected error during token retrieval: {str(e)}")
         return response.data
 
-@auth_mcp.tool()
 async def trigger_ebay_login() -> str:
     """Initiates the eBay OAuth2 login flow. 
     
-    This will open a browser window for eBay authentication. After successful login, 
-    the .env file will be updated with new tokens.
-    IMPORTANT: You MUST restart the MCP server in your IDE after completing the login 
-    for the new tokens to take effect.
+    This opens a browser window for eBay authentication. After successful login,
+    auth state is updated in the configured token store and current server process.
     """
     logger.info("Executing trigger_ebay_login MCP tool.")
     try:
@@ -121,3 +121,9 @@ async def trigger_ebay_login() -> str:
             str(e)
         )
         return response.data
+
+
+if os.getenv("EBAY_ENABLE_INTERACTIVE_AUTH", "1") == "1":
+    auth_mcp.tool(
+        annotations={"readOnlyHint": False, "openWorldHint": True, "destructiveHint": False},
+    )(trigger_ebay_login)

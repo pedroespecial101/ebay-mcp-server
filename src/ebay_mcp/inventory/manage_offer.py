@@ -97,7 +97,7 @@ async def _get_offer_by_sku(sku: str, access_token: str, client: httpx.AsyncClie
     
     response = await client.get(url, headers=headers)
     log_headers = headers.copy()
-    log_headers['Authorization'] = f"Bearer {access_token[:20]}...<truncated>"
+    log_headers['Authorization'] = "[REDACTED]"
     logger.debug(f"_get_offer_by_sku: Headers: {log_headers}, URL: {url}")
     logger.debug(f"_get_offer_by_sku: Response status: {response.status_code}, text: {response.text[:500]}...")
 
@@ -120,7 +120,9 @@ async def _get_offer_by_sku(sku: str, access_token: str, client: httpx.AsyncClie
 
 
 async def manage_offer_tool(inventory_mcp):
-    @inventory_mcp.tool()
+    @inventory_mcp.tool(
+        annotations={"readOnlyHint": False, "openWorldHint": False, "destructiveHint": True}
+    )
     async def manage_offer(params: ManageOfferToolInput) -> str:
         """Manages eBay offers: create, modify, withdraw, or publish based on SKU.
 

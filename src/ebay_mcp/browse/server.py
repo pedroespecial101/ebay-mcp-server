@@ -22,7 +22,8 @@ from utils.api_utils import execute_ebay_api_call, get_standard_ebay_headers, ur
 from utils.debug_httpx import create_debug_client
 
 # Load environment variables
-load_dotenv()
+if os.getenv("EBAY_TOKEN_STORE", "").lower() != "doppler":
+    load_dotenv()
 
 # Determine if we're in DEBUG mode
 DEBUG_MODE = os.getenv('MCP_LOG_LEVEL', 'NORMAL').upper() == 'DEBUG'
@@ -49,7 +50,9 @@ def truncate_string(long_string: str, head_len: int = 100, tail_len: int = 100) 
 # Create Browse MCP server
 browse_mcp = FastMCP("eBay Browse API")
 
-@browse_mcp.tool()
+@browse_mcp.tool(
+    annotations={"readOnlyHint": True, "openWorldHint": False, "destructiveHint": False}
+)
 async def search_ebay_items(query: str, limit: int = 10) -> str:
     """Search items on eBay using Browse API"""
     logger.info(f"Executing search_ebay_items MCP tool with query='{query}', limit={limit}.")
@@ -63,7 +66,7 @@ async def search_ebay_items(query: str, limit: int = 10) -> str:
             headers = get_standard_ebay_headers(access_token)
             api_params = {"q": params.query, "limit": params.limit}
             url = "https://api.ebay.com/buy/browse/v1/item_summary/search"
-            logger.debug(f"search_ebay_items: Requesting URL: {url} with params: {api_params} using token {access_token[:10]}...")
+            logger.debug(f"search_ebay_items: Requesting URL: {url} with params: {api_params}")
             
             response = await client.get(url, headers=headers, params=api_params)
             logger.debug(f"search_ebay_items: Response status: {response.status_code}")
@@ -90,7 +93,9 @@ async def search_ebay_items(query: str, limit: int = 10) -> str:
         return f"Error in search parameters: {str(e)}"
 
 
-@browse_mcp.tool()
+@browse_mcp.tool(
+    annotations={"readOnlyHint": True, "openWorldHint": False, "destructiveHint": False}
+)
 async def search_by_image(params: SearchByImageParams) -> str:
     """Search items on eBay using an image from a URL
     
@@ -141,7 +146,7 @@ async def search_by_image(params: SearchByImageParams) -> str:
             body = {"image": base64_image}
             
             url = "https://api.ebay.com/buy/browse/v1/item_summary/search_by_image"
-            logger.debug(f"search_by_image: Requesting URL: {url} with params: {api_params} using token {access_token[:10]}...")
+            logger.debug(f"search_by_image: Requesting URL: {url} with params: {api_params}")
             
             # Use POST for image search with the image in the request body
             response = await client.post(url, headers=headers, params=api_params, json=body)

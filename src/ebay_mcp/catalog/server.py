@@ -16,7 +16,8 @@ sys.path.append(project_root)
 from ebay_mcp.catalog.search import search_by_gtin_tool
 
 # Load environment variables
-load_dotenv()
+if os.getenv("EBAY_TOKEN_STORE", "").lower() != "doppler":
+    load_dotenv()
 
 # Determine if we're in DEBUG mode
 DEBUG_MODE = os.getenv('MCP_LOG_LEVEL', 'NORMAL').upper() == 'DEBUG'

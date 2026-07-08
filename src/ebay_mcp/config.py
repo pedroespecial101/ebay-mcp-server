@@ -22,6 +22,9 @@ class EbayOfferDefaults(BaseSettings):
 
     # eBay API Default Settings
     EBAY_MARKETPLACE_ID: str = "EBAY_GB"
+    EBAY_LOCALE: str = "en-GB"
+    EBAY_CURRENCY: str = "GBP"
+    EBAY_DELIVERY_COUNTRY: str = "GB"
     EBAY_PAYMENT_POLICY_ID: str
     EBAY_RETURN_POLICY_ID: str
     EBAY_FULFILLMENT_POLICY_ID: str

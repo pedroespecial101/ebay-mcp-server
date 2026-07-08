@@ -2,10 +2,39 @@
 Configuration models for eBay MCP Server.
 These models handle environment variables and server settings.
 """
-from typing import Optional, List
-from pydantic import BaseModel, Field, validator
 import os
-from dotenv import load_dotenv
+from pathlib import Path
+
+from dotenv import dotenv_values
+from pydantic import BaseModel, Field
+
+
+AUTH_ENV_KEYS = (
+    "EBAY_CLIENT_ID",
+    "EBAY_CLIENT_SECRET",
+    "EBAY_RU_NAME",
+    "EBAY_APP_CONFIGURED_REDIRECT_URI",
+    "EBAY_USER_ACCESS_TOKEN",
+    "EBAY_USER_REFRESH_TOKEN",
+    "EBAY_USER_ID",
+    "EBAY_USER_NAME",
+)
+
+
+def _read_credentials_file(credentials_source: str | None) -> dict[str, str | None]:
+    if not credentials_source:
+        return {}
+
+    path = Path(credentials_source).expanduser()
+    if not path.is_file():
+        return {}
+
+    parsed = dotenv_values(path)
+    return {key: parsed.get(key) for key in AUTH_ENV_KEYS}
+
+
+def _value(key: str, file_values: dict[str, str | None], default: str | None = None) -> str | None:
+    return os.getenv(key, file_values.get(key, default))
 
 class EbayAuthConfig(BaseModel):
     """eBay authentication configuration."""
@@ -16,26 +45,26 @@ class EbayAuthConfig(BaseModel):
     redirect_uri: str = Field(..., description="eBay Application Configured Redirect URI")
     
     # User authentication tokens
-    user_access_token: Optional[str] = Field(None, description="eBay User Access Token")
-    user_refresh_token: Optional[str] = Field(None, description="eBay User Refresh Token")
-    user_id: Optional[str] = Field(None, description="eBay User ID")
-    user_name: Optional[str] = Field(None, description="eBay User Name")
+    user_access_token: str | None = Field(None, description="eBay User Access Token")
+    user_refresh_token: str | None = Field(None, description="eBay User Refresh Token")
+    user_id: str | None = Field(None, description="eBay User ID")
+    user_name: str | None = Field(None, description="eBay User Name")
     
     @classmethod
-    def from_env(cls, dotenv_path: Optional[str] = None) -> 'EbayAuthConfig':
+    def from_env(cls, dotenv_path: str | None = None) -> 'EbayAuthConfig':
         """Load configuration from environment variables."""
-        if dotenv_path and os.path.exists(dotenv_path):
-            load_dotenv(dotenv_path)
-        
+        credentials_source = dotenv_path or os.getenv("EBAY_CREDENTIALS_FILE")
+        file_values = _read_credentials_file(credentials_source)
+
         return cls(
-            client_id=os.getenv("EBAY_CLIENT_ID", ""),
-            client_secret=os.getenv("EBAY_CLIENT_SECRET", ""),
-            ru_name=os.getenv("EBAY_RU_NAME", ""),
-            redirect_uri=os.getenv("EBAY_APP_CONFIGURED_REDIRECT_URI", ""),
-            user_access_token=os.getenv("EBAY_USER_ACCESS_TOKEN"),
-            user_refresh_token=os.getenv("EBAY_USER_REFRESH_TOKEN"),
-            user_id=os.getenv("EBAY_USER_ID"),
-            user_name=os.getenv("EBAY_USER_NAME")
+            client_id=_value("EBAY_CLIENT_ID", file_values, "") or "",
+            client_secret=_value("EBAY_CLIENT_SECRET", file_values, "") or "",
+            ru_name=_value("EBAY_RU_NAME", file_values, "") or "",
+            redirect_uri=_value("EBAY_APP_CONFIGURED_REDIRECT_URI", file_values, "") or "",
+            user_access_token=_value("EBAY_USER_ACCESS_TOKEN", file_values),
+            user_refresh_token=_value("EBAY_USER_REFRESH_TOKEN", file_values),
+            user_id=_value("EBAY_USER_ID", file_values),
+            user_name=_value("EBAY_USER_NAME", file_values),
         )
     
     def is_app_configured(self) -> bool:

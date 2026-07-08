@@ -1,8 +1,12 @@
 # eBay MCP Server
 
+For new second-hand listings, use the high-level `media_*` and `listing_*` tools documented in [docs/streamlined-listing-workflow.md](docs/streamlined-listing-workflow.md). They provide private image staging, validation, resumable creation, fee approval, publication verification, and conservative draft cleanup. The low-level inventory and offer tools remain available for diagnostics.
+
 ## Overview
 
 This project implements a Model Context Protocol (MCP) server for eBay OAuth API integration, primarily focused on seller actions. The server uses FastMCP to expose eBay API endpoints as callable functions that can be accessed by AI assistants and other MCP clients. The project is designed to use user-level tokens rather than application-level authentication, allowing actions to be performed on behalf of a specific eBay seller account.
+
+It is separate from the read-only browse MCP at `/Users/petetreadaway/Documents/ebay.co.uk_Browse_MCP`. You can reuse the same eBay application client ID and secret if both servers are attached to the same developer app keyset, but the seller auth state should stay separate from browse.
 
 Additionally, you can test MCP tools using **MCP Inspector** — an open-source browser interface available at <https://github.com/modelcontextprotocol/inspector>.
 
@@ -38,7 +42,7 @@ Additionally, you can test MCP tools using **MCP Inspector** — an open-source 
 
 ```
 ebay-mcp-server/
-├── .env                    # Environment variables and tokens (gitignored)
+├── .env.example            # Documented configuration keys (no secrets)
 ├── CHANGELOG.md            # Documentation of changes to the project
 ├── README.md               # Project documentation (this file)
 ├── ebay_auth/              # eBay authentication module
@@ -49,7 +53,7 @@ ebay-mcp-server/
 ├── logs/                   # Server logs directory
 │   └── fastmcp_server.log  # Server log file with rotation
 ├── start_mcp_inspector.sh  # Script to start MCP Inspector locally
-├── start.sh                # MCP server management script for local testing
+├── start_mcp_server_instance.sh # MCP server management script for local testing
 ├── requirements.txt        # Python dependencies
 ├── src/                    # Source code directory
 │   ├── ebay_mcp/           # Modular MCP servers for eBay APIs
@@ -59,18 +63,11 @@ ebay-mcp-server/
 │   │   │   └── server.py   # Browse MCP tools implementation
 │   │   ├── inventory/      # Inventory API server
 │   │   │   ├── server.py   # Inventory MCP base implementation
-│   │   │   ├── get_inventory_items.py        # Get inventory items with pagination tool
-│   │   │   ├── update_offer.py  # Update offer tool implementation
-│   │   │   ├── withdraw_offer.py # Withdraw offer tool implementation
-│   │   │   ├── listing_fees.py  # Listing fees tool implementation
-│   │   │   └── manage_offer.py  # Comprehensive offer management tool (create, modify, withdraw, publish, get)
+│   │   │   ├── manage_inventory_item.py # Inventory item create, modify, get, delete
+│   │   │   └── manage_offer.py  # Offer create, modify, withdraw, publish, get
+│   │   ├── catalog/         # Catalog API server and GTIN search tool
 │   │   └── taxonomy/       # Taxonomy API server
 │   │       └── server.py   # Taxonomy MCP tools implementation
-│   ├── other_tools_mcp/    # Other utility tool servers
-│   │   ├── database/       # Database utility tools
-│   │   │   └── server.py   # Database MCP tools implementation
-│   │   └── tests/          # Test utility tools
-│   │       └── server.py   # Test MCP tools implementation
 │   ├── utils/              # Shared utility modules
 │   │   └── api_utils.py    # Shared API utility functions
 │   ├── ebay_service.py     # eBay service utilities
@@ -104,24 +101,72 @@ ebay-mcp-server/
    pip install -r requirements.txt
    ```
 
-4. Create a `.env` file in the project root with the following variables:
-   ```
-   EBAY_CLIENT_ID=<your_client_id>
-   EBAY_CLIENT_SECRET=<your_client_secret>
-   EBAY_RU_NAME=<your_runame>
-   EBAY_APP_CONFIGURED_REDIRECT_URI=<your_redirect_uri>
-   
-   # The following will be populated by the authentication process
-   # EBAY_USER_ACCESS_TOKEN=<access_token>
-   # EBAY_USER_REFRESH_TOKEN=<refresh_token>
-   # EBAY_USER_ID=<user_id>
-   # EBAY_USER_NAME=<username>
+4. Use Doppler `ebay-mcp/dev` for the normal local installation. See `.env.example` for every supported key.
+
+5. Run the seller server with Doppler injection:
+
+   ```bash
+   doppler run --project ebay-mcp --config dev -- ./start_mcp_server_instance.sh
    ```
 
-5. Run the authentication flow to get user tokens:
-   ```bash
-   python ebay_auth/ebay_auth.py login
-   ```
+For a local-file fallback, create a gitignored `.env` from `.env.example`, or set `EBAY_CREDENTIALS_FILE` to an absolute dotenv path. The OAuth flow reads and writes that file when `EBAY_TOKEN_STORE` is not `doppler`.
+
+## Doppler-backed local setup
+
+For day-to-day use, keep the seller secrets in Doppler and run the server locally through `doppler run`. That keeps the install local while making a future OCI move mostly an environment change.
+
+Configured secret names:
+
+- `EBAY_CLIENT_ID`
+- `EBAY_CLIENT_SECRET`
+- `EBAY_RU_NAME`
+- `EBAY_APP_CONFIGURED_REDIRECT_URI`
+- `EBAY_USER_REFRESH_TOKEN`
+- `EBAY_PAYMENT_POLICY_ID`
+- `EBAY_RETURN_POLICY_ID`
+- `EBAY_FULFILLMENT_POLICY_ID`
+- `EBAY_MERCHANT_LOCATION_KEY`
+- `EBAY_MARKETPLACE_ID`
+- `EBAY_LOCALE`
+- `EBAY_CURRENCY`
+- `EBAY_DELIVERY_COUNTRY`
+
+The app client ID and secret are shared with Browse because the Browse MCP already references this repo's ignored credentials file. Seller refresh auth remains seller-only. `EBAY_USER_ACCESS_TOKEN` is deliberately not stored in Doppler: the server mints it from the refresh token at startup and keeps it in process memory.
+
+Launch:
+
+```bash
+doppler run --project ebay-mcp --config dev -- ./start_mcp_server_instance.sh
+```
+
+For a fresh seller login, run:
+
+```bash
+doppler run --project ebay-mcp --config dev -- \
+  python ebay_auth/ebay_auth.py login
+```
+
+With `EBAY_TOKEN_STORE=doppler`, new or rotated refresh tokens are written back to `ebay-mcp/dev`. Access tokens are not persisted.
+
+Set `CLEAR_EBAY_USER_TOKENS=1` only when you deliberately want to clear local user tokens before starting.
+
+## ChatGPT private connector
+
+ChatGPT uses OpenAI Secure MCP Tunnel rather than a public seller endpoint. The
+local tunnel profile is `ebay-seller-chatgpt`, and its runtime secrets live in
+Doppler `ebay-mcp/dev_chatgpt`.
+
+```bash
+doppler run --project ebay-mcp --config dev_chatgpt -- \
+  tunnel-client doctor --profile ebay-seller-chatgpt --explain
+./scripts/start_chatgpt_tunnel.sh
+```
+
+The ChatGPT config disables `trigger_ebay_login`; complete seller OAuth locally
+before starting the tunnel. Read-only tools advertise `readOnlyHint=true`.
+Inventory and offer management advertise destructive write capability because
+their action enums include delete, withdraw, and publish operations, allowing
+ChatGPT to require confirmation.
 
 ## Usage
 
@@ -129,7 +174,7 @@ ebay-mcp-server/
 
 #### Local Development and Testing
 
-The `start.sh` script is provided for local development and testing purposes. It is **not** used by the IDE's MCP integration:
+The `start_mcp_server_instance.sh` script is provided for local development and testing purposes. It is **not** used by the IDE's MCP integration:
 
 ```bash
 # Start the server for local testing
@@ -146,10 +191,11 @@ tail -f logs/fastmcp_server.log
 For AI assistants and IDEs that support the Model Context Protocol (MCP), the server is typically configured in the IDE's MCP configuration file. A sample configuration might look like this:
 
 ```json
-"Ebay API": {
-  "command": "/path/to/ebay-mcp-server/.venv/bin/fastmcp",
+"ebay_seller": {
+  "command": "doppler",
   "args": [
-    "run",
+    "run", "--project", "ebay-mcp", "--config", "dev", "--",
+    "/path/to/ebay-mcp-server/.venv/bin/python",
     "/path/to/ebay-mcp-server/src/main_server.py"
   ],
   "env": {}
@@ -157,13 +203,14 @@ For AI assistants and IDEs that support the Model Context Protocol (MCP), the se
 ```
 
 This configuration tells the IDE to:
-1. Run the FastMCP executable from the project's virtual environment
-2. Use the `run` command (instead of the `dev` command used by `start.sh`)
-3. Point to the `main_server.py` file
+1. Inject seller configuration from Doppler `ebay-mcp/dev`
+2. Run the seller server with its own virtual environment
+3. Keep it registered separately from `ebay_uk_browse`
 
 **Important Notes:** 
-- Changes to the MCP server **code** will require restarting the MCP server process in your IDE for changes to take effect, which is separate from running the `start.sh` script.
-- Authentication performed through the `trigger_ebay_login` MCP tool in the IDE does **not** require restarting the MCP server. Tokens are automatically loaded after successful authentication.
+- Changes to the MCP server **code** will require restarting the MCP server process in your IDE for changes to take effect, which is separate from running the `start_mcp_server_instance.sh` script.
+- Authentication through `trigger_ebay_login` updates the current process and durable refresh-token store without requiring a restart.
+- When using Doppler, prefer `doppler run --project ebay-mcp --config dev -- ./start_mcp_server_instance.sh` instead of exporting secrets manually.
 
 ### MCP Client Integration
 
@@ -172,7 +219,6 @@ The server implements the Model Context Protocol, allowing AI assistants and oth
 ### Authentication & Testing Tools
 - `test_auth()`: Test authentication and token retrieval
 - `trigger_ebay_login()`: Initiates the eBay OAuth2 login flow directly from the MCP IDE
-- `add(a: int, b: int)`: Simple addition function (useful for testing)
 
 ### Browse API Tools
 - `search_ebay_items(query: str, limit: int = 10)`: Search items on eBay
@@ -182,11 +228,23 @@ The server implements the Model Context Protocol, allowing AI assistants and oth
 - `get_item_aspects_for_category(category_id: str)`: Get item aspects for a specific category
 
 ### Inventory API Tools
-- `get_inventory_items(limit: int = 25, offset: int = 0)`: Retrieve multiple inventory items with pagination support
-- `get_offer_by_sku(sku: str)`: Get offer details for a specific SKU
 - `manage_inventory_item(sku: str, action: str, item_data: Optional[dict])`: Manages eBay inventory items. Actions include 'create', 'modify', 'get', 'delete'. For 'create' and 'modify', the `item_data` payload follows a limited-field schema (title, description, identifiers, condition, availability) as defined by the InventoryItemDataForManage model.
 - `manage_offer(sku: str, action: str, offer_data: Optional[dict])`: Manages eBay offers. Actions include 'create', 'modify', 'withdraw', 'publish', 'get'. The `offer_data` parameter is a complex object required for 'create' and 'modify' actions; refer to the tool's auto-generated schema for detailed field names (using `camelCase`) and descriptions.
-- `get_listing_fees(offer_ids: list)`: Get listing fees for unpublished offers
+
+### Catalog API Tools
+- `search_by_gtin(gtin: str)`: Search the UK eBay catalog for a product by EAN, ISBN, UPC, or other GTIN.
+
+### Safe validation
+
+Run focused unit and MCP-discovery checks before any seller mutation. The older inventory and offer integration tests can create, publish, withdraw, or delete real account data and must not be run as a generic smoke suite.
+
+```bash
+.venv/bin/python -m pytest tests/test_credentials_and_defaults.py
+doppler run --project ebay-mcp --config dev -- \
+  .venv/bin/python scripts/smoke_mcp_discovery.py
+doppler run --project ebay-mcp --config dev -- \
+  .venv/bin/python scripts/live_read_smoke.py
+```
 
 ## Adding New Functions
 
@@ -248,7 +306,7 @@ async def your_new_function(param1: str, param2: int = 10) -> str:
         return result
 ```
 
-6. Restart the server using `./start.sh` to make the new function available
+6. Restart the server using `./start_mcp_server_instance.sh` to make the new function available
 
 ## Pydantic Integration
 
@@ -298,11 +356,11 @@ API responses are parsed into Pydantic models for type safety and easy data acce
 Example response model:
 
 ```python
-class ListingFeeResponse(EbayBaseModel):
-    """Response model for get_listing_fees."""
-    
-    feeSummaries: List[FeeSummary] = Field(default_factory=list)
-    warnings: Optional[List[Warning]] = None
+class ToolResponse(EbayResponse[dict]):
+    """Structured response returned by an eBay MCP tool."""
+
+    status_code: int
+    details: dict | None = None
 ```
 
 ## Authentication Flow
@@ -318,15 +376,15 @@ The project implements the OAuth2 authorization code flow for eBay with two auth
 2. Browser opens to eBay login page
 3. After login, eBay redirects to the configured redirect URI
 4. The script exchanges the authorization code for access and refresh tokens
-5. Tokens are stored in the `.env` file
-6. The MCP server uses these tokens for API calls
+5. The refresh token is saved to Doppler (or the configured dotenv fallback)
+6. The access token remains in process memory for API calls
 
 ### Method 2: In-IDE MCP Authentication (Recommended)
 
 1. AI assistant or user calls the `trigger_ebay_login` MCP tool
 2. Browser opens to eBay login page
 3. After login, eBay redirects to the configured redirect URI
-4. Tokens are automatically stored in the `.env` file
+4. Durable refresh auth is saved to Doppler or the configured dotenv fallback
 5. The MCP server immediately begins using the new tokens without requiring a restart
 
 In both cases, when the access token expires, it automatically refreshes using the refresh token. If the refresh token also expires or becomes invalid, the system will prompt for re-authentication using the `trigger_ebay_login` tool.
@@ -335,8 +393,8 @@ In both cases, when the access token expires, it automatically refreshes using t
 
 To interactively explore and execute MCP tools in your browser, use [MCP Inspector](https://github.com/modelcontextprotocol/inspector):
 
-1. Ensure your FastMCP server is running (e.g., via `./start.sh`).
-2. Start MCP Inspector with the provided script:
+1. Ensure the Doppler CLI can access `ebay-mcp/dev`.
+2. Start MCP Inspector with the provided script; its config launches the seller server:
    ```bash
    ./start_mcp_inspector.sh
    ```
@@ -346,25 +404,24 @@ To interactively explore and execute MCP tools in your browser, use [MCP Inspect
 
 Potential enhancements for the project:
 
-1. **Database Integration**: Move token storage from `.env` file to a secure database
-2. **Multiple User Support**: Allow the server to manage tokens for multiple eBay seller accounts
-3. **More eBay APIs**: Expand the available functions to cover additional eBay APIs
-4. **Expanded MCP Inspector**: Add more features to the testing interface
-5. **Automated Test Suite**: Develop comprehensive tests for all components
+1. **Multiple User Support**: Allow the server to manage tokens for multiple eBay seller accounts
+2. **More eBay APIs**: Expand the available functions to cover additional eBay APIs
+3. **Expanded MCP Inspector**: Add more features to the testing interface
+4. **Automated Test Suite**: Develop comprehensive tests for all components
    - Order Management API
    - Fulfillment API
    - Marketing API
    - Compliance API
-6. **Rate Limiting**: Implement rate limiting to comply with eBay API usage policies
-7. **Web Interface**: Add a web dashboard for monitoring the server status and token management
-8. **Webhook Support**: Enable webhooks for eBay notifications
-9. **Docker Container**: Containerize the application for easier deployment
-10. **API Key Management**: Implement rotation and secure storage of API credentials
+5. **Rate Limiting**: Implement rate limiting to comply with eBay API usage policies
+6. **Web Interface**: Add a web dashboard for monitoring the server status and token management
+7. **Webhook Support**: Enable webhooks for eBay notifications
+8. **OCI Packaging**: Add a tailnet-only container deployment using the same Doppler keys
 
 ## Security Considerations
 
-- The `.env` file contains sensitive credentials and should never be committed to version control
-- Consider implementing token encryption at rest if deploying to production
+- Doppler `ebay-mcp/dev` is the source of truth for production eBay credentials and seller refresh auth
+- The local `.env` remains a gitignored fallback and legacy source for the shared Browse app keyset
+- Never log or return client secrets, authorization codes, access tokens, or refresh tokens
 - Regularly rotate eBay API credentials according to security best practices
 - Use HTTPS for all redirect URIs in production environments
 

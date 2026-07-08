@@ -21,7 +21,8 @@ from utils.api_utils import execute_ebay_api_call, get_standard_ebay_headers
 from utils.debug_httpx import create_debug_client
 
 # Load environment variables
-load_dotenv()
+if os.getenv("EBAY_TOKEN_STORE", "").lower() != "doppler":
+    load_dotenv()
 
 # Determine if we're in DEBUG mode
 DEBUG_MODE = os.getenv('MCP_LOG_LEVEL', 'NORMAL').upper() == 'DEBUG'
@@ -32,7 +33,9 @@ logger = logging.getLogger(__name__)
 # Create Taxonomy MCP server
 taxonomy_mcp = FastMCP("eBay Taxonomy API")
 
-@taxonomy_mcp.tool()
+@taxonomy_mcp.tool(
+    annotations={"readOnlyHint": True, "openWorldHint": False, "destructiveHint": False}
+)
 async def get_category_suggestions(query: str) -> str:
     """Get category suggestions from eBay Taxonomy API for the UK catalogue."""
     logger.info(f"Executing get_category_suggestions MCP tool with query='{query}'.")
@@ -46,7 +49,7 @@ async def get_category_suggestions(query: str) -> str:
             headers = get_standard_ebay_headers(access_token)
             api_params = {"q": params.query}
             url = "https://api.ebay.com/commerce/taxonomy/v1/category_tree/3/get_category_suggestions"
-            logger.debug(f"get_category_suggestions: Requesting URL: {url} with params: {api_params} using token {access_token[:10]}...")
+            logger.debug(f"get_category_suggestions: Requesting URL: {url} with params: {api_params}")
             
             response = await client.get(url, headers=headers, params=api_params)
             logger.debug(f"get_category_suggestions: Response status: {response.status_code}")
@@ -66,7 +69,9 @@ async def get_category_suggestions(query: str) -> str:
         logger.error(f"Error in get_category_suggestions: {str(e)}")
         return f"Error in category suggestion parameters: {str(e)}"
 
-@taxonomy_mcp.tool()
+@taxonomy_mcp.tool(
+    annotations={"readOnlyHint": True, "openWorldHint": False, "destructiveHint": False}
+)
 async def get_item_aspects_for_category(category_id: str) -> str:
     """Get item aspects for a specific category from eBay Taxonomy API.
     
@@ -82,7 +87,7 @@ async def get_item_aspects_for_category(category_id: str) -> str:
             # Use standardized eBay API headers
             headers = get_standard_ebay_headers(access_token)
             url = f"https://api.ebay.com/commerce/taxonomy/v1/category_tree/3/get_item_aspects_for_category"
-            logger.debug(f"get_item_aspects_for_category: Requesting URL: {url} with category_id: {params.category_id} using token {access_token[:10]}...")
+            logger.debug(f"get_item_aspects_for_category: Requesting URL: {url} with category_id: {params.category_id}")
             
             response = await client.get(url, headers=headers, params={"category_id": params.category_id})
             logger.debug(f"get_item_aspects_for_category: Response status: {response.status_code}")

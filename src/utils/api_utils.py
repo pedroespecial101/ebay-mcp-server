@@ -19,13 +19,22 @@ from ebay_auth.ebay_auth import refresh_access_token as ebay_auth_refresh_token
 from ebay_service import get_ebay_access_token
 
 # Load environment variables
-load_dotenv()
+if os.getenv("EBAY_TOKEN_STORE", "").lower() != "doppler":
+    load_dotenv()
 
 # Get logger
 logger = logging.getLogger(__name__)
 
 # Determine if we're in DEBUG mode
 DEBUG_MODE = os.getenv('MCP_LOG_LEVEL', 'NORMAL').upper() == 'DEBUG'
+
+
+def _redact_headers(headers) -> dict:
+    """Return headers safe for diagnostic logging."""
+    redacted = dict(headers)
+    if "Authorization" in redacted:
+        redacted["Authorization"] = "[REDACTED]"
+    return redacted
 
 # Helper to check if token is an error message from our get_ebay_access_token function
 def is_token_error(token: str) -> bool:
@@ -54,7 +63,7 @@ def log_request_response_debug(request=None, response=None, error=None, prefix='
             request_info = {
                 'method': request.method,
                 'url': str(request.url),
-                'headers': dict(request.headers),
+                'headers': _redact_headers(request.headers),
                 'content': request.content.decode('utf-8') if request.content else None
             }
             logger.debug(f"{prefix} Request: {json.dumps(request_info, indent=2)}")
@@ -85,7 +94,7 @@ def get_standard_ebay_headers(access_token: str, additional_headers: dict = None
     - Authorization: Bearer token (always required)
     - Content-Type: application/json (for most requests)
 
-    IMPORTANT: MarketplaceID should NEVER be in headers - use request body/parameters instead
+    The marketplace header is required by catalog calls and keeps all reads on EBAY_GB.
 
     Args:
         access_token: eBay access token
@@ -97,9 +106,9 @@ def get_standard_ebay_headers(access_token: str, additional_headers: dict = None
     standard_headers = {
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json",
-        "Content-Language": "en-GB",  # Required for ALL eBay API requests (hyphen format)
-        "Accept-Language": "en-GB",   # Required for ALL eBay API requests (hyphen format)
-        "X-EBAY-C-MARKETPLACE-ID": "EBAY_GB", # Required for Catalog API calls and hopefully doesnt break other API calls
+        "Content-Language": os.getenv("EBAY_LOCALE", "en-GB"),
+        "Accept-Language": os.getenv("EBAY_LOCALE", "en-GB"),
+        "X-EBAY-C-MARKETPLACE-ID": os.getenv("EBAY_MARKETPLACE_ID", "EBAY_GB"),
     }
 
     if additional_headers:
@@ -180,9 +189,7 @@ async def execute_ebay_api_call(tool_name: str, client: httpx.AsyncClient, api_c
         return f"Token acquisition failed. Details: {access_token}"
 
     try:
-        logger.info(f"{tool_name}: Attempting API call with current token: {access_token[:10]}...")
-        if DEBUG_MODE:
-            logger.debug(f"{tool_name}: Executing API call with full token: {access_token}")
+        logger.info(f"{tool_name}: Attempting API call with the current access token.")
         
         # Wrap the api_call_logic to intercept and log requests/responses
         async def wrapped_api_call(token, client):
@@ -217,13 +224,13 @@ async def execute_ebay_api_call(tool_name: str, client: httpx.AsyncClient, api_c
             log_request_response_debug(request=e.request, response=e.response, 
                                       error=f"HTTP Status Error: {e}", prefix=f"{tool_name}")
         if e.response.status_code == 401:
-            logger.warning(f"{tool_name}: API call failed with 401 (Unauthorized). Token {access_token[:10]}... may be expired. Attempting refresh.")
+            logger.warning(f"{tool_name}: API call failed with 401 (Unauthorized). Attempting token refresh.")
             
             loop = asyncio.get_event_loop()
             new_token_value_after_refresh = await loop.run_in_executor(None, ebay_auth_refresh_token)
 
             if new_token_value_after_refresh:
-                logger.info(f"{tool_name}: Token refresh process completed. New token value: {new_token_value_after_refresh[:10]}... Attempting to retrieve and retry API call.")
+                logger.info(f"{tool_name}: Token refresh completed. Attempting to retrieve and retry the API call.")
                 refreshed_access_token = await get_ebay_access_token() # This should now pick up the new token from .env
                 
                 if is_token_error(refreshed_access_token):
@@ -233,7 +240,7 @@ async def execute_ebay_api_call(tool_name: str, client: httpx.AsyncClient, api_c
                     logger.error(error_msg)
                     return error_msg
                 
-                logger.info(f"{tool_name}: Retrying API call with refreshed token: {refreshed_access_token[:10]}...")
+                logger.info(f"{tool_name}: Retrying API call with the refreshed token.")
                 try:
                     return await api_call_logic(refreshed_access_token, client)
                 except httpx.HTTPStatusError as retry_e:
