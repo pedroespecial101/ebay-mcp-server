@@ -27,6 +27,12 @@ EXPECTED_TOOLS = {
     "listing_create",
     "listing_publish",
     "listing_discard_draft",
+    "trading_get_recent_seller_listings",
+    "trading_get_item",
+    "trading_revise_fixed_price_item",
+    "trading_upload_listing_pictures",
+    "trading_verify_add_fixed_price_item",
+    "trading_add_fixed_price_item",
 }
 if os.getenv("EBAY_ENABLE_INTERACTIVE_AUTH", "1") == "1":
     EXPECTED_TOOLS.add("auth_trigger_ebay_login")
@@ -38,6 +44,8 @@ WRITE_TOOLS = {
     "listing_create",
     "listing_publish",
     "listing_discard_draft",
+    "trading_revise_fixed_price_item",
+    "trading_add_fixed_price_item",
 }
 
 
@@ -73,6 +81,9 @@ async def main() -> None:
                     raise SystemExit(f"Unsafe staging annotations for {tool.name}")
         elif tool.name in {"media_open_image_uploader", "media_list_staged_images"}:
             continue
+        elif tool.name == "trading_upload_listing_pictures":
+            if tool.annotations.readOnlyHint or tool.annotations.destructiveHint:
+                raise SystemExit("Unsafe Trading image-upload annotations")
         elif tool.name == "auth_trigger_ebay_login":
             if tool.annotations.readOnlyHint or tool.annotations.destructiveHint:
                 raise SystemExit("Unsafe interactive-auth annotations")

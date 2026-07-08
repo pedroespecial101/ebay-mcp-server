@@ -105,6 +105,7 @@ from ebay_mcp.inventory.server import inventory_mcp
 from ebay_mcp.catalog.server import catalog_mcp
 from ebay_mcp.media.server import media_mcp
 from ebay_mcp.listing.server import listing_mcp
+from ebay_mcp.trading.server import trading_mcp
 
 # Create the main MCP server
 instruction_text = """This MCP server provides tools to interact with eBay UK seller APIs.
@@ -175,6 +176,9 @@ def mount_servers():
 
     mcp.mount(listing_mcp, namespace="listing")
     logger.info("Mounted streamlined listing MCP server")
+
+    mcp.mount(trading_mcp, namespace="trading")
+    logger.info("Mounted narrow Trading API MCP server")
     
 
 # Mount all servers

@@ -2,6 +2,13 @@
 
 For new second-hand listings, use the high-level `media_*` and `listing_*` tools documented in [docs/streamlined-listing-workflow.md](docs/streamlined-listing-workflow.md). They provide private image staging, validation, resumable creation, fee approval, publication verification, and conservative draft cleanup. The low-level inventory and offer tools remain available for diagnostics.
 
+For listings started with **Sell one like this** in the eBay app, use the narrow
+`trading_*` tools. Publish a truthful quantity-one fixed-price placeholder first,
+then call `trading_get_recent_seller_listings`, inspect it with
+`trading_get_item`, present the proposed diff to the seller, and only then call
+`trading_revise_fixed_price_item` with the returned revision token. App/Seller
+Hub drafts and scheduled listings are not supported by this workflow.
+
 ## Overview
 
 This project implements a Model Context Protocol (MCP) server for eBay OAuth API integration, primarily focused on seller actions. The server uses FastMCP to expose eBay API endpoints as callable functions that can be accessed by AI assistants and other MCP clients. The project is designed to use user-level tokens rather than application-level authentication, allowing actions to be performed on behalf of a specific eBay seller account.
@@ -233,6 +240,22 @@ The server implements the Model Context Protocol, allowing AI assistants and oth
 
 ### Catalog API Tools
 - `search_by_gtin(gtin: str)`: Search the UK eBay catalog for a product by EAN, ISBN, UPC, or other GTIN.
+
+### Narrow Trading API Tools
+
+- `trading_get_recent_seller_listings`: Find recent active UK quantity-one fixed-price listings suitable for takeover.
+- `trading_get_item`: Return the complete editable state and optimistic-concurrency revision token.
+- `trading_revise_fixed_price_item`: Apply an explicitly confirmed essentials-only patch, then read the listing back.
+- `trading_upload_listing_pictures`: Move privately staged images to EPS using the Media API.
+- `trading_verify_add_fixed_price_item`: Validate a direct Trading proposal and return fees plus a short-lived token.
+- `trading_add_fixed_price_item`: Re-verify and immediately publish an unchanged proposal within an explicit fee ceiling.
+
+Direct Trading adds use the existing payment, return, fulfilment, and merchant
+location settings. `EBAY_ITEM_LOCATION` and `EBAY_ITEM_POSTAL_CODE` can override
+the city/postcode resolved from that merchant location. They create no Inventory
+API item, SKU, or Offer. `UploadSiteHostedPictures` is deliberately
+not implemented because eBay is decommissioning it; image uploads use the Media
+API replacement.
 
 ### Safe validation
 

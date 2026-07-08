@@ -1,3 +1,10 @@
+# 2026-07-08 - Narrow Trading API listing takeover
+
+- Added authenticated Trading `GetSellerList`, `GetItem`, and active fixed-price revision tools for app-created quantity-one listings.
+- Added optimistic revision tokens, full item-specific and picture-set replacement handling, readback verification, and conservative unsupported-listing checks.
+- Added Media API EPS upload, Trading verify/add tools, fee ceilings, short-lived verification tokens, and UUID-based duplicate recovery without Inventory/SKU/Offer creation.
+- Added 23 focused safe tests, MCP discovery validation, and a production read-only Trading smoke test; no production listing writes were performed.
+
 # 2026-07-08 - Streamlined resumable listing workflow
 
 - Upgraded to `fastmcp[apps]` 3.4.3 and `prefab-ui` 0.20.2 while preserving mounted tool names.
