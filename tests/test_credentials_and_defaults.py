@@ -86,3 +86,22 @@ def test_standard_headers_use_uk_defaults(monkeypatch):
     assert headers["Content-Language"] == "en-GB"
     assert headers["Accept-Language"] == "en-GB"
     assert headers["X-EBAY-C-MARKETPLACE-ID"] == "EBAY_GB"
+
+
+def test_debug_header_and_body_redaction():
+    from utils.api_utils import _redact_body, _redact_headers
+
+    headers = _redact_headers(
+        {
+            "Authorization": "Bearer secret",
+            "Set-Cookie": "session=secret",
+            "Content-Type": "application/json",
+        }
+    )
+    assert headers["Authorization"] == "[REDACTED]"
+    assert headers["Set-Cookie"] == "[REDACTED]"
+    assert headers["Content-Type"] == "application/json"
+
+    body = _redact_body('{"access_token":"secret","expires_in":7200}')
+    assert "secret" not in body
+    assert "[REDACTED]" in body

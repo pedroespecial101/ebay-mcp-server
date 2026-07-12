@@ -1,6 +1,11 @@
 # eBay MCP Server
 
-For new second-hand listings, use the high-level `media_*` and `listing_*` tools documented in [docs/streamlined-listing-workflow.md](docs/streamlined-listing-workflow.md). They provide private image staging, validation, resumable creation, fee approval, publication verification, and conservative draft cleanup. The low-level inventory and offer tools remain available for diagnostics.
+For new second-hand listings, use the `research_*`, `media_*`, and `listing_*`
+tools as one combined endpoint. Research tools provide read-only ebay.co.uk live
+listing research; media and listing tools provide private image staging,
+validation, resumable creation, fee approval, publication verification, and
+conservative draft cleanup. The low-level inventory and offer tools remain
+available for diagnostics.
 
 For listings started with **Sell one like this** in the eBay app, use the narrow
 `trading_*` tools. Publish a truthful quantity-one fixed-price placeholder first,
@@ -12,9 +17,16 @@ Hub drafts and scheduled listings are not supported by this workflow.
 
 ## Overview
 
-This project implements a Model Context Protocol (MCP) server for eBay OAuth API integration, primarily focused on seller actions. The server uses FastMCP to expose eBay API endpoints as callable functions that can be accessed by AI assistants and other MCP clients. The project is designed to use user-level tokens rather than application-level authentication, allowing actions to be performed on behalf of a specific eBay seller account.
+This project implements a Model Context Protocol (MCP) server for eBay UK
+research and seller workflows. The server uses FastMCP to expose eBay API
+endpoints as callable functions that can be accessed by AI assistants and other
+MCP clients.
 
-It is separate from the read-only browse MCP at `/Users/petetreadaway/Documents/ebay.co.uk_Browse_MCP`. You can reuse the same eBay application client ID and secret if both servers are attached to the same developer app keyset, but the seller auth state should stay separate from browse.
+It now vendors the read-only UK Browse research surface from
+`/Users/petetreadaway/Documents/ebay.co.uk_Browse_MCP` under the `research_*`
+namespace. The research client uses application credentials only and deliberately
+ignores seller OAuth values. Seller, inventory, listing, media, and Trading tools
+continue to use user-level seller auth where required.
 
 Additionally, you can test MCP tools using **MCP Inspector** — an open-source browser interface available at <https://github.com/modelcontextprotocol/inspector>.
 
@@ -23,7 +35,8 @@ Additionally, you can test MCP tools using **MCP Inspector** — an open-source 
 - OAuth2 authentication with eBay's API using user-level tokens
 - Token management system with automatic refresh capabilities
 - Multiple MCP functions for interacting with eBay APIs:
-  - Browse API for searching items
+  - Read-only UK Browse research for live listing search, item details, and image similarity
+  - Legacy Browse API helper tools for compatibility
   - Taxonomy API for category suggestions and item aspects
   - Inventory API for comprehensive inventory management:
     - Retrieve inventory items by SKU or with pagination
@@ -111,7 +124,7 @@ ebay-mcp-server/
 
 4. Use Doppler `ebay-mcp/dev` for the normal local installation. See `.env.example` for every supported key.
 
-5. Run the seller server with Doppler injection:
+5. Run the combined server with Doppler injection:
 
    ```bash
    doppler run --project ebay-mcp --config dev -- ./start_mcp_server_instance.sh
@@ -121,7 +134,8 @@ For a local-file fallback, create a gitignored `.env` from `.env.example`, or se
 
 ## Doppler-backed local setup
 
-For day-to-day use, keep the seller secrets in Doppler and run the server locally through `doppler run`. That keeps the install local while making a future OCI move mostly an environment change.
+For day-to-day use, keep the seller secrets in Doppler and run the server locally
+through `doppler run`. The same server can run as stdio or Streamable HTTP.
 
 Configured secret names:
 
@@ -139,13 +153,26 @@ Configured secret names:
 - `EBAY_CURRENCY`
 - `EBAY_DELIVERY_COUNTRY`
 
-The app client ID and secret are shared with Browse because the Browse MCP already references this repo's ignored credentials file. Seller refresh auth remains seller-only. `EBAY_USER_ACCESS_TOKEN` is deliberately not stored in Doppler: the server mints it from the refresh token at startup and keeps it in process memory.
+The app client ID and secret are shared by `research_*` and seller flows. Seller
+refresh auth remains seller-only. `EBAY_USER_ACCESS_TOKEN` is deliberately not
+stored in Doppler: the server mints it from the refresh token at startup and
+keeps it in process memory.
 
 Launch:
 
 ```bash
 doppler run --project ebay-mcp --config dev -- ./start_mcp_server_instance.sh
 ```
+
+Streamable HTTP with tailnet HTTPS for local testing:
+
+```bash
+doppler run --project ebay-mcp --config dev -- ./scripts/start_tailnet_https.sh
+```
+
+The Python server listens on `http://127.0.0.1:8766/mcp`; when
+`EBAY_MCP_ENABLE_TAILSCALE_SERVE=1` the script asks Tailscale Serve to publish
+that local HTTP server as tailnet-only HTTPS.
 
 For a fresh seller login, run:
 
@@ -228,8 +255,17 @@ The server implements the Model Context Protocol, allowing AI assistants and oth
 - `test_auth()`: Test authentication and token retrieval
 - `trigger_ebay_login()`: Initiates the eBay OAuth2 login flow directly from the MCP IDE
 
-### Browse API Tools
-- `search_ebay_items(query: str, limit: int = 10)`: Search items on eBay
+### Preferred Read-Only Research Tools
+- `research_search_items`: live keyword/GTIN search with category, price, condition, buying-option, location, aspect, fitment, refinement, sort, and pagination inputs.
+- `research_get_item`: compact details for a live Browse API item ID.
+- `research_search_by_image`: UK-supported visual-similarity search from a public HTTPS image URL.
+
+Research prices are current asking prices or auction bids, not completed-sale
+comparables.
+
+### Legacy Browse API Tools
+- `browseAPI_search_ebay_items(query: str, limit: int = 10)`: simple live item search.
+- `browseAPI_search_by_image`: visual-similarity search kept for compatibility.
 
 ### Taxonomy API Tools
 - `get_category_suggestions(query: str)`: Get category suggestions from eBay Taxonomy API

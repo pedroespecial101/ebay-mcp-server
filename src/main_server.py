@@ -92,6 +92,10 @@ root_logger.addHandler(console_handler)
 logger = logging.getLogger(__name__)
 logger.info(f"Logging configured with level {log_level_str} ({logging.getLevelName(log_level)})")
 logger.info(f"Log file location: {LOG_FILE_PATH}")
+
+if os.getenv("MCP_DEBUG_HTTP_LIBS", "0") != "1":
+    for noisy_logger_name in ("httpcore", "httpx", "hpack", "http11"):
+        logging.getLogger(noisy_logger_name).setLevel(logging.WARNING)
 # --- End of Centralized Logging Configuration ---
 
 from fastmcp import FastMCP, Client
@@ -99,6 +103,7 @@ from fastmcp import FastMCP, Client
 # Import all sub-servers
 from ebay_mcp.auth.server import auth_mcp
 from ebay_mcp.browse.server import browse_mcp
+from ebay_mcp.research.server import research_mcp
 from ebay_mcp.taxonomy.server import taxonomy_mcp
 from ebay_mcp.inventory.server import inventory_mcp
 # from ebay_mcp.prompts.server import prompts_mcp
@@ -108,7 +113,25 @@ from ebay_mcp.listing.server import listing_mcp
 from ebay_mcp.trading.server import trading_mcp
 
 # Create the main MCP server
-instruction_text = """This MCP server provides tools to interact with eBay UK seller APIs.
+instruction_text = """This MCP server provides one tailnet-ready endpoint for eBay UK research and seller workflows.
+
+RESEARCH BEFORE LISTING:
+Use the research_* tools for live ebay.co.uk market research. They are read-only
+and return current asking prices or auction bids, not completed-sale
+comparables. Use research_search_items for keyword/GTIN research with filters,
+research_get_item for a selected live Browse item, and
+research_search_by_image for visual-similarity search from a public HTTPS image
+URL. Do not describe research results as sold-price evidence.
+
+WHEN THE USER SAYS "CHECK EBAY":
+If the user asks to check eBay, search eBay, find current listings, compare
+asking prices, identify an item, or estimate a current market range, use the
+research_* tools immediately. Do not reply with "check eBay", "I cannot access
+eBay", or tell the user to search eBay themselves when the relevant tool is
+available. Use research_search_items for text or GTIN, research_search_by_image
+when an image is supplied, and research_get_item for a selected result. State
+that the returned evidence is live ebay.co.uk listing data and distinguish it
+from sold/completed-sale evidence, which this server does not provide.
 
 PRIMARY WORKFLOW:
 1. Stage 1-24 ordered photographs with media_open_image_uploader or media_stage_images.
@@ -120,7 +143,22 @@ ACTIVE LISTING TAKEOVER:
 Use trading_get_recent_seller_listings to find a newly published placeholder, trading_get_item to inspect its editable data, and trading_view_item_images to return its actual photographs to model vision. Present a human-readable diff before trading_revise_fixed_price_item.
 
 VISUAL INSPECTION:
-For a seller listing's actual photographs, call trading_view_item_images with limit=1 and max_px=768 first. If the MCP client blocks a returned image, retry that same image with max_px=512. The per-call maximum is three images, but this is not a listing maximum: use total_images, has_more and next_start_index to continue until every photograph has been reviewed. media_stage_images and media_open_image_uploader are for listing creation; staged image refs bypass model vision. Use media_view_ebay_image only for public eBay image CDN URLs returned by Browse or Trading metadata. browseAPI_search_by_image finds visually similar live listings; it is not an image viewer for the source item.
+For a seller listing's actual photographs, call trading_view_item_images with limit=1 and max_px=768 first. If the MCP client blocks a returned image, retry that same image with max_px=512. The per-call maximum is three images, but this is not a listing maximum: use total_images, has_more and next_start_index to continue until every photograph has been reviewed. media_stage_images and media_open_image_uploader are for listing creation; staged image refs bypass model vision. Use media_view_ebay_image only for public eBay image CDN URLs returned by Browse/research or Trading metadata. research_search_by_image and browseAPI_search_by_image find visually similar live listings; they are not image viewers for the source item.
+
+IMAGE INPUTS FROM CHATGPT:
+ChatGPT attachment paths under /mnt/data are client-side proxy paths and are not
+automatically visible to this server. Do not retry media_stage_images with a
+proxied /mnt/data path after a rewrite-path error. Prefer
+media_open_image_uploader for local attachments; otherwise use a public HTTPS
+image URL or a file path inside the server's configured import directory. After
+staging, use the returned opaque r2: image references in listing tools.
+
+SELLER AUTHENTICATION ERRORS:
+If a seller write or Trading call returns eBay HTTP 401 or error code 1001,
+treat it as a seller-token problem, not as a general MCP outage. Retry the
+same read-only/authentication check once, then report the exact recovery step
+needed. Do not repeat a write operation until authentication succeeds, and do
+not claim that research access proves seller write authentication is healthy.
 
 Use the mandatory SKU as the idempotency and recovery key. Retry the same SKU and unchanged content after a partial failure; mismatched content is never overwritten. Partial drafts are preserved. Use listing_discard_draft only for explicit cleanup of a verified unpublished draft. The first image is the gallery image.
 
@@ -160,6 +198,11 @@ def mount_servers():
     # Mount browse API tools
     mcp.mount(browse_mcp, namespace="browseAPI")
     logger.info("Mounted browse API MCP server")
+
+    # Mount richer read-only UK Browse API research tools from the standalone
+    # Browse MCP, kept separate from seller OAuth and write workflows.
+    mcp.mount(research_mcp, namespace="research")
+    logger.info("Mounted read-only UK Browse research MCP server")
     
     # Mount taxonomy API tools
     mcp.mount(taxonomy_mcp, namespace="taxonomyAPI")
@@ -199,6 +242,13 @@ if __name__ == "__main__":
             "host": os.getenv("MCP_HOST", "127.0.0.1"),
             "port": int(os.getenv("MCP_PORT", "8766")),
         }
+        allowed_hosts = [
+            value.strip()
+            for value in os.getenv("MCP_ALLOWED_HOSTS", "").split(",")
+            if value.strip()
+        ]
+        if allowed_hosts:
+            transport_kwargs["allowed_hosts"] = allowed_hosts
 
     logger.info("Starting FastMCP server with %s transport...", transport)
     logger.info("Server is configured with dynamically mounted sub-servers")

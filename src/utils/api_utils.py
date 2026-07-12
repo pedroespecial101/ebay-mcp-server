@@ -31,10 +31,34 @@ DEBUG_MODE = os.getenv('MCP_LOG_LEVEL', 'NORMAL').upper() == 'DEBUG'
 
 def _redact_headers(headers) -> dict:
     """Return headers safe for diagnostic logging."""
-    redacted = dict(headers)
-    if "Authorization" in redacted:
-        redacted["Authorization"] = "[REDACTED]"
+    redacted = {}
+    sensitive_names = {"authorization", "cookie", "set-cookie", "x-ebay-api-iaf-token"}
+    for name, value in dict(headers).items():
+        redacted[name] = "[REDACTED]" if str(name).lower() in sensitive_names else value
     return redacted
+
+
+def _redact_body(content: str | None) -> str | None:
+    """Return body text safe for diagnostic logging."""
+    if not content:
+        return content
+    try:
+        payload = json.loads(content)
+    except (TypeError, ValueError):
+        return "[omitted]"
+    if isinstance(payload, dict):
+        for key in list(payload):
+            if key.lower() in {
+                "access_token",
+                "refresh_token",
+                "id_token",
+                "token",
+                "client_secret",
+                "authorization",
+            }:
+                payload[key] = "[REDACTED]"
+        return json.dumps(payload)
+    return "[omitted]"
 
 # Helper to check if token is an error message from our get_ebay_access_token function
 def is_token_error(token: str) -> bool:
@@ -64,7 +88,7 @@ def log_request_response_debug(request=None, response=None, error=None, prefix='
                 'method': request.method,
                 'url': str(request.url),
                 'headers': _redact_headers(request.headers),
-                'content': request.content.decode('utf-8') if request.content else None
+                'content': _redact_body(request.content.decode('utf-8') if request.content else None)
             }
             logger.debug(f"{prefix} Request: {json.dumps(request_info, indent=2)}")
         except Exception as e:
@@ -74,8 +98,8 @@ def log_request_response_debug(request=None, response=None, error=None, prefix='
         try:
             response_info = {
                 'status_code': response.status_code,
-                'headers': dict(response.headers),
-                'content': response.text if hasattr(response, 'text') else None
+                'headers': _redact_headers(response.headers),
+                'content': _redact_body(response.text if hasattr(response, 'text') else None)
             }
             logger.debug(f"{prefix} Response: {json.dumps(response_info, indent=2)}")
         except Exception as e:

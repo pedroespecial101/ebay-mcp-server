@@ -53,7 +53,13 @@ class EbayImageUpload(FileUpload):
     def _register_tools(self) -> None:
         provider = self
 
-        @self.tool(name="store_images")
+        @self.tool(
+            name="store_images",
+            description=(
+                "Stage uploaded listing photographs privately in R2. "
+                "This stores media for later listing creation; it does not publish or change an eBay listing."
+            ),
+        )
         def store_images(files: list[dict], ctx: Context) -> list[dict]:
             """Store uploaded photographs privately without placing their bytes in model context."""
             if not 1 <= len(files) <= 24:
@@ -66,12 +72,23 @@ class EbayImageUpload(FileUpload):
                     raise ValueError("Only JPEG, PNG, WebP and HEIC images are accepted.")
             return provider.on_store(files, ctx)
 
-        @self.tool(name="list_staged_images", model=True)
+        @self.tool(
+            name="list_staged_images",
+            model=True,
+            description="List private staged image references; read-only and does not contact eBay.",
+        )
         def list_staged_images(ctx: Context) -> list[dict]:
             """List private staged images and their opaque references."""
             return provider.on_list(ctx)
 
-        @self.ui(name="open_image_uploader")
+        @self.ui(
+            name="open_image_uploader",
+            description=(
+                "Open the private listing-photograph uploader UI. "
+                "Use before listing_create when local image upload is needed."
+            ),
+            annotations={"readOnlyHint": False, "destructiveHint": False, "openWorldHint": False},
+        )
         def open_image_uploader(ctx: Context) -> PrefabApp:
             """Open the image uploader; uploaded bytes bypass the language-model context."""
             with Card(css_class="max-w-2xl mx-auto") as view:

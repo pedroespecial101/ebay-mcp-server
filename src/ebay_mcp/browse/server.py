@@ -38,7 +38,12 @@ browse_mcp = FastMCP("eBay Browse API")
     annotations={"readOnlyHint": True, "openWorldHint": False, "destructiveHint": False}
 )
 async def search_ebay_items(query: str, limit: int = 10) -> str:
-    """Search items on eBay using Browse API"""
+    """Legacy simple read-only live listing search.
+
+    Prefer research_search_items for new market-research/listing workflows. This
+    compatibility tool returns raw Browse API JSON for current live listings and
+    asking prices only, not sold/completed comparables.
+    """
     logger.info(f"Executing search_ebay_items MCP tool with query='{query}', limit={limit}.")
     
     # Validate parameters using Pydantic model
@@ -81,8 +86,9 @@ async def search_ebay_items(query: str, limit: int = 10) -> str:
     annotations={"readOnlyHint": True, "openWorldHint": False, "destructiveHint": False}
 )
 async def search_by_image(params: SearchByImageParams) -> str:
-    """Find visually similar live eBay listings using an image URL.
+    """Legacy simple visual-similarity search for live eBay listings.
 
+    Prefer research_search_by_image for new market-research/listing workflows.
     This is a similarity-search tool, not an image viewer. It does not return the
     supplied image for model vision. To inspect photographs on one of the seller's
     own listings, use trading_view_item_images.
