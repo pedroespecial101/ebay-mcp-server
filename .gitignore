@@ -181,3 +181,7 @@ node_modules/
 /playwright/.cache/
 .VSCodeCounter/
 logs/
+
+# Local development metadata and logs
+.DS_Store
+*.log
