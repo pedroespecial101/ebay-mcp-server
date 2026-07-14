@@ -185,23 +185,14 @@ With `EBAY_TOKEN_STORE=doppler`, new or rotated refresh tokens are written back 
 
 Set `CLEAR_EBAY_USER_TOKENS=1` only when you deliberately want to clear local user tokens before starting.
 
-## ChatGPT private connector
+## ChatGPT boundary
 
-ChatGPT uses OpenAI Secure MCP Tunnel rather than a public seller endpoint. The
-local tunnel profile is `ebay-seller-chatgpt`, and its runtime secrets live in
-Doppler `ebay-mcp/dev_chatgpt`.
-
-```bash
-doppler run --project ebay-mcp --config dev_chatgpt -- \
-  tunnel-client doctor --profile ebay-seller-chatgpt --explain
-./scripts/start_chatgpt_tunnel.sh
-```
-
-The ChatGPT config disables `trigger_ebay_login`; complete seller OAuth locally
-before starting the tunnel. Read-only tools advertise `readOnlyHint=true`.
-Inventory and offer management advertise destructive write capability because
-their action enums include delete, withdraw, and publish operations, allowing
-ChatGPT to require confirmation.
+The broad seller MCP is no longer a ChatGPT App. Its legacy
+`ebay-seller-chatgpt` tunnel profile is retained only as rollback history and
+must remain stopped/unlinked. ChatGPT uses the dedicated, narrow eBay Listing
+Studio App instead; Listing Studio calls this seller MCP internally over
+loopback. Seller OAuth remains local and seller credentials remain in
+Doppler `ebay-mcp/dev`.
 
 ## Usage
 
@@ -259,6 +250,9 @@ The server implements the Model Context Protocol, allowing AI assistants and oth
 - `research_search_items`: live keyword/GTIN search with category, price, condition, buying-option, location, aspect, fitment, refinement, sort, and pagination inputs.
 - `research_get_item`: compact details for a live Browse API item ID.
 - `research_search_by_image`: UK-supported visual-similarity search from a public HTTPS image URL.
+- `research_search_by_staged_image`: visual-similarity search from a trusted
+  private `r2:` staging reference; the source image is sent directly to eBay and
+  is never made public.
 
 Research prices are current asking prices or auction bids, not completed-sale
 comparables.
@@ -288,15 +282,26 @@ comparables.
   complete ordered photo set.
 - `trading_revise_fixed_price_item`: Apply an explicitly confirmed essentials-only patch, then read the listing back.
 - `trading_upload_listing_pictures`: Move privately staged images to EPS using the Media API.
-- `trading_verify_add_fixed_price_item`: Validate a direct Trading proposal and return fees plus a short-lived token.
+- `trading_verify_add_fixed_price_item`: Validate a direct Trading proposal and
+  return fees, a short-lived token, and a fail-closed Simple Delivery status.
 - `trading_add_fixed_price_item`: Re-verify and immediately publish an unchanged proposal within an explicit fee ceiling.
 
 Direct Trading adds use the existing payment, return, fulfilment, and merchant
-location settings. `EBAY_ITEM_LOCATION` and `EBAY_ITEM_POSTAL_CODE` can override
-the city/postcode resolved from that merchant location. They create no Inventory
-API item, SKU, or Offer. `UploadSiteHostedPictures` is deliberately
+location settings. Proposals may include a seller SKU with SKU inventory
+tracking plus metric packed weight, dimensions, and package type.
+`EBAY_ITEM_LOCATION` and `EBAY_ITEM_POSTAL_CODE` can override the city/postcode
+resolved from that merchant location. They create no Inventory API item or
+Offer. Simple Delivery is `confirmed` only when the account-backed verification
+response explicitly identifies it; unknown or unsupported results must block
+automated publication. `UploadSiteHostedPictures` is deliberately
 not implemented because eBay is decommissioning it; image uploads use the Media
 API replacement.
+
+Local media staging accepts the existing `EBAY_IMAGE_IMPORT_DIR` plus the
+separate `EBAY_LISTING_STUDIO_IMPORT_DIR`, which defaults to Listing Studio's
+`~/Library/Application Support/eBay Listing Studio/images/ebay` derivative
+directory. Additional approved roots may be supplied with the path-separated
+`EBAY_IMAGE_IMPORT_DIRS`; path traversal remains rejected.
 
 Trading calls automatically refresh an expired seller access token once and
 retry the original request. `browseAPI_search_by_image` is a visual similarity

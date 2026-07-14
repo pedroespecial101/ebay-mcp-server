@@ -18,6 +18,7 @@ EXPECTED_TOOLS = {
     "research_search_items",
     "research_get_item",
     "research_search_by_image",
+    "research_search_by_staged_image",
     "taxonomyAPI_get_category_suggestions",
     "taxonomyAPI_get_item_aspects_for_category",
     "inventoryAPI_manage_offer",

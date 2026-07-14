@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+import asyncio
+
 from fastmcp import FastMCP
+
+from ebay_mcp.media.storage import get_staged_bytes
 
 from .client import EbayClient
 from .models import (
@@ -119,6 +123,44 @@ def create_server(client: EbayClient | None = None) -> FastMCP:
             offset=offset,
         )
         return await ebay.search_by_image(request)
+
+    @server.tool(
+        annotations={"readOnlyHint": True, "destructiveHint": False, "openWorldHint": True}
+    )
+    async def search_by_staged_image(
+        image_ref: str,
+        category_id: str | None = None,
+        min_price: float | None = None,
+        max_price: float | None = None,
+        condition_ids: list[str] | None = None,
+        buying_options: list[BuyingOption] | None = None,
+        item_location_country: str | None = None,
+        aspect_filters: dict[str, list[str]] | None = None,
+        include_refinements: bool = False,
+        limit: int = 20,
+        offset: int = 0,
+    ) -> SearchResponse:
+        """Find live visual matches from a private media staging reference.
+
+        The trusted server reads the private staged bytes and sends them directly
+        to eBay Browse. No public source-image URL is created and no image bytes
+        are returned to the MCP caller.
+        """
+        image, _ = await asyncio.to_thread(get_staged_bytes, image_ref)
+        request = ImageSearchRequest(
+            image_url="https://private-staged-image.invalid/source.jpg",
+            category_id=category_id,
+            min_price=min_price,
+            max_price=max_price,
+            condition_ids=condition_ids or [],
+            buying_options=buying_options or [],
+            item_location_country=item_location_country,
+            aspect_filters=aspect_filters or {},
+            include_refinements=include_refinements,
+            limit=limit,
+            offset=offset,
+        )
+        return await ebay.search_by_image_bytes(request, image)
 
     return server
 

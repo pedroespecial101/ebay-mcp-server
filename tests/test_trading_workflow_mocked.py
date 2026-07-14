@@ -150,6 +150,7 @@ class FakeTradingClient:
 
 def proposal():
     return FixedPriceListingProposal(
+        sku="SKU-001",
         title="Used test item",
         description="Used item with light wear.",
         price_gbp="12.50",
@@ -158,6 +159,13 @@ def proposal():
         condition_description="Light wear",
         item_specifics={"Brand": ["Acme"]},
         picture_urls=["https://i.ebayimg.com/images/g/one/s-l1600.jpg"],
+        package={
+            "weight_grams": 1250,
+            "length_cm": "30",
+            "width_cm": "20",
+            "height_cm": "10",
+            "package_type": "PARCEL_OR_PADDED_ENVELOPE",
+        },
     )
 
 
@@ -369,6 +377,34 @@ def test_verified_add_uses_same_uuid_and_reads_back_listing():
     assert result.item_id == client.item_id
     assert client.added_uuid == verified_uuid
     assert result.final_listing.revision_token
+
+
+def test_direct_add_serializes_sku_and_metric_package_details():
+    client = FakeTradingClient()
+    asyncio.run(service.verify_add_fixed_price_item(proposal(), client))
+    request = next(request for name, request in client.calls if name == "VerifyAddFixedPriceItem")
+    assert value(request, "Item/SKU") == "SKU-001"
+    assert value(request, "Item/InventoryTrackingMethod") == "SKU"
+    assert value(request, "Item/ShippingPackageDetails/MeasurementUnit") == "Metric"
+    assert value(request, "Item/ShippingPackageDetails/ShippingPackage") == "ParcelOrPaddedEnvelope"
+    assert value(request, "Item/ShippingPackageDetails/WeightMajor") == "1"
+    assert value(request, "Item/ShippingPackageDetails/WeightMinor") == "250"
+    assert find(request, "Item/ShippingPackageDetails/WeightMajor").attrib["unit"] == "kg"
+    assert find(request, "Item/ShippingPackageDetails/WeightMinor").attrib["unit"] == "gr"
+
+
+def test_simple_delivery_status_fails_closed_and_recognizes_explicit_messages():
+    assert service._simple_delivery_status([], []) == "unknown"
+    assert service._simple_delivery_evidence([], []).reason.startswith("eBay verification returned no explicit")
+    warning = service.TradingIssue(code="managed", severity="Warning", message="Simple Delivery will be applied")
+    assert service._simple_delivery_status([warning], []) == "confirmed"
+    evidence = service._simple_delivery_evidence([warning], [])
+    assert evidence.status == "confirmed"
+    assert evidence.issue_codes == ["managed"]
+    assert evidence.matched_signals == ["simple_delivery_warning"]
+    assert "Simple Delivery will be applied" not in evidence.model_dump_json()
+    error = service.TradingIssue(code="21920414", severity="Error", message="Seller is not eligible")
+    assert service._simple_delivery_status([], [error]) == "unsupported"
 
 
 def test_duplicate_uuid_recovers_original_item_as_idempotent_success():

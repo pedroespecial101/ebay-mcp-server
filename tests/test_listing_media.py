@@ -55,6 +55,28 @@ def test_local_import_cannot_escape_root(tmp_path, monkeypatch):
         asyncio.run(storage.stage_source(source))
 
 
+def test_listing_studio_has_a_separate_restricted_import_root(tmp_path, monkeypatch):
+    inbox = tmp_path / "existing-inbox"
+    studio = tmp_path / "listing-studio" / "images" / "ebay"
+    studio.mkdir(parents=True)
+    image = studio / "photo.jpg"
+    image.write_bytes(jpeg_bytes())
+    monkeypatch.setenv("EBAY_IMAGE_IMPORT_DIR", str(inbox))
+    monkeypatch.setenv("EBAY_LISTING_STUDIO_IMPORT_DIR", str(studio))
+
+    expected = storage.StagedImage(
+        image_ref="r2:staging/seller/test/photo.jpg",
+        filename="photo.jpg",
+        size=100,
+        width=120,
+        height=80,
+        uploaded_at="2026-07-13T00:00:00+00:00",
+    )
+    monkeypatch.setattr(storage, "stage_bytes", lambda data, filename: expected)
+    source = storage.ImageSource(kind="local_file", value=str(image))
+    assert asyncio.run(storage.stage_source(source)) == expected
+
+
 def test_view_ebay_image_returns_one_normalized_image_without_source_url(monkeypatch):
     async def download(_url, allowed_hosts=None):
         assert allowed_hosts == media_server.EBAY_IMAGE_HOSTS

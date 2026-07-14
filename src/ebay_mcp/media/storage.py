@@ -237,10 +237,23 @@ async def stage_source(source: ImageSource) -> StagedImage:
     if source.kind == ImageSourceKind.URL:
         data, inferred = await download_public_image(source.value)
         return await asyncio.to_thread(stage_bytes, data, source.filename or inferred)
-    root = Path(os.getenv("EBAY_IMAGE_IMPORT_DIR", "~/Pictures/eBay Listing Inbox")).expanduser().resolve()
+    roots = {
+        Path(os.getenv("EBAY_IMAGE_IMPORT_DIR", "~/Pictures/eBay Listing Inbox")).expanduser().resolve(),
+        Path(
+            os.getenv(
+                "EBAY_LISTING_STUDIO_IMPORT_DIR",
+                "~/Library/Application Support/eBay Listing Studio/images/ebay",
+            )
+        ).expanduser().resolve(),
+    }
+    roots.update(
+        Path(value).expanduser().resolve()
+        for value in os.getenv("EBAY_IMAGE_IMPORT_DIRS", "").split(os.pathsep)
+        if value.strip()
+    )
     path = Path(source.value).expanduser().resolve()
-    if not path.is_relative_to(root) or not path.is_file():
-        raise MediaStorageError("Local image must be a file inside the configured import directory.")
+    if not any(path.is_relative_to(root) for root in roots) or not path.is_file():
+        raise MediaStorageError("Local image must be a file inside an approved import directory.")
     if path.stat().st_size > MAX_INPUT_BYTES:
         raise MediaStorageError("Local image exceeds 12 MiB.")
     return await asyncio.to_thread(stage_bytes, path.read_bytes(), source.filename or path.name)

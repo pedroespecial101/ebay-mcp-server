@@ -182,7 +182,20 @@ class UploadedListingPicture(BaseModel):
     expiration_date: datetime | None = None
 
 
+class ListingPackage(BaseModel):
+    weight_grams: int = Field(gt=0, le=30_000)
+    length_cm: Decimal = Field(gt=0, le=200, decimal_places=2)
+    width_cm: Decimal = Field(gt=0, le=200, decimal_places=2)
+    height_cm: Decimal = Field(gt=0, le=200, decimal_places=2)
+    package_type: Literal[
+        "PARCEL_OR_PADDED_ENVELOPE", "PACKAGE_THICK_ENVELOPE", "LETTER",
+        "LARGE_ENVELOPE", "MAILING_BOX", "PADDED_BAGS", "TOUGH_BAGS",
+        "BULKY_GOODS",
+    ] = "PARCEL_OR_PADDED_ENVELOPE"
+
+
 class FixedPriceListingProposal(BaseModel):
+    sku: str | None = Field(default=None, min_length=1, max_length=50)
     title: str = Field(min_length=1, max_length=80)
     description: str = Field(min_length=1, max_length=500_000)
     price_gbp: Decimal = Field(gt=0, decimal_places=2)
@@ -192,6 +205,7 @@ class FixedPriceListingProposal(BaseModel):
     item_specifics: dict[str, list[str]] = Field(default_factory=dict)
     picture_urls: list[str] = Field(min_length=1, max_length=24)
     best_offer_enabled: bool = False
+    package: ListingPackage | None = None
 
     @field_validator("title", "description", "condition_description")
     @classmethod
@@ -222,6 +236,13 @@ class VerifyAddFixedPriceItemInput(BaseModel):
     proposal: FixedPriceListingProposal
 
 
+class SimpleDeliveryEvidence(BaseModel):
+    status: Literal["confirmed", "unsupported", "unknown"]
+    reason: str
+    issue_codes: list[str] = Field(default_factory=list)
+    matched_signals: list[str] = Field(default_factory=list)
+
+
 class VerifyAddFixedPriceItemResult(BaseModel):
     valid: bool
     verification_token: str | None = None
@@ -230,6 +251,13 @@ class VerifyAddFixedPriceItemResult(BaseModel):
     estimated_fee_gbp: Decimal = Decimal("0.00")
     warnings: list[TradingIssue] = Field(default_factory=list)
     errors: list[TradingIssue] = Field(default_factory=list)
+    simple_delivery_status: Literal["confirmed", "unsupported", "unknown"] = "unknown"
+    simple_delivery_evidence: SimpleDeliveryEvidence = Field(
+        default_factory=lambda: SimpleDeliveryEvidence(
+            status="unknown",
+            reason="No explicit Simple Delivery evidence was returned by eBay.",
+        )
+    )
 
 
 class AddFixedPriceItemInput(BaseModel):

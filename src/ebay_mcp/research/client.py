@@ -95,6 +95,16 @@ class EbayClient:
 
     async def search_by_image(self, request: ImageSearchRequest) -> SearchResponse:
         image = await self._download_public_image(request.image_url)
+        return await self.search_by_image_bytes(request, image)
+
+    async def search_by_image_bytes(
+        self, request: ImageSearchRequest, image: bytes
+    ) -> SearchResponse:
+        """Search from trusted private bytes without requiring a public image URL."""
+        if not image:
+            raise ImageDownloadError("Image was empty")
+        if len(image) > self.settings.image_max_bytes:
+            raise ImageDownloadError("Image exceeds the 10 MiB image-search limit")
         params = self._image_search_params(request)
         data = await self._request_json(
             "POST",
