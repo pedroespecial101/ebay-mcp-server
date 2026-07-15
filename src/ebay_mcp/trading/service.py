@@ -25,7 +25,7 @@ from models.ebay.trading import (
     AddFixedPriceItemInput, AddFixedPriceItemResult, EditableSellerListing,
     FixedPriceListingProposal, FixedPriceRevisionPatch, RecentSellerListingsInput,
     RecentSellerListingsResult, ReviseFixedPriceItemInput, ReviseFixedPriceItemResult,
-    SellerListingSummary, SellerPolicyReferences, SimpleDeliveryEvidence, TradingFee, TradingIssue,
+    SellerListingSummary, SellerPolicyReferences, TradingFee, TradingIssue,
     UploadedListingPicture, VerifyAddFixedPriceItemResult,
     ViewItemImagesInput,
 )
@@ -588,10 +588,14 @@ async def verify_add_fixed_price_item(
             return await verify_add_fixed_price_item(proposal, owned)
     uuid = secrets.token_hex(16).upper()
     fees, warnings, errors = await _verify_proposal(proposal, uuid, client)
-    simple_delivery_evidence = _simple_delivery_evidence(warnings, errors)
-    simple_delivery = simple_delivery_evidence.status
     if errors:
-        return VerifyAddFixedPriceItemResult(valid=False, fees=fees, estimated_fee_gbp=_total_fees(fees), warnings=warnings, errors=errors, simple_delivery_status=simple_delivery, simple_delivery_evidence=simple_delivery_evidence)
+        return VerifyAddFixedPriceItemResult(
+            valid=False,
+            fees=fees,
+            estimated_fee_gbp=_total_fees(fees),
+            warnings=warnings,
+            errors=errors,
+        )
     token = secrets.token_urlsafe(24)
     expires_at = datetime.now(timezone.utc) + VERIFICATION_TTL
     _VERIFICATIONS[token] = {"digest": _proposal_digest(proposal), "uuid": uuid, "expires_at": expires_at}
@@ -602,59 +606,7 @@ async def verify_add_fixed_price_item(
         fees=fees,
         estimated_fee_gbp=_total_fees(fees),
         warnings=warnings,
-        simple_delivery_status=simple_delivery,
-        simple_delivery_evidence=simple_delivery_evidence,
     )
-
-
-def _simple_delivery_evidence(
-    warnings: list[TradingIssue], errors: list[TradingIssue]
-) -> SimpleDeliveryEvidence:
-    """Return sanitized, fail-closed evidence without echoing raw eBay messages."""
-    issues = [*warnings, *errors]
-    unsupported_codes = {"21920414"}
-    issue_codes = sorted({issue.code for issue in issues if issue.code})
-    unsupported = [
-        issue for issue in issues
-        if issue.code in unsupported_codes
-        or "not eligible for managed shipping" in issue.message.casefold()
-    ]
-    if unsupported:
-        return SimpleDeliveryEvidence(
-            status="unsupported",
-            reason="eBay explicitly reported that managed/Simple Delivery is unsupported.",
-            issue_codes=issue_codes,
-            matched_signals=["managed_shipping_ineligible"],
-        )
-    confirmed = [
-        issue for issue in warnings
-        if "simple delivery" in issue.message.casefold()
-        or "managed shipping" in issue.message.casefold()
-    ]
-    if confirmed:
-        signals = []
-        if any("simple delivery" in issue.message.casefold() for issue in confirmed):
-            signals.append("simple_delivery_warning")
-        if any("managed shipping" in issue.message.casefold() for issue in confirmed):
-            signals.append("managed_shipping_warning")
-        return SimpleDeliveryEvidence(
-            status="confirmed",
-            reason="eBay verification explicitly identified Simple/managed Delivery.",
-            issue_codes=issue_codes,
-            matched_signals=signals,
-        )
-    return SimpleDeliveryEvidence(
-        status="unknown",
-        reason="eBay verification returned no explicit Simple Delivery marker.",
-        issue_codes=issue_codes,
-    )
-
-
-def _simple_delivery_status(
-    warnings: list[TradingIssue], errors: list[TradingIssue]
-) -> str:
-    """Compatibility wrapper for callers that only need the fail-closed status."""
-    return _simple_delivery_evidence(warnings, errors).status
 
 
 def _duplicate_item_id(error: TradingAPIError) -> str | None:

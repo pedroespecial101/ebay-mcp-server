@@ -236,13 +236,6 @@ class VerifyAddFixedPriceItemInput(BaseModel):
     proposal: FixedPriceListingProposal
 
 
-class SimpleDeliveryEvidence(BaseModel):
-    status: Literal["confirmed", "unsupported", "unknown"]
-    reason: str
-    issue_codes: list[str] = Field(default_factory=list)
-    matched_signals: list[str] = Field(default_factory=list)
-
-
 class VerifyAddFixedPriceItemResult(BaseModel):
     valid: bool
     verification_token: str | None = None
@@ -251,13 +244,6 @@ class VerifyAddFixedPriceItemResult(BaseModel):
     estimated_fee_gbp: Decimal = Decimal("0.00")
     warnings: list[TradingIssue] = Field(default_factory=list)
     errors: list[TradingIssue] = Field(default_factory=list)
-    simple_delivery_status: Literal["confirmed", "unsupported", "unknown"] = "unknown"
-    simple_delivery_evidence: SimpleDeliveryEvidence = Field(
-        default_factory=lambda: SimpleDeliveryEvidence(
-            status="unknown",
-            reason="No explicit Simple Delivery evidence was returned by eBay.",
-        )
-    )
 
 
 class AddFixedPriceItemInput(BaseModel):

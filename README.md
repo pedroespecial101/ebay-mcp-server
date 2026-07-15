@@ -283,7 +283,7 @@ comparables.
 - `trading_revise_fixed_price_item`: Apply an explicitly confirmed essentials-only patch, then read the listing back.
 - `trading_upload_listing_pictures`: Move privately staged images to EPS using the Media API.
 - `trading_verify_add_fixed_price_item`: Validate a direct Trading proposal and
-  return fees, a short-lived token, and a fail-closed Simple Delivery status.
+  return fees, warnings, errors and a short-lived token.
 - `trading_add_fixed_price_item`: Re-verify and immediately publish an unchanged proposal within an explicit fee ceiling.
 
 Direct Trading adds use the existing payment, return, fulfilment, and merchant
@@ -291,9 +291,7 @@ location settings. Proposals may include a seller SKU with SKU inventory
 tracking plus metric packed weight, dimensions, and package type.
 `EBAY_ITEM_LOCATION` and `EBAY_ITEM_POSTAL_CODE` can override the city/postcode
 resolved from that merchant location. They create no Inventory API item or
-Offer. Simple Delivery is `confirmed` only when the account-backed verification
-response explicitly identifies it; unknown or unsupported results must block
-automated publication. `UploadSiteHostedPictures` is deliberately
+Offer. `UploadSiteHostedPictures` is deliberately
 not implemented because eBay is decommissioning it; image uploads use the Media
 API replacement.
 

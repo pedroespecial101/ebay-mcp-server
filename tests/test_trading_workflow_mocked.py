@@ -393,20 +393,6 @@ def test_direct_add_serializes_sku_and_metric_package_details():
     assert find(request, "Item/ShippingPackageDetails/WeightMinor").attrib["unit"] == "gr"
 
 
-def test_simple_delivery_status_fails_closed_and_recognizes_explicit_messages():
-    assert service._simple_delivery_status([], []) == "unknown"
-    assert service._simple_delivery_evidence([], []).reason.startswith("eBay verification returned no explicit")
-    warning = service.TradingIssue(code="managed", severity="Warning", message="Simple Delivery will be applied")
-    assert service._simple_delivery_status([warning], []) == "confirmed"
-    evidence = service._simple_delivery_evidence([warning], [])
-    assert evidence.status == "confirmed"
-    assert evidence.issue_codes == ["managed"]
-    assert evidence.matched_signals == ["simple_delivery_warning"]
-    assert "Simple Delivery will be applied" not in evidence.model_dump_json()
-    error = service.TradingIssue(code="21920414", severity="Error", message="Seller is not eligible")
-    assert service._simple_delivery_status([], [error]) == "unsupported"
-
-
 def test_duplicate_uuid_recovers_original_item_as_idempotent_success():
     client = FakeTradingClient()
     client.duplicate = True
