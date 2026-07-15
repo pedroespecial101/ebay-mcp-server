@@ -101,11 +101,11 @@ async def upload_listing_pictures(input: UploadListingPicturesInput) -> list[Upl
 
 @trading_mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "openWorldHint": True})
 async def verify_add_fixed_price_item(input: VerifyAddFixedPriceItemInput) -> VerifyAddFixedPriceItemResult:
-    """Validate a quantity-one UK fixed-price proposal and estimate fees without creating a listing."""
+    """Validate a quantity-one UK fixed-price proposal without creating a listing."""
     return await verify_listing(input.proposal)
 
 
 @trading_mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": True, "openWorldHint": True})
 async def add_fixed_price_item(input: AddFixedPriceItemInput) -> AddFixedPriceItemResult:
-    """Publish an unchanged verified proposal within its explicit listing-fee ceiling."""
+    """Publish an unchanged verified proposal after explicit seller confirmation."""
     return await add_listing(input)

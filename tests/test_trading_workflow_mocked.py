@@ -276,6 +276,11 @@ def test_view_item_images_defaults_to_one_and_rejects_large_batches():
         ViewItemImagesInput(item_id="123456789012", limit=4)
 
 
+def test_direct_add_contract_has_no_fee_ceiling():
+    schema = AddFixedPriceItemInput.model_json_schema()
+    assert set(schema["properties"]) == {"proposal", "verification_token"}
+
+
 def test_variation_listing_is_flagged_and_rejected_for_narrow_revision():
     client = FakeTradingClient()
     result = item_response()
@@ -329,16 +334,16 @@ def test_revision_uses_deleted_field_when_removing_all_item_specifics():
     assert find(request, "Item/ItemSpecifics") is None
 
 
-def test_fee_ceiling_blocks_add_before_publication():
+def test_reported_fee_metadata_does_not_block_add():
     client = FakeTradingClient()
     client.verify_fee = Decimal("1.25")
     verified = asyncio.run(service.verify_add_fixed_price_item(proposal(), client))
     params = AddFixedPriceItemInput(
-        proposal=proposal(), verification_token=verified.verification_token, max_listing_fee_gbp="1.00"
+        proposal=proposal(), verification_token=verified.verification_token
     )
-    with pytest.raises(ValueError, match="approved ceiling"):
-        asyncio.run(service.add_fixed_price_item(params, client))
-    assert not any(name == "AddFixedPriceItem" for name, _ in client.calls)
+    result = asyncio.run(service.add_fixed_price_item(params, client))
+    assert result.status == "published"
+    assert any(name == "AddFixedPriceItem" for name, _ in client.calls)
 
 
 def test_direct_add_can_resolve_location_from_existing_merchant_location(monkeypatch):
@@ -371,7 +376,7 @@ def test_verified_add_uses_same_uuid_and_reads_back_listing():
     verify_call = next(request for name, request in client.calls if name == "VerifyAddFixedPriceItem")
     verified_uuid = value(verify_call, "Item/UUID")
     result = asyncio.run(service.add_fixed_price_item(AddFixedPriceItemInput(
-        proposal=proposal(), verification_token=verified.verification_token, max_listing_fee_gbp="0"
+        proposal=proposal(), verification_token=verified.verification_token
     ), client))
     assert result.status == "published"
     assert result.item_id == client.item_id
@@ -398,7 +403,7 @@ def test_duplicate_uuid_recovers_original_item_as_idempotent_success():
     client.duplicate = True
     verified = asyncio.run(service.verify_add_fixed_price_item(proposal(), client))
     result = asyncio.run(service.add_fixed_price_item(AddFixedPriceItemInput(
-        proposal=proposal(), verification_token=verified.verification_token, max_listing_fee_gbp="0"
+        proposal=proposal(), verification_token=verified.verification_token
     ), client))
     assert result.item_id == client.item_id
     assert result.idempotent_recovery is True

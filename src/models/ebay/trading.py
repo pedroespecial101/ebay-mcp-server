@@ -249,7 +249,6 @@ class VerifyAddFixedPriceItemResult(BaseModel):
 class AddFixedPriceItemInput(BaseModel):
     proposal: FixedPriceListingProposal
     verification_token: str = Field(min_length=20)
-    max_listing_fee_gbp: Decimal = Field(default=Decimal("0.00"), ge=0, decimal_places=2)
 
 
 class AddFixedPriceItemResult(BaseModel):

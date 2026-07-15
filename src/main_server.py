@@ -136,8 +136,8 @@ from sold/completed-sale evidence, which this server does not provide.
 PRIMARY WORKFLOW:
 1. Stage 1-24 ordered photographs with media_open_image_uploader or media_stage_images.
 2. Call listing_validate with a complete proposal and explicit category ID.
-3. Call listing_create in draft mode. This validates, uploads to EPS, creates and verifies inventory/offer state, and estimates fees.
-4. Review the structured result. Call listing_publish only after approving any non-zero fee ceiling.
+3. Call listing_create in draft mode. This validates, uploads to EPS, and creates and verifies inventory/offer state.
+4. Review the structured result. Call listing_publish only after explicit seller confirmation.
 
 ACTIVE LISTING TAKEOVER:
 Use trading_get_recent_seller_listings to find a newly published placeholder, trading_get_item to inspect its editable data, and trading_view_item_images to return its actual photographs to model vision. Present a human-readable diff before trading_revise_fixed_price_item.

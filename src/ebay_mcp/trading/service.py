@@ -641,9 +641,6 @@ async def add_fixed_price_item(
     fees, verify_warnings, errors = await _verify_proposal(params.proposal, verification["uuid"], client)
     if errors:
         raise ValueError(f"The listing no longer verifies: {errors[0].message}")
-    estimate = _total_fees(fees)
-    if estimate > params.max_listing_fee_gbp:
-        raise ValueError(f"Estimated listing fees are GBP {estimate}; approved ceiling is GBP {params.max_listing_fee_gbp}.")
     try:
         defaults = await _required_add_defaults(client)
         response = await client.call(

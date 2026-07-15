@@ -76,14 +76,16 @@ def test_publish_verifies_active_listing_after_zero_fee(monkeypatch):
     assert ("POST", "/sell/inventory/v1/offer/offer-1/publish") in FakeAPI.calls
 
 
-def test_nonzero_fee_requires_explicit_ceiling(monkeypatch):
+def test_nonzero_fee_metadata_does_not_block_confirmed_publish(monkeypatch):
     data = proposal()
     FakeAPI.calls = []
     monkeypatch.setattr(workflow, "EbayAPI", FakeAPI)
     async def get_offers(*_): return [offer(data)]
     async def fees(*_): return FeeEstimate(amount_gbp=Decimal("1.25"))
+    async def poll(*_): return offer(data, published=True)
     monkeypatch.setattr(workflow, "_get_offers", get_offers)
     monkeypatch.setattr(workflow, "_fees", fees)
+    monkeypatch.setattr(workflow, "_poll_published", poll)
     result = asyncio.run(workflow.publish_listing(PublishListingInput(sku=data.sku)))
-    assert result.status == "fee_approval_required"
-    assert not any(path.endswith("/publish") for _, path in FakeAPI.calls)
+    assert result.status == "published"
+    assert any(path.endswith("/publish") for _, path in FakeAPI.calls)

@@ -77,7 +77,6 @@ class SimpleListingInput(BaseModel):
 
 class PublishListingInput(BaseModel):
     sku: str = Field(min_length=1, max_length=50)
-    max_fee_gbp: Decimal = Field(default=Decimal("0.00"), ge=0, decimal_places=2)
 
 
 class DiscardDraftInput(BaseModel):

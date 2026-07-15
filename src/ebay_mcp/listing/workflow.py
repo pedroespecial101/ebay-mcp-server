@@ -293,12 +293,9 @@ async def create_listing(data: SimpleListingInput) -> ListingWorkflowResult:
                 completed.append("offer_verified")
             fee = await _fees(api, offer_id)
             completed.append("fees_checked")
-            if data.mode.value == "draft" or fee.amount_gbp > 0:
-                warning = []
-                if fee.amount_gbp > 0:
-                    warning.append(WorkflowIssue(code="nonzero_fee", message=f"Estimated listing fee is GBP {fee.amount_gbp}; explicit approval is required."))
+            if data.mode.value == "draft":
                 return ListingWorkflowResult(status="draft_ready", sku=data.sku, completed_steps=completed, offer_id=offer_id,
-                    fee_estimate=fee, warnings=validation.warnings + warning, next_action="Call listing_publish with an approved fee ceiling.")
+                    fee_estimate=fee, warnings=validation.warnings, next_action="Call listing_publish after explicit seller confirmation.")
             await api.request("POST", f"/sell/inventory/v1/offer/{offer_id}/publish", expected={200})
             published = await _poll_published(api, offer_id)
             if not published:
@@ -329,9 +326,6 @@ async def publish_listing(data: PublishListingInput) -> ListingWorkflowResult:
                 return ListingWorkflowResult(status="published", sku=data.sku, completed_steps=["already_published"], offer_id=offer_id,
                     listing_id=listing_id, listing_url=f"https://www.ebay.co.uk/itm/{listing_id}" if listing_id else None, recoverable=False)
             fee = await _fees(api, offer_id)
-            if fee.amount_gbp > data.max_fee_gbp:
-                return ListingWorkflowResult(status="fee_approval_required", sku=data.sku, completed_steps=["fees_checked"],
-                    offer_id=offer_id, fee_estimate=fee, next_action="Call listing_publish again with an explicitly approved sufficient max_fee_gbp.")
             await api.request("POST", f"/sell/inventory/v1/offer/{offer_id}/publish", expected={200})
             published = await _poll_published(api, offer_id)
             if not published:

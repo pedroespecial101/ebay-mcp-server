@@ -1,3 +1,10 @@
+# 2026-07-15 - Private-seller fee gate removal
+
+- Removed fee-ceiling inputs and fee-based publication blockers from both direct
+  Trading adds and the legacy Inventory/Offer workflow.
+- Retained eBay fee response fields as informational diagnostics only; unchanged
+  verification, seller confirmation and duplicate-safe publication remain required.
+
 # 2026-07-15 - EPS authentication recovery
 
 - Added one-shot seller access-token refresh and retry when an EPS Media upload receives HTTP 401.

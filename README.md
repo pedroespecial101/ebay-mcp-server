@@ -3,7 +3,7 @@
 For new second-hand listings, use the `research_*`, `media_*`, and `listing_*`
 tools as one combined endpoint. Research tools provide read-only ebay.co.uk live
 listing research; media and listing tools provide private image staging,
-validation, resumable creation, fee approval, publication verification, and
+validation, resumable creation, explicit publication confirmation, verification, and
 conservative draft cleanup. The low-level inventory and offer tools remain
 available for diagnostics.
 
@@ -283,8 +283,10 @@ comparables.
 - `trading_revise_fixed_price_item`: Apply an explicitly confirmed essentials-only patch, then read the listing back.
 - `trading_upload_listing_pictures`: Move privately staged images to EPS using the Media API.
 - `trading_verify_add_fixed_price_item`: Validate a direct Trading proposal and
-  return fees, warnings, errors and a short-lived token.
-- `trading_add_fixed_price_item`: Re-verify and immediately publish an unchanged proposal within an explicit fee ceiling.
+  return warnings, errors, advisory eBay metadata and a short-lived token.
+- `trading_add_fixed_price_item`: Re-verify and immediately publish an unchanged
+  proposal after explicit seller confirmation. Reported fee metadata is
+  informational and does not gate private-seller publication.
 
 Direct Trading adds use the existing payment, return, fulfilment, and merchant
 location settings. Proposals may include a seller SKU with SKU inventory
