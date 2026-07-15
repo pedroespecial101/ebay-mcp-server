@@ -1,9 +1,11 @@
 import asyncio
 from io import BytesIO
 
+import httpx
 import pytest
 from PIL import Image
 
+from ebay_mcp.media import ebay as ebay_media
 from ebay_mcp.media import storage
 from ebay_mcp.media import server as media_server
 from ebay_mcp.listing.workflow import _aspect_constraints, _inventory_matches, _offer_matches
@@ -100,6 +102,94 @@ def test_view_ebay_image_rejects_non_ebay_hosts():
         asyncio.run(media_server.view_ebay_image(ViewEbayImageInput(
             url="https://example.com/image.jpg",
         )))
+
+
+def test_eps_upload_refreshes_expired_token_once(monkeypatch):
+    requests = []
+
+    def handler(request):
+        requests.append(request)
+        if len(requests) == 1:
+            return httpx.Response(401, json={"errors": [{"errorId": 1001, "message": "Token expired"}]})
+        return httpx.Response(
+            201,
+            json={"imageUrl": "https://i.ebayimg.com/images/g/test/s-l1600.jpg"},
+            headers={"location": "https://apim.ebay.com/commerce/media/v1_beta/image/123"},
+        )
+
+    async def stale_token():
+        return "stale-token"
+
+    monkeypatch.setattr(ebay_media, "get_ebay_access_token", stale_token)
+    monkeypatch.setattr(ebay_media, "refresh_access_token", lambda: "fresh-token")
+    monkeypatch.setattr(ebay_media, "get_staged_bytes", lambda _ref: (jpeg_bytes(), "photo.jpg"))
+    http = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+
+    async def run():
+        try:
+            return await ebay_media.upload_staged_pictures(["r2:test"], client=http)
+        finally:
+            await http.aclose()
+
+    result = asyncio.run(run())
+    assert [request.headers["authorization"] for request in requests] == [
+        "Bearer stale-token",
+        "Bearer fresh-token",
+    ]
+    assert result[0].image_id == "123"
+
+
+def test_eps_upload_explains_failed_automatic_refresh(monkeypatch):
+    async def stale_token():
+        return "stale-token"
+
+    def handler(_request):
+        return httpx.Response(401, json={"errors": [{"errorId": 1001, "message": "Token expired"}]})
+
+    monkeypatch.setattr(ebay_media, "get_ebay_access_token", stale_token)
+    monkeypatch.setattr(ebay_media, "refresh_access_token", lambda: None)
+    monkeypatch.setattr(ebay_media, "get_staged_bytes", lambda _ref: (jpeg_bytes(), "photo.jpg"))
+    http = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+
+    async def run():
+        try:
+            with pytest.raises(ebay_media.EbayMediaUploadError, match="automatic refresh failed") as exc:
+                await ebay_media.upload_staged_pictures(["r2:test"], client=http)
+            return str(exc.value)
+        finally:
+            await http.aclose()
+
+    message = asyncio.run(run())
+    assert "1001: Token expired" in message
+    assert "retry preparation" in message
+
+
+def test_eps_upload_explains_rejection_after_refresh(monkeypatch):
+    async def stale_token():
+        return "stale-token"
+
+    def handler(_request):
+        return httpx.Response(401, json={"errors": [{"errorId": 1001, "message": "Invalid token"}]})
+
+    monkeypatch.setattr(ebay_media, "get_ebay_access_token", stale_token)
+    monkeypatch.setattr(ebay_media, "refresh_access_token", lambda: "fresh-token")
+    monkeypatch.setattr(ebay_media, "get_staged_bytes", lambda _ref: (jpeg_bytes(), "photo.jpg"))
+    http = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+
+    async def run():
+        try:
+            with pytest.raises(
+                ebay_media.EbayMediaUploadError,
+                match="after Listing Studio automatically refreshed",
+            ) as exc:
+                await ebay_media.upload_staged_pictures(["r2:test"], client=http)
+            return str(exc.value)
+        finally:
+            await http.aclose()
+
+    message = asyncio.run(run())
+    assert "Seller consent may have been revoked" in message
+    assert "1001: Invalid token" in message
 
 
 def test_aspect_constraints_normalize_ebay_taxonomy():

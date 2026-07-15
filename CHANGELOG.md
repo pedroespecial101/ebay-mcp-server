@@ -1,3 +1,9 @@
+# 2026-07-15 - EPS authentication recovery
+
+- Added one-shot seller access-token refresh and retry when an EPS Media upload receives HTTP 401.
+- Added sanitized, action-oriented Media authentication errors for failed refresh, repeated 401 and permission denial.
+- Added focused tests for successful recovery and both persistent authentication failure paths.
+
 # 2026-07-08 - Trading image vision and durable authentication
 
 - Added `trading_view_item_images`, returning bounded, metadata-free JPEG content blocks so MCP clients can inspect a seller listing's actual photographs.

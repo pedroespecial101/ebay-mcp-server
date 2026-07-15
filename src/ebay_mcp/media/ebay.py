@@ -3,20 +3,61 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from datetime import datetime
 
 import httpx
 
+from ebay_auth.ebay_auth import refresh_access_token
 from ebay_mcp.media.storage import get_staged_bytes
 from ebay_service import get_ebay_access_token
 from models.ebay.trading import UploadedListingPicture
 from utils.api_utils import get_standard_ebay_headers, is_token_error
 
 MEDIA_UPLOAD_URL = "https://apim.ebay.com/commerce/media/v1_beta/image/create_image_from_file"
+logger = logging.getLogger(__name__)
 
 
 class EbayMediaUploadError(RuntimeError):
     pass
+
+
+def _response_detail(response: httpx.Response) -> str | None:
+    try:
+        payload = response.json()
+    except ValueError:
+        return None
+    errors = payload.get("errors") if isinstance(payload, dict) else None
+    if not isinstance(errors, list) or not errors or not isinstance(errors[0], dict):
+        return None
+    error = errors[0]
+    message = error.get("message") or error.get("longMessage")
+    code = error.get("errorId")
+    parts = [str(value).strip() for value in (code, message) if value]
+    return ": ".join(parts)[:300] or None
+
+
+def _response_suffix(response: httpx.Response) -> str:
+    detail = _response_detail(response)
+    return f" eBay reported {detail}." if detail else ""
+
+
+def _upload_error(response: httpx.Response, *, refreshed: bool) -> EbayMediaUploadError:
+    suffix = _response_suffix(response)
+    if response.status_code == 401 and refreshed:
+        return EbayMediaUploadError(
+            "eBay still rejected the EPS image upload after Listing Studio automatically "
+            "refreshed the seller access token (HTTP 401). Seller consent may have been "
+            f"revoked; run the eBay login flow, then retry preparation.{suffix}"
+        )
+    if response.status_code == 403:
+        return EbayMediaUploadError(
+            "eBay denied the EPS image upload (HTTP 403). The seller token may lack the "
+            f"required sell.inventory permission; run the eBay login flow, then retry preparation.{suffix}"
+        )
+    return EbayMediaUploadError(
+        f"eBay rejected the EPS image upload (HTTP {response.status_code}).{suffix}"
+    )
 
 
 def _expiration_date(raw: str | None) -> datetime | None:
@@ -40,15 +81,29 @@ async def upload_staged_pictures(
     try:
         for image_ref in image_refs:
             raw, filename = await asyncio.to_thread(get_staged_bytes, image_ref)
-            headers = get_standard_ebay_headers(token)
-            headers.pop("Content-Type", None)
-            response = await http.post(
-                MEDIA_UPLOAD_URL,
-                headers=headers,
-                files={"image": (filename, raw, "image/jpeg")},
-            )
+            refreshed = False
+            while True:
+                headers = get_standard_ebay_headers(token)
+                headers.pop("Content-Type", None)
+                response = await http.post(
+                    MEDIA_UPLOAD_URL,
+                    headers=headers,
+                    files={"image": (filename, raw, "image/jpeg")},
+                )
+                if response.status_code != 401 or refreshed:
+                    break
+                logger.info("EPS image upload received HTTP 401; refreshing the seller access token once.")
+                token = await asyncio.to_thread(refresh_access_token)
+                if not token or is_token_error(token):
+                    raise EbayMediaUploadError(
+                        "The EPS image upload found an expired seller access token, but automatic "
+                        "refresh failed. Run the eBay login flow, then retry preparation."
+                        f"{_response_suffix(response)}"
+                    )
+                refreshed = True
+                logger.info("Seller access token refreshed; retrying the EPS image upload.")
             if response.status_code != 201:
-                raise EbayMediaUploadError(f"eBay rejected an image upload (HTTP {response.status_code}).")
+                raise _upload_error(response, refreshed=refreshed)
             try:
                 body = response.json()
             except ValueError as exc:

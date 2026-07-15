@@ -301,10 +301,12 @@ separate `EBAY_LISTING_STUDIO_IMPORT_DIR`, which defaults to Listing Studio's
 directory. Additional approved roots may be supplied with the path-separated
 `EBAY_IMAGE_IMPORT_DIRS`; path traversal remains rejected.
 
-Trading calls automatically refresh an expired seller access token once and
-retry the original request. `browseAPI_search_by_image` is a visual similarity
-search for finding other live listings; it does not display an item's source
-photographs to the model.
+Trading and EPS Media uploads automatically refresh an expired seller access
+token once and retry the original request. If Media authentication still fails,
+the tool returns a sanitized explanation distinguishing refresh failure from
+revoked consent or missing permissions. `browseAPI_search_by_image` is a visual
+similarity search for finding other live listings; it does not display an item's
+source photographs to the model.
 
 For visual inspection from a known eBay CDN image URL, use
 `media_view_ebay_image`. It accepts approved eBay image hosts only, fetches one
