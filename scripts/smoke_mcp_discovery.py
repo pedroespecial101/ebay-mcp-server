@@ -21,6 +21,7 @@ EXPECTED_TOOLS = {
     "research_search_by_staged_image",
     "taxonomyAPI_get_category_suggestions",
     "taxonomyAPI_get_item_aspects_for_category",
+    "taxonomyAPI_get_item_condition_policies",
     "inventoryAPI_manage_offer",
     "inventoryAPI_manage_inventory_item",
     "catalogAPI_search_by_gtin",

@@ -105,3 +105,35 @@ async def get_item_aspects_for_category(category_id: str) -> str:
     except Exception as e:
         logger.error(f"Error in get_item_aspects_for_category: {str(e)}")
         return f"Error in item aspects parameters: {str(e)}"
+
+
+@taxonomy_mcp.tool(
+    annotations={"readOnlyHint": True, "openWorldHint": False, "destructiveHint": False}
+)
+async def get_item_condition_policies(category_id: str) -> str:
+    """Get allowed eBay UK listing conditions for one category."""
+    logger.info(
+        "Executing get_item_condition_policies MCP tool with category_id='%s'.",
+        category_id,
+    )
+    try:
+        params = ItemAspectsParams(category_id=category_id)
+
+        async def _api_call(access_token: str, client: httpx.AsyncClient):
+            headers = get_standard_ebay_headers(access_token)
+            response = await client.get(
+                "https://api.ebay.com/sell/metadata/v1/marketplace/EBAY_GB/"
+                "get_item_condition_policies",
+                headers=headers,
+                params={"filter": f"categoryIds:{{{params.category_id}}}"},
+            )
+            response.raise_for_status()
+            return response.text
+
+        async with create_debug_client() as client:
+            return await execute_ebay_api_call(
+                "get_item_condition_policies", client, _api_call,
+            )
+    except Exception as e:
+        logger.error("Error in item condition policies: %s", e)
+        return f"Error in item condition policies: {e}"
