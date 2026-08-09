@@ -15,6 +15,21 @@ the proposed diff to the seller, and only then call
 `trading_revise_fixed_price_item` with the returned revision token. App/Seller
 Hub drafts and scheduled listings are not supported by this workflow.
 
+For a Trading-created classic-key variation master, use the dedicated
+`trading_append_fixed_price_variation` tool. It is intentionally narrower than a
+general revision API: it reads the complete active UK master, appends one
+quantity-one `Key Code` variation with exactly two EPS photographs, revises the
+listing, and reads the complete result back. The input includes the ItemID,
+64-character revision token, durable operation ID, variation (including its
+physical SKU, price and selector), `picture_dimension` (normally `Key Code`) and
+the two distinct `https://i.ebayimg.com/` URLs. Existing variations, pictures,
+prices and sold quantities are preserved. Duplicate SKU/selector, stale tokens,
+ended/non-Trading/non-UK masters, sales on the candidate variation, and the
+250-variation limit are rejected. There are no generic variation update, delete
+or rename operations. If a request times out, the tool reads eBay before
+reporting or retrying; an already-present exact variation returns
+`already_applied` rather than creating a duplicate.
+
 ## Overview
 
 This project implements a Model Context Protocol (MCP) server for eBay UK
