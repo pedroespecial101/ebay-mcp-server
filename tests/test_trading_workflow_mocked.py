@@ -25,6 +25,7 @@ from ebay_mcp.media import ebay as media_api
 from models.ebay.trading import (
     AddFixedPriceItemInput, FixedPriceListingProposal, FixedPriceRevisionPatch,
     AddFixedPriceVariationsInput, MultiVariationFixedPriceListingProposal,
+    AppendFixedPriceVariationInput,
     RecentSellerListingsInput, ReviseFixedPriceItemInput,
     ViewItemImagesInput,
 )
@@ -149,6 +150,98 @@ class FakeTradingClient:
         raise AssertionError(name)
 
 
+def key_master_variations(count=2):
+    return [
+        {
+            "sku": f"TLL-{number:03d}-TL",
+            "price": "4.95",
+            "quantity": 1,
+            "quantity_sold": 0,
+            "selector": f"MRN{number} — Union — TLL-{number:03d}-TL",
+            "urls": [
+                f"https://i.ebayimg.com/images/g/MRN{number}-front/s-l1600.jpg",
+                f"https://i.ebayimg.com/images/g/MRN{number}-rear/s-l1600.jpg",
+            ],
+        }
+        for number in range(1, count + 1)
+    ]
+
+
+def key_master_response(variations, item_id="123456789012"):
+    result = item_response(item_id, "MRN classic car keys")
+    item = find(result.root, "Item")
+    matrix = element("Variations", parent=item)
+    for source in variations:
+        variation = element("Variation", parent=matrix)
+        element("SKU", source["sku"], variation)
+        price = element("StartPrice", source["price"], variation)
+        price.set("currencyID", "GBP")
+        element("Quantity", source["quantity"], variation)
+        selling = element("SellingStatus", parent=variation)
+        element("QuantitySold", source["quantity_sold"], selling)
+        specifics = element("VariationSpecifics", parent=variation)
+        pair = element("NameValueList", parent=specifics)
+        element("Name", "Key Code", pair)
+        element("Value", source["selector"], pair)
+    pictures = element("Pictures", parent=matrix)
+    element("VariationSpecificName", "Key Code", pictures)
+    for source in variations:
+        picture_set = element("VariationSpecificPictureSet", parent=pictures)
+        element("VariationSpecificValue", source["selector"], picture_set)
+        for url in source["urls"]:
+            element("PictureURL", url, picture_set)
+    specifics_set = element("VariationSpecificsSet", parent=matrix)
+    pair = element("NameValueList", parent=specifics_set)
+    element("Name", "Key Code", pair)
+    for source in variations:
+        element("Value", source["selector"], pair)
+    return result
+
+
+class FakeVariationAppendClient(FakeTradingClient):
+    def __init__(self, variations=None):
+        super().__init__()
+        self.variations = variations or key_master_variations()
+        self.raise_after_revise = False
+        self.corrupt_readback = False
+        self.revised = False
+
+    async def call(self, name, request):
+        self.calls.append((name, request))
+        if name == "GetItem":
+            source = [dict(entry, urls=list(entry["urls"])) for entry in self.variations]
+            if self.corrupt_readback and self.revised and source:
+                source[0]["price"] = "9.99"
+            return key_master_response(source, self.item_id)
+        if name == "ReviseFixedPriceItem":
+            picture_sets = {
+                value(entry, "VariationSpecificValue"): [
+                    picture.text for picture in findall(entry, "PictureURL") if picture.text
+                ]
+                for entry in findall(request, "Item/Variations/Pictures/VariationSpecificPictureSet")
+            }
+            parsed = []
+            for entry in findall(request, "Item/Variations/Variation"):
+                selector = value(entry, "VariationSpecifics/NameValueList/Value")
+                existing = next((source for source in self.variations if source["sku"] == value(entry, "SKU")), None)
+                parsed.append({
+                    "sku": value(entry, "SKU"),
+                    "price": value(entry, "StartPrice"),
+                    # eBay's GetItem reports total quantity rather than the
+                    # available value expected by Revise.
+                    "quantity": existing["quantity"] if existing else int(value(entry, "Quantity") or "0"),
+                    "quantity_sold": existing["quantity_sold"] if existing else 0,
+                    "selector": selector,
+                    "urls": picture_sets[selector],
+                })
+            self.variations = parsed
+            self.revised = True
+            if self.raise_after_revise:
+                raise TradingAPIError("network timeout after eBay may have applied the revision")
+            return response("ReviseFixedPriceItem")
+        return await super().call(name, request)
+
+
 def proposal():
     return FixedPriceListingProposal(
         sku="SKU-001",
@@ -228,6 +321,25 @@ def key_code_variation_proposal():
                 for code in codes
             ],
         },
+    )
+
+
+def append_key_input(revision_token, *, sku="TLL-038-TL", selector="MRN7 — Romac — TLL-038-TL"):
+    return AppendFixedPriceVariationInput(
+        item_id="123456789012",
+        expected_revision_token=revision_token,
+        operation_id="append-TLL-038-TL-1",
+        variation={
+            "sku": sku,
+            "price_gbp": "4.95",
+            "quantity": 1,
+            "specifics": {"Key Code": selector},
+        },
+        picture_dimension="Key Code",
+        picture_urls=[
+            "https://i.ebayimg.com/images/g/MRN7-front/s-l1600.jpg",
+            "https://i.ebayimg.com/images/g/MRN7-rear/s-l1600.jpg",
+        ],
     )
 
 
@@ -644,6 +756,147 @@ def test_variation_verification_digest_rejects_changed_content_but_allows_saved_
     retried = asyncio.run(service.verify_add_fixed_price_variations(variation_proposal(verified.uuid.lower()), client))
     assert retried.uuid == verified.uuid
     assert retried.proposal_digest == verified.proposal_digest
+
+
+def test_append_key_variation_emits_complete_golden_matrix_and_reads_it_back():
+    client = FakeVariationAppendClient()
+    before = asyncio.run(service.get_item(client.item_id, client))
+    params = append_key_input(before.revision_token)
+    result = asyncio.run(service.append_fixed_price_variation(params, client))
+
+    assert result.status == "appended"
+    assert result.operation_id == params.operation_id
+    assert result.idempotent_recovery is False
+    assert [entry.sku for entry in result.final_listing.variation_details.variations] == [
+        "TLL-001-TL", "TLL-002-TL", "TLL-038-TL",
+    ]
+    request = next(request for name, request in client.calls if name == "ReviseFixedPriceItem")
+    item = find(request, "Item")
+    assert [node.tag.rsplit("}", 1)[-1] for node in item] == ["ItemID", "Variations"]
+    matrix = find(item, "Variations")
+    assert [node.tag.rsplit("}", 1)[-1] for node in matrix] == [
+        "Variation", "Variation", "Variation", "Pictures", "VariationSpecificsSet",
+    ]
+    assert find(item, "StartPrice") is None
+    assert find(item, "Quantity") is None
+    assert [value(entry, "SKU") for entry in findall(matrix, "Variation")] == [
+        "TLL-001-TL", "TLL-002-TL", "TLL-038-TL",
+    ]
+    sets = findall(matrix, "Pictures/VariationSpecificPictureSet")
+    assert value(find(matrix, "Pictures"), "VariationSpecificName") == "Key Code"
+    assert value(sets[-1], "VariationSpecificValue") == "MRN7 — Romac — TLL-038-TL"
+    assert [picture.text for picture in findall(sets[-1], "PictureURL")] == params.picture_urls
+    values = [node.text for node in findall(matrix, "VariationSpecificsSet/NameValueList/Value")]
+    assert values == [
+        "MRN1 — Union — TLL-001-TL",
+        "MRN2 — Union — TLL-002-TL",
+        "MRN7 — Romac — TLL-038-TL",
+    ]
+
+
+def test_append_uses_available_stock_for_sold_variations_without_replenishing_them():
+    variations = key_master_variations()
+    variations[0]["quantity"] = 3
+    variations[0]["quantity_sold"] = 2
+    client = FakeVariationAppendClient(variations)
+    before = asyncio.run(service.get_item(client.item_id, client))
+    result = asyncio.run(service.append_fixed_price_variation(append_key_input(before.revision_token), client))
+    request = next(request for name, request in client.calls if name == "ReviseFixedPriceItem")
+    first = findall(request, "Item/Variations/Variation")[0]
+    assert value(first, "Quantity") == "1"
+    preserved = result.final_listing.variation_details.variations[0]
+    assert preserved.quantity == 3
+    assert preserved.quantity_sold == 2
+
+
+def test_append_rejects_non_eps_or_duplicate_photo_urls_at_the_boundary():
+    with pytest.raises(ValidationError, match="EPS"):
+        AppendFixedPriceVariationInput(
+            **append_key_input("a" * 64).model_dump(mode="json") | {
+                "picture_urls": ["https://example.com/front.jpg", "https://i.ebayimg.com/images/g/rear/s-l1600.jpg"],
+            }
+        )
+    with pytest.raises(ValidationError, match="distinct"):
+        AppendFixedPriceVariationInput(
+            **append_key_input("a" * 64).model_dump(mode="json") | {
+                "picture_urls": [
+                    "https://i.ebayimg.com/images/g/same/s-l1600.jpg",
+                    "https://i.ebayimg.com/images/g/same/s-l1600.jpg",
+                ],
+            }
+        )
+
+
+def test_append_rejects_stale_baseline_before_revising():
+    client = FakeVariationAppendClient()
+    stale_token = asyncio.run(service.get_item(client.item_id, client)).revision_token
+    client.variations.append(key_master_variations(3)[-1])
+    with pytest.raises(ValueError, match="changed after"):
+        asyncio.run(service.append_fixed_price_variation(append_key_input(stale_token), client))
+    assert not any(name == "ReviseFixedPriceItem" for name, _ in client.calls)
+
+
+def test_append_rejects_duplicate_sku_or_selector_before_revising():
+    client = FakeVariationAppendClient()
+    revision = asyncio.run(service.get_item(client.item_id, client)).revision_token
+    with pytest.raises(ValueError, match="physical SKU"):
+        asyncio.run(service.append_fixed_price_variation(append_key_input(
+            revision,
+            sku="TLL-001-TL",
+            selector="MRN7 — Romac — TLL-038-TL",
+        ), client))
+    with pytest.raises(ValueError, match="selector"):
+        asyncio.run(service.append_fixed_price_variation(append_key_input(
+            revision,
+            sku="TLL-038-TL",
+            selector="MRN1 — Union — TLL-001-TL",
+        ), client))
+    assert not any(name == "ReviseFixedPriceItem" for name, _ in client.calls)
+
+
+def test_append_rejects_the_250_variation_capacity_before_revising():
+    client = FakeVariationAppendClient(key_master_variations(250))
+    revision = asyncio.run(service.get_item(client.item_id, client)).revision_token
+    with pytest.raises(ValueError, match="maximum 250"):
+        asyncio.run(service.append_fixed_price_variation(append_key_input(revision), client))
+    assert not any(name == "ReviseFixedPriceItem" for name, _ in client.calls)
+
+
+def test_append_recovers_exact_already_applied_member_without_revision():
+    desired = {
+        "sku": "TLL-038-TL",
+        "price": "4.95",
+        "quantity": 1,
+        "quantity_sold": 0,
+        "selector": "MRN7 — Romac — TLL-038-TL",
+        "urls": [
+            "https://i.ebayimg.com/images/g/MRN7-front/s-l1600.jpg",
+            "https://i.ebayimg.com/images/g/MRN7-rear/s-l1600.jpg",
+        ],
+    }
+    client = FakeVariationAppendClient([*key_master_variations(), desired])
+    result = asyncio.run(service.append_fixed_price_variation(append_key_input("f" * 64), client))
+    assert result.status == "already_applied"
+    assert result.idempotent_recovery is True
+    assert not any(name == "ReviseFixedPriceItem" for name, _ in client.calls)
+
+
+def test_append_reads_ebay_before_recovering_an_ambiguous_timeout():
+    client = FakeVariationAppendClient()
+    revision = asyncio.run(service.get_item(client.item_id, client)).revision_token
+    client.raise_after_revise = True
+    result = asyncio.run(service.append_fixed_price_variation(append_key_input(revision), client))
+    assert result.status == "already_applied"
+    assert result.idempotent_recovery is True
+    assert [entry.sku for entry in result.final_listing.variation_details.variations][-1] == "TLL-038-TL"
+
+
+def test_append_raises_when_readback_changed_a_preexisting_variation():
+    client = FakeVariationAppendClient()
+    revision = asyncio.run(service.get_item(client.item_id, client)).revision_token
+    client.corrupt_readback = True
+    with pytest.raises(TradingAPIError, match="changed an existing variation"):
+        asyncio.run(service.append_fixed_price_variation(append_key_input(revision), client))
 
 
 def test_media_upload_returns_only_eps_metadata(monkeypatch):

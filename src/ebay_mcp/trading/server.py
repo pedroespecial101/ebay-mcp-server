@@ -8,6 +8,7 @@ from mcp.types import TextContent
 from ebay_mcp.trading.service import (
     add_fixed_price_item as add_listing,
     add_fixed_price_variations as add_variation_listing,
+    append_fixed_price_variation as append_variation,
     get_item as fetch_item,
     get_recent_seller_listings as fetch_recent,
     revise_fixed_price_item as revise_listing,
@@ -19,6 +20,7 @@ from ebay_mcp.trading.service import (
 from models.ebay.trading import (
     AddFixedPriceItemInput, AddFixedPriceItemResult, EditableSellerListing,
     AddFixedPriceVariationsInput, AddFixedPriceVariationsResult,
+    AppendFixedPriceVariationInput, AppendFixedPriceVariationResult,
     GetSellerItemInput, RecentSellerListingsInput, RecentSellerListingsResult,
     ReviseFixedPriceItemInput, ReviseFixedPriceItemResult, UploadListingPicturesInput,
     UploadedListingPicture, VerifyAddFixedPriceItemInput, VerifyAddFixedPriceItemResult,
@@ -134,3 +136,16 @@ async def add_fixed_price_variations(
 ) -> AddFixedPriceVariationsResult:
     """Publish an unchanged, verified multi-variation proposal after explicit seller confirmation."""
     return await add_variation_listing(input)
+
+
+@trading_mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": True, "openWorldHint": True})
+async def append_fixed_price_variation(
+    input: AppendFixedPriceVariationInput,
+) -> AppendFixedPriceVariationResult:
+    """Append one quantity-one, two-photo Key Code variation to an active UK Trading master.
+
+    This is intentionally the only supported mutation of an existing variation
+    listing. It reads the full master first, rejects stale or duplicate state,
+    then reads it back before reporting success.
+    """
+    return await append_variation(input)

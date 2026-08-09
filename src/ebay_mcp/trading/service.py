@@ -30,6 +30,7 @@ from models.ebay.trading import (
     AddFixedPriceVariationsInput, AddFixedPriceVariationsResult, ListingVariation,
     MultiVariationFixedPriceListingProposal, VariationListingDetails,
     VerifyAddFixedPriceVariationsResult,
+    AppendFixedPriceVariationInput, AppendFixedPriceVariationResult,
     ViewItemImagesInput,
 )
 from utils.api_utils import get_standard_ebay_headers
@@ -38,6 +39,7 @@ INVENTORY_OFFERS_URL = "https://api.ebay.com/sell/inventory/v1/offer"
 VERIFICATION_TTL = timedelta(minutes=15)
 SUPPORTED_LISTING_TYPES = {"FixedPriceItem", "StoresFixedPrice"}
 _VERIFICATIONS: dict[str, dict[str, Any]] = {}
+_APPEND_LOCKS: dict[str, asyncio.Lock] = {}
 logger = logging.getLogger(__name__)
 
 TRADING_PACKAGE_TYPES = {
@@ -108,8 +110,12 @@ def _revision_state(listing: dict[str, Any]) -> str:
             "condition_description", "primary_category_id", "item_specifics",
             "best_offer_enabled", "picture_urls", "status", "listing_type", "site",
             "quantity", "quantity_sold", "has_variations", "is_charity", "inventory_model",
+            "variation_details",
         )
     }
+    details = editable.get("variation_details")
+    if isinstance(details, VariationListingDetails):
+        editable["variation_details"] = details.model_dump(mode="json")
     return hashlib.sha256(json.dumps(editable, sort_keys=True, default=str, separators=(",", ":")).encode()).hexdigest()
 
 
@@ -528,6 +534,218 @@ async def revise_fixed_price_item(
         fees=_parse_fees(response.root),
         final_listing=final,
     )
+
+
+def _append_master_details(current: EditableSellerListing, picture_dimension: str) -> VariationListingDetails:
+    """Validate the deliberately narrow kind of master this tool may extend."""
+    problems: list[str] = []
+    if current.status != "Active":
+        problems.append("listing_not_active")
+    if current.site != "UK":
+        problems.append("not_ebay_uk")
+    if current.listing_type not in SUPPORTED_LISTING_TYPES:
+        problems.append("not_fixed_price")
+    if current.inventory_model is not False:
+        problems.append("inventory_api_listing" if current.inventory_model is True else "inventory_model_unknown")
+    if current.is_charity:
+        problems.append("charity_listing")
+    if "not_authenticated_seller_listing" in current.restrictions:
+        problems.append("not_authenticated_seller_listing")
+    details = current.variation_details
+    if not current.has_variations or details is None:
+        problems.append("not_a_variation_listing")
+    if problems:
+        raise ValueError("This listing cannot be extended by the narrow variation append tool: " + ", ".join(problems))
+
+    if details.picture_dimension != picture_dimension:
+        raise ValueError("The existing listing does not map pictures by Key Code.")
+    if set(details.dimensions) != {picture_dimension}:
+        raise ValueError("The existing listing must have exactly one Key Code variation dimension.")
+    if not details.variations:
+        raise ValueError("The existing listing has no variations to preserve.")
+    if len(details.variations) > 250:
+        raise ValueError("The existing listing exceeds eBay's 250-variation limit.")
+
+    selectors: list[str] = []
+    skus: list[str] = []
+    for variation in details.variations:
+        if variation.sku is None or set(variation.specifics) != {picture_dimension}:
+            raise ValueError("The existing listing has an unsupported variation shape.")
+        skus.append(variation.sku)
+        selectors.append(variation.specifics[picture_dimension])
+    if len(skus) != len(set(skus)) or len(selectors) != len(set(selectors)):
+        raise ValueError("The existing listing has duplicate variation SKUs or Key Code selectors.")
+    if details.dimensions[picture_dimension] != selectors:
+        raise ValueError("The existing Key Code specificity set does not exactly match its variations.")
+    if set(details.picture_sets) != set(selectors):
+        raise ValueError("The existing Key Code picture mapping is incomplete.")
+    if any(not urls or len(urls) > 12 for urls in details.picture_sets.values()):
+        raise ValueError("The existing Key Code picture mapping is invalid.")
+    return details
+
+
+def _same_variation(left: ListingVariation, right: ListingVariation) -> bool:
+    return (
+        left.sku == right.sku
+        and left.price_gbp == right.price_gbp
+        and left.quantity == right.quantity
+        and left.quantity_sold == right.quantity_sold
+        and left.specifics == right.specifics
+    )
+
+
+def _is_exactly_appended(
+    details: VariationListingDetails,
+    params: AppendFixedPriceVariationInput,
+) -> bool:
+    matching = [entry for entry in details.variations if entry.sku == params.variation.sku]
+    if len(matching) != 1 or not _same_variation(matching[0], params.variation):
+        return False
+    selector = params.variation.specifics[params.picture_dimension]
+    return details.picture_sets.get(selector) == params.picture_urls
+
+
+def _assert_append_is_new(details: VariationListingDetails, params: AppendFixedPriceVariationInput) -> None:
+    if len(details.variations) >= 250:
+        raise ValueError("The master already has eBay's maximum 250 variations.")
+    selector = params.variation.specifics[params.picture_dimension]
+    if any(entry.sku == params.variation.sku for entry in details.variations):
+        raise ValueError("That physical SKU is already present in the master listing.")
+    if any(entry.specifics[params.picture_dimension] == selector for entry in details.variations):
+        raise ValueError("That Key Code selector is already present in the master listing.")
+
+
+def _build_append_variation_request(
+    current: EditableSellerListing,
+    details: VariationListingDetails,
+    params: AppendFixedPriceVariationInput,
+) -> ET.Element:
+    """Build a full contiguous variation matrix without touching scalar fields."""
+    root = element("ReviseFixedPriceItemRequest")
+    item = element("Item", parent=root)
+    element("ItemID", current.item_id, item)
+    variations = element("Variations", parent=item)
+    existing_by_sku = {variation.sku: variation for variation in details.variations}
+    for variation in [*details.variations, params.variation]:
+        entry = element("Variation", parent=variations)
+        element("SKU", variation.sku, entry)
+        price = element("StartPrice", variation.price_gbp, entry)
+        price.set("currencyID", "GBP")
+        # GetItem reports the total original variation quantity, while Revise
+        # expects the current available quantity. Reusing GetItem's raw value
+        # would restore units that have already sold.
+        existing = existing_by_sku.get(variation.sku)
+        available_quantity = (
+            max(existing.quantity - existing.quantity_sold, 0)
+            if existing is not None
+            else variation.quantity
+        )
+        element("Quantity", available_quantity, entry)
+        specifics = element("VariationSpecifics", parent=entry)
+        pair = element("NameValueList", parent=specifics)
+        element("Name", params.picture_dimension, pair)
+        element("Value", variation.specifics[params.picture_dimension], pair)
+
+    pictures = element("Pictures", parent=variations)
+    element("VariationSpecificName", params.picture_dimension, pictures)
+    picture_sets = {**details.picture_sets}
+    selector = params.variation.specifics[params.picture_dimension]
+    picture_sets[selector] = params.picture_urls
+    for mapped_value in [*details.dimensions[params.picture_dimension], selector]:
+        picture_set = element("VariationSpecificPictureSet", parent=pictures)
+        element("VariationSpecificValue", mapped_value, picture_set)
+        for url in picture_sets[mapped_value]:
+            element("PictureURL", url, picture_set)
+
+    specificity_set = element("VariationSpecificsSet", parent=variations)
+    pair = element("NameValueList", parent=specificity_set)
+    element("Name", params.picture_dimension, pair)
+    for mapped_value in [*details.dimensions[params.picture_dimension], selector]:
+        element("Value", mapped_value, pair)
+    return root
+
+
+def _assert_append_readback(
+    before: VariationListingDetails,
+    final: EditableSellerListing,
+    params: AppendFixedPriceVariationInput,
+) -> None:
+    """Only report success when the complete pre-state survives unchanged."""
+    after = _append_master_details(final, params.picture_dimension)
+    if len(after.variations) != len(before.variations) + 1:
+        raise TradingAPIError("Variation append read-back did not contain exactly one additional variation.")
+    before_by_sku = {entry.sku: entry for entry in before.variations}
+    after_by_sku = {entry.sku: entry for entry in after.variations}
+    if set(after_by_sku) != {*before_by_sku, params.variation.sku}:
+        raise TradingAPIError("Variation append read-back changed an existing variation SKU.")
+    if any(not _same_variation(entry, after_by_sku[sku]) for sku, entry in before_by_sku.items()):
+        raise TradingAPIError("Variation append read-back changed an existing variation.")
+    if not _same_variation(after_by_sku[params.variation.sku], params.variation):
+        raise TradingAPIError("Variation append read-back did not preserve the requested price, quantity and selector.")
+    selector = params.variation.specifics[params.picture_dimension]
+    expected_values = [*before.dimensions[params.picture_dimension], selector]
+    if after.dimensions[params.picture_dimension] != expected_values:
+        raise TradingAPIError("Variation append read-back changed the Key Code specificity set.")
+    if after.picture_sets.get(selector) != params.picture_urls:
+        raise TradingAPIError("Variation append read-back did not preserve the two requested EPS photographs.")
+    if any(after.picture_sets.get(key) != urls for key, urls in before.picture_sets.items()):
+        raise TradingAPIError("Variation append read-back changed an existing picture mapping.")
+
+
+async def append_fixed_price_variation(
+    params: AppendFixedPriceVariationInput,
+    client: TradingClient | None = None,
+) -> AppendFixedPriceVariationResult:
+    """Append exactly one photographed Key Code variation to a Trading-created master."""
+    if client is None:
+        async with TradingClient() as owned:
+            return await append_fixed_price_variation(params, owned)
+    lock = _APPEND_LOCKS.setdefault(params.item_id, asyncio.Lock())
+    async with lock:
+        current = await get_item(params.item_id, client)
+        before = _append_master_details(current, params.picture_dimension)
+        if _is_exactly_appended(before, params):
+            return AppendFixedPriceVariationResult(
+                status="already_applied",
+                item_id=params.item_id,
+                operation_id=params.operation_id,
+                final_listing=current,
+                idempotent_recovery=True,
+            )
+        if current.revision_token != params.expected_revision_token:
+            raise ValueError("The master listing changed after it was inspected. Fetch it again before appending.")
+        _assert_append_is_new(before, params)
+        request = _build_append_variation_request(current, before, params)
+        try:
+            response = await client.call("ReviseFixedPriceItem", request)
+        except TradingAPIError as exc:
+            # Only a transport/server failure is ambiguous. A parsed eBay
+            # rejection is definitive and must be surfaced unchanged.
+            if exc.root is not None or exc.issues or (exc.status_code is not None and exc.status_code < 500):
+                raise
+            # A network timeout can be ambiguous. Read eBay before a caller can retry.
+            try:
+                recovered = await get_item(params.item_id, client)
+                _assert_append_readback(before, recovered, params)
+            except Exception:
+                raise exc
+            return AppendFixedPriceVariationResult(
+                status="already_applied",
+                item_id=params.item_id,
+                operation_id=params.operation_id,
+                final_listing=recovered,
+                idempotent_recovery=True,
+            )
+        final = await get_item(params.item_id, client)
+        _assert_append_readback(before, final, params)
+        return AppendFixedPriceVariationResult(
+            status="appended",
+            item_id=params.item_id,
+            operation_id=params.operation_id,
+            warnings=list(response.warnings),
+            fees=_parse_fees(response.root),
+            final_listing=final,
+        )
 
 
 async def upload_listing_pictures(image_refs: list[str]) -> list[UploadedListingPicture]:

@@ -1,3 +1,15 @@
+# 2026-08-09 - Safe Trading variation append
+
+- Added `trading_append_fixed_price_variation`, the only supported mutation of
+  an existing key variation master. It appends one quantity-one `Key Code`
+  variation with exactly two distinct EPS URLs.
+- The operation fetches the complete active UK Trading listing, rejects
+  Inventory-model, stale, duplicate, incomplete-picture and full-master state,
+  serializes the complete preserved variation matrix, then reads it back.
+- Added exact already-applied and ambiguous-timeout recovery, per-ItemID
+  in-process serialization, and focused mocked golden XML/read-back tests. No
+  live seller calls were made.
+
 # 2026-08-09 - Direct Trading multi-variation listings
 
 - Added dedicated `trading_verify_add_fixed_price_variations` and

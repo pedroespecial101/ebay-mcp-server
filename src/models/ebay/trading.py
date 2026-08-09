@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from decimal import Decimal
 from typing import Any, Literal
+from urllib.parse import urlparse
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -262,6 +263,56 @@ class VariationListingDetails(BaseModel):
     variations: list[ListingVariation] = Field(default_factory=list)
     picture_dimension: str | None = None
     picture_sets: dict[str, list[str]] = Field(default_factory=dict)
+
+
+class AppendFixedPriceVariationInput(BaseModel):
+    """The one safe variation mutation supported for an existing key master."""
+
+    item_id: str = Field(pattern=r"^\d{8,20}$")
+    expected_revision_token: str = Field(min_length=64, max_length=64)
+    operation_id: str = Field(
+        min_length=1,
+        max_length=100,
+        pattern=r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,99}$",
+        description="Durable caller journal ID used to correlate safe retries.",
+    )
+    variation: ListingVariation
+    picture_dimension: Literal["Key Code"] = "Key Code"
+    picture_urls: list[str] = Field(min_length=2, max_length=2)
+
+    @field_validator("picture_urls")
+    @classmethod
+    def eps_urls_only(cls, urls: list[str]) -> list[str]:
+        if len(set(urls)) != 2:
+            raise ValueError("the two variation pictures must be distinct")
+        for url in urls:
+            parsed = urlparse(url)
+            if parsed.scheme != "https" or parsed.hostname != "i.ebayimg.com":
+                raise ValueError("variation picture URLs must be HTTPS EPS i.ebayimg.com URLs")
+        return urls
+
+    @model_validator(mode="after")
+    def validate_single_key_variation(self):
+        if self.variation.sku is None:
+            raise ValueError("the appended variation requires a physical SKU")
+        if self.variation.quantity != 1 or self.variation.quantity_sold != 0:
+            raise ValueError("the appended variation must have quantity one and no sales")
+        if set(self.variation.specifics) != {self.picture_dimension}:
+            raise ValueError("the appended variation must use only the Key Code dimension")
+        selector = self.variation.specifics[self.picture_dimension]
+        if len(selector) > 65:
+            raise ValueError("the Key Code selector must be at most 65 characters")
+        return self
+
+
+class AppendFixedPriceVariationResult(BaseModel):
+    status: Literal["appended", "already_applied"]
+    item_id: str
+    operation_id: str
+    warnings: list[TradingIssue] = Field(default_factory=list)
+    fees: list[TradingFee] = Field(default_factory=list)
+    final_listing: EditableSellerListing
+    idempotent_recovery: bool = False
 
 
 class MultiVariationFixedPriceListingProposal(BaseModel):
