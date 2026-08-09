@@ -535,6 +535,55 @@ def test_five_mrn_key_codes_use_one_dimension_with_complete_picture_mapping():
     ]
 
 
+def test_one_key_code_dimension_survives_add_get_item_readback():
+    client = FakeTradingClient()
+    readback = item_response(client.item_id)
+    item = find(readback.root, "Item")
+    variations = element("Variations", parent=item)
+    codes = ("MRN-001", "MRN-002", "MRN-003", "MRN-004", "MRN-005")
+    for code in codes:
+        variation = element("Variation", parent=variations)
+        element("SKU", f"KEY-{code}", variation)
+        element("StartPrice", "12.50", variation)
+        element("Quantity", 1, variation)
+        specifics = element("VariationSpecifics", parent=variation)
+        pair = element("NameValueList", parent=specifics)
+        element("Name", "Key Code", pair)
+        element("Value", code, pair)
+    pictures = element("Pictures", parent=variations)
+    element("VariationSpecificName", "Key Code", pictures)
+    for code in codes:
+        picture_set = element("VariationSpecificPictureSet", parent=pictures)
+        element("VariationSpecificValue", code, picture_set)
+        element("PictureURL", f"https://i.ebayimg.com/images/g/{code}/s-l1600.jpg", picture_set)
+    dimension_set = element("VariationSpecificsSet", parent=variations)
+    pair = element("NameValueList", parent=dimension_set)
+    element("Name", "Key Code", pair)
+    for code in codes:
+        element("Value", code, pair)
+
+    original_call = client.call
+
+    async def custom_call(name, request):
+        if name == "GetItem":
+            return readback
+        return await original_call(name, request)
+
+    client.call = custom_call
+    listing_proposal = key_code_variation_proposal()
+    verified = asyncio.run(service.verify_add_fixed_price_variations(listing_proposal, client))
+    result = asyncio.run(service.add_fixed_price_variations(AddFixedPriceVariationsInput(
+        proposal=listing_proposal, verification_token=verified.verification_token,
+    ), client))
+    details = result.final_listing.variation_details
+    assert details.dimensions == {"Key Code": list(codes)}
+    assert [entry.specifics for entry in details.variations] == [
+        {"Key Code": code} for code in codes
+    ]
+    assert details.picture_dimension == "Key Code"
+    assert set(details.picture_sets) == set(codes)
+
+
 def test_variation_add_reuses_verified_uuid_and_reads_back_normalized_variations():
     client = FakeTradingClient()
     readback = item_response(client.item_id)

@@ -142,7 +142,7 @@ def _parse_variation_details(item: ET.Element) -> VariationListingDetails | None
             if name and specific_value:
                 specifics[name] = specific_value
         # A malformed/partial GetItem response should not make ordinary read-back fail.
-        if len(specifics) < 2:
+        if len(specifics) < 1:
             continue
         parsed_variations.append(ListingVariation(
             sku=value(entry, "SKU"),
