@@ -203,6 +203,34 @@ def variation_proposal(uuid=None):
     )
 
 
+def key_code_variation_proposal():
+    codes = ("MRN-001", "MRN-002", "MRN-003", "MRN-004", "MRN-005")
+    return MultiVariationFixedPriceListingProposal(
+        title="Five coded vintage keys",
+        description="Each variation is identified by its photographed key code.",
+        category_id="123",
+        condition_id="3000",
+        item_specifics={"Brand": ["Unbranded"]},
+        picture_urls=["https://i.ebayimg.com/images/g/shared/s-l1600.jpg"],
+        variations=[
+            {
+                "sku": f"KEY-{code}",
+                "price_gbp": "12.50",
+                "quantity": 1,
+                "specifics": {"Key Code": code},
+            }
+            for code in codes
+        ],
+        picture_mapping={
+            "dimension": "Key Code",
+            "sets": [
+                {"value": code, "picture_urls": [f"https://i.ebayimg.com/images/g/{code}/s-l1600.jpg"]}
+                for code in codes
+            ],
+        },
+    )
+
+
 @pytest.fixture(autouse=True)
 def defaults(monkeypatch):
     monkeypatch.setenv("EBAY_PAYMENT_POLICY_ID", "1001")
@@ -443,13 +471,13 @@ def test_duplicate_uuid_recovers_original_item_as_idempotent_success():
     assert result.idempotent_recovery is True
 
 
-def test_variation_proposal_requires_picture_values_from_its_single_mapped_dimension():
+def test_variation_proposal_requires_complete_picture_mapping_for_its_single_dimension():
     incomplete = variation_proposal().model_dump(mode="json")
     incomplete["picture_mapping"] = {
         "dimension": "Finish",
-        "sets": [{"value": "Copper", "picture_urls": ["https://i.ebayimg.com/images/g/copper/s-l1600.jpg"]}],
+        "sets": [{"value": "Brass", "picture_urls": ["https://i.ebayimg.com/images/g/brass/s-l1600.jpg"]}],
     }
-    with pytest.raises(ValidationError, match="may only name values"):
+    with pytest.raises(ValidationError, match="cover exactly every value"):
         MultiVariationFixedPriceListingProposal(**incomplete)
     overlapping = variation_proposal().model_dump(mode="json")
     overlapping["item_specifics"] = {"Finish": ["Brass"]}
@@ -482,6 +510,29 @@ def test_variation_verify_serializes_correct_xml_shape_and_returns_durable_ident
         for entry in findall(variations, "VariationSpecificsSet/NameValueList")
     }
     assert dimensions == {"Finish": ["Brass", "Steel"], "Size": ["Small"]}
+
+
+def test_five_mrn_key_codes_use_one_dimension_with_complete_picture_mapping():
+    client = FakeTradingClient()
+    verified = asyncio.run(service.verify_add_fixed_price_variations(key_code_variation_proposal(), client))
+    request = next(request for name, request in client.calls if name == "VerifyAddFixedPriceItem")
+    variations = find(request, "Item/Variations")
+    assert verified.valid is True
+    assert value(variations, "Pictures/VariationSpecificName") == "Key Code"
+    assert len(findall(variations, "Variation")) == 5
+    assert all(
+        value(entry, "VariationSpecifics/NameValueList/Name") == "Key Code"
+        for entry in findall(variations, "Variation")
+    )
+    assert [value(entry, "VariationSpecificValue") for entry in findall(
+        variations, "Pictures/VariationSpecificPictureSet"
+    )] == ["MRN-001", "MRN-002", "MRN-003", "MRN-004", "MRN-005"]
+    dimension_set = findall(variations, "VariationSpecificsSet/NameValueList")
+    assert len(dimension_set) == 1
+    assert value(dimension_set[0], "Name") == "Key Code"
+    assert [node.text for node in findall(dimension_set[0], "Value")] == [
+        "MRN-001", "MRN-002", "MRN-003", "MRN-004", "MRN-005",
+    ]
 
 
 def test_variation_add_reuses_verified_uuid_and_reads_back_normalized_variations():

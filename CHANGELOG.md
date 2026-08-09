@@ -3,7 +3,7 @@
 - Added dedicated `trading_verify_add_fixed_price_variations` and
   `trading_add_fixed_price_variations` tools for direct eBay UK fixed-price
   listings with multiple purchasable variations.
-- Added local validation and Trading XML serialization for 2--5 shared
+- Added local validation and Trading XML serialization for 1--5 shared
   variation dimensions, unique SKU/value combinations, and exactly one
   picture-mapped dimension.
 - Returned durable UUID and content digest with verification/publication, while

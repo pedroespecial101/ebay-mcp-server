@@ -202,7 +202,7 @@ class ListingVariation(BaseModel):
     price_gbp: Decimal = Field(gt=0, decimal_places=2)
     quantity: int = Field(ge=0, le=999_999)
     quantity_sold: int = Field(default=0, ge=0)
-    specifics: dict[str, str] = Field(min_length=2, max_length=5)
+    specifics: dict[str, str] = Field(min_length=1, max_length=5)
 
     @field_validator("specifics")
     @classmethod
@@ -312,8 +312,8 @@ class MultiVariationFixedPriceListingProposal(BaseModel):
     @model_validator(mode="after")
     def validate_variation_matrix(self):
         first_names = set(self.variations[0].specifics)
-        if not 2 <= len(first_names) <= 5:
-            raise ValueError("each variation must use two to five variation dimensions")
+        if not 1 <= len(first_names) <= 5:
+            raise ValueError("each variation must use one to five variation dimensions")
         if any(set(entry.specifics) != first_names for entry in self.variations):
             raise ValueError("every variation must specify the same variation dimensions")
         if first_names & set(self.item_specifics):
@@ -328,8 +328,8 @@ class MultiVariationFixedPriceListingProposal(BaseModel):
             raise ValueError("the picture-mapped dimension must be a variation dimension")
         dimension_values = {entry.specifics[self.picture_mapping.dimension] for entry in self.variations}
         mapped_values = {entry.value for entry in self.picture_mapping.sets}
-        if not mapped_values <= dimension_values:
-            raise ValueError("picture mappings may only name values of the mapped variation dimension")
+        if mapped_values != dimension_values:
+            raise ValueError("picture mappings must cover exactly every value of the mapped variation dimension")
         return self
 
 
