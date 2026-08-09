@@ -27,6 +27,9 @@ from models.ebay.trading import (
     RecentSellerListingsResult, ReviseFixedPriceItemInput, ReviseFixedPriceItemResult,
     SellerListingSummary, SellerPolicyReferences, TradingFee, TradingIssue,
     UploadedListingPicture, VerifyAddFixedPriceItemResult,
+    AddFixedPriceVariationsInput, AddFixedPriceVariationsResult, ListingVariation,
+    MultiVariationFixedPriceListingProposal, VariationListingDetails,
+    VerifyAddFixedPriceVariationsResult,
     ViewItemImagesInput,
 )
 from utils.api_utils import get_standard_ebay_headers
@@ -91,6 +94,12 @@ def _proposal_digest(proposal: FixedPriceListingProposal) -> str:
     return hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
 
+def _variation_proposal_digest(proposal: MultiVariationFixedPriceListingProposal) -> str:
+    """Hash only sale content: an optional durable UUID is idempotency metadata."""
+    payload = proposal.model_dump(mode="json", exclude={"uuid"})
+    return hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+
+
 def _revision_state(listing: dict[str, Any]) -> str:
     editable = {
         key: listing[key]
@@ -112,6 +121,50 @@ def _parse_specifics(item: ET.Element) -> dict[str, list[str]]:
         if name and values:
             specifics[name] = values
     return specifics
+
+
+def _parse_variation_details(item: ET.Element) -> VariationListingDetails | None:
+    variations = find(item, "Variations")
+    if variations is None:
+        return None
+    dimensions: dict[str, list[str]] = {}
+    for entry in findall(variations, "VariationSpecificsSet/NameValueList"):
+        name = value(entry, "Name")
+        values = [node.text or "" for node in findall(entry, "Value") if node.text]
+        if name and values:
+            dimensions[name] = values
+    parsed_variations: list[ListingVariation] = []
+    for entry in findall(variations, "Variation"):
+        specifics: dict[str, str] = {}
+        for specific in findall(entry, "VariationSpecifics/NameValueList"):
+            name = value(specific, "Name")
+            specific_value = value(specific, "Value")
+            if name and specific_value:
+                specifics[name] = specific_value
+        # A malformed/partial GetItem response should not make ordinary read-back fail.
+        if len(specifics) < 2:
+            continue
+        parsed_variations.append(ListingVariation(
+            sku=value(entry, "SKU"),
+            price_gbp=_parse_decimal(value(entry, "StartPrice") or value(entry, "SellingStatus/CurrentPrice")),
+            quantity=_parse_int(value(entry, "Quantity")),
+            quantity_sold=_parse_int(value(entry, "SellingStatus/QuantitySold")),
+            specifics=specifics,
+        ))
+    pictures = find(variations, "Pictures")
+    picture_dimension = value(pictures, "VariationSpecificName")
+    picture_sets: dict[str, list[str]] = {}
+    for picture_set in findall(pictures, "VariationSpecificPictureSet"):
+        mapped_value = value(picture_set, "VariationSpecificValue")
+        urls = [node.text or "" for node in findall(picture_set, "PictureURL") if node.text]
+        if mapped_value and urls:
+            picture_sets[mapped_value] = urls
+    return VariationListingDetails(
+        dimensions=dimensions,
+        variations=parsed_variations,
+        picture_dimension=picture_dimension,
+        picture_sets=picture_sets,
+    )
 
 
 def _parse_fees(root: ET.Element) -> list[TradingFee]:
@@ -214,6 +267,7 @@ async def _parse_editable_item(client: TradingClient, item: ET.Element) -> Edita
         "quantity": _parse_int(value(item, "Quantity"), 1),
         "quantity_sold": _parse_int(value(item, "SellingStatus/QuantitySold")),
         "has_variations": find(item, "Variations") is not None,
+        "variation_details": _parse_variation_details(item),
         "is_charity": find(item, "Charity") is not None,
         "inventory_model": inventory_model,
         "seller_matches": not (
@@ -562,6 +616,98 @@ def _build_add_request(call_name: str, proposal: FixedPriceListingProposal, uuid
     return root
 
 
+def _build_add_variations_request(
+    call_name: str,
+    proposal: MultiVariationFixedPriceListingProposal,
+    uuid: str,
+    defaults: dict[str, str],
+) -> ET.Element:
+    """Build the constrained Add/Verify XML shape for a multi-variation listing.
+
+    Trading requires the `Variation` entries before the optional picture map and
+    the `VariationSpecificsSet`; only one variation dimension can own the
+    `Pictures` mapping.
+    """
+    root = element(f"{call_name}Request")
+    item = element("Item", parent=root)
+    element("Title", proposal.title, item)
+    element("Description", proposal.description, item)
+    category = element("PrimaryCategory", parent=item)
+    element("CategoryID", proposal.category_id, category)
+    element("ConditionID", proposal.condition_id, item)
+    if proposal.condition_description:
+        element("ConditionDescription", proposal.condition_description, item)
+    element("Currency", "GBP", item)
+    element("Country", "GB", item)
+    element("Site", "UK", item)
+    element("Location", defaults["location"], item)
+    element("PostalCode", defaults["postal_code"], item)
+    element("ListingType", "FixedPriceItem", item)
+    element("ListingDuration", "GTC", item)
+    element("UUID", uuid, item)
+    element("CategoryMappingAllowed", False, item)
+    best_offer = element("BestOfferDetails", parent=item)
+    element("BestOfferEnabled", proposal.best_offer_enabled, best_offer)
+    if proposal.item_specifics:
+        _append_specifics(item, proposal.item_specifics)
+    pictures = element("PictureDetails", parent=item)
+    element("PictureSource", "EPS", pictures)
+    for url in proposal.picture_urls:
+        element("PictureURL", url, pictures)
+    if proposal.package:
+        package = element("ShippingPackageDetails", parent=item)
+        element("MeasurementUnit", "Metric", package)
+        element("PackageDepth", proposal.package.height_cm, package)
+        element("PackageLength", proposal.package.length_cm, package)
+        element("PackageWidth", proposal.package.width_cm, package)
+        element("ShippingPackage", TRADING_PACKAGE_TYPES[proposal.package.package_type], package)
+        major = element("WeightMajor", proposal.package.weight_grams // 1000, package)
+        major.set("unit", "kg")
+        minor = element("WeightMinor", proposal.package.weight_grams % 1000, package)
+        minor.set("unit", "gr")
+    profiles = element("SellerProfiles", parent=item)
+    payment = element("SellerPaymentProfile", parent=profiles)
+    element("PaymentProfileID", defaults["payment"], payment)
+    returns = element("SellerReturnProfile", parent=profiles)
+    element("ReturnProfileID", defaults["return"], returns)
+    shipping = element("SellerShippingProfile", parent=profiles)
+    element("ShippingProfileID", defaults["shipping"], shipping)
+
+    variations = element("Variations", parent=item)
+    dimension_names = list(proposal.variations[0].specifics)
+    dimension_values: dict[str, list[str]] = {name: [] for name in dimension_names}
+    for proposed in proposal.variations:
+        variation = element("Variation", parent=variations)
+        element("SKU", proposed.sku, variation)
+        price = element("StartPrice", proposed.price_gbp, variation)
+        price.set("currencyID", "GBP")
+        element("Quantity", proposed.quantity, variation)
+        specifics = element("VariationSpecifics", parent=variation)
+        for name in dimension_names:
+            entry = element("NameValueList", parent=specifics)
+            element("Name", name, entry)
+            specific_value = proposed.specifics[name]
+            element("Value", specific_value, entry)
+            if specific_value not in dimension_values[name]:
+                dimension_values[name].append(specific_value)
+
+    mapped_pictures = element("Pictures", parent=variations)
+    element("VariationSpecificName", proposal.picture_mapping.dimension, mapped_pictures)
+    for picture_set in proposal.picture_mapping.sets:
+        set_node = element("VariationSpecificPictureSet", parent=mapped_pictures)
+        element("VariationSpecificValue", picture_set.value, set_node)
+        for url in picture_set.picture_urls:
+            element("PictureURL", url, set_node)
+
+    specific_set = element("VariationSpecificsSet", parent=variations)
+    for name in dimension_names:
+        entry = element("NameValueList", parent=specific_set)
+        element("Name", name, entry)
+        for specific_value in dimension_values[name]:
+            element("Value", specific_value, entry)
+    return root
+
+
 async def _verify_proposal(
     proposal: FixedPriceListingProposal, uuid: str, client: TradingClient
 ) -> tuple[list[TradingFee], list[TradingIssue], list[TradingIssue]]:
@@ -598,7 +744,12 @@ async def verify_add_fixed_price_item(
         )
     token = secrets.token_urlsafe(24)
     expires_at = datetime.now(timezone.utc) + VERIFICATION_TTL
-    _VERIFICATIONS[token] = {"digest": _proposal_digest(proposal), "uuid": uuid, "expires_at": expires_at}
+    _VERIFICATIONS[token] = {
+        "kind": "fixed_price",
+        "digest": _proposal_digest(proposal),
+        "uuid": uuid,
+        "expires_at": expires_at,
+    }
     return VerifyAddFixedPriceItemResult(
         valid=True,
         verification_token=token,
@@ -633,6 +784,8 @@ async def add_fixed_price_item(
     verification = _VERIFICATIONS.get(params.verification_token)
     if not verification:
         raise ValueError("The verification token is unknown or the server restarted; verify the listing again.")
+    if verification.get("kind", "fixed_price") != "fixed_price":
+        raise ValueError("This verification token belongs to a different Trading proposal type; verify this listing again.")
     if verification["expires_at"] <= datetime.now(timezone.utc):
         _VERIFICATIONS.pop(params.verification_token, None)
         raise ValueError("The verification token expired; verify the listing again.")
@@ -670,4 +823,117 @@ async def add_fixed_price_item(
         warnings=warnings,
         final_listing=final,
         idempotent_recovery=recovered,
+    )
+
+
+async def _verify_variations_proposal(
+    proposal: MultiVariationFixedPriceListingProposal, uuid: str, client: TradingClient
+) -> tuple[list[TradingFee], list[TradingIssue], list[TradingIssue]]:
+    defaults = await _required_add_defaults(client)
+    try:
+        response = await client.call(
+            "VerifyAddFixedPriceItem",
+            _build_add_variations_request("VerifyAddFixedPriceItem", proposal, uuid, defaults),
+        )
+        return _parse_fees(response.root), response.warnings, []
+    except TradingAPIError as exc:
+        errors = [issue for issue in exc.issues if issue.severity.lower() == "error"]
+        warnings = [issue for issue in exc.issues if issue.severity.lower() != "error"]
+        if not errors:
+            errors = [TradingIssue(code="verify_failed", severity="Error", message=str(exc))]
+        return [], warnings, errors
+
+
+async def verify_add_fixed_price_variations(
+    proposal: MultiVariationFixedPriceListingProposal, client: TradingClient | None = None
+) -> VerifyAddFixedPriceVariationsResult:
+    if client is None:
+        async with TradingClient() as owned:
+            return await verify_add_fixed_price_variations(proposal, owned)
+    uuid = proposal.uuid or secrets.token_hex(16).upper()
+    digest = _variation_proposal_digest(proposal)
+    fees, warnings, errors = await _verify_variations_proposal(proposal, uuid, client)
+    if errors:
+        return VerifyAddFixedPriceVariationsResult(
+            valid=False,
+            uuid=uuid,
+            proposal_digest=digest,
+            fees=fees,
+            estimated_fee_gbp=_total_fees(fees),
+            warnings=warnings,
+            errors=errors,
+        )
+    token = secrets.token_urlsafe(24)
+    expires_at = datetime.now(timezone.utc) + VERIFICATION_TTL
+    _VERIFICATIONS[token] = {
+        "kind": "variations",
+        "digest": digest,
+        "uuid": uuid,
+        "expires_at": expires_at,
+    }
+    return VerifyAddFixedPriceVariationsResult(
+        valid=True,
+        verification_token=token,
+        expires_at=expires_at,
+        uuid=uuid,
+        proposal_digest=digest,
+        fees=fees,
+        estimated_fee_gbp=_total_fees(fees),
+        warnings=warnings,
+    )
+
+
+async def add_fixed_price_variations(
+    params: AddFixedPriceVariationsInput, client: TradingClient | None = None
+) -> AddFixedPriceVariationsResult:
+    if client is None:
+        async with TradingClient() as owned:
+            return await add_fixed_price_variations(params, owned)
+    verification = _VERIFICATIONS.get(params.verification_token)
+    if not verification:
+        raise ValueError("The verification token is unknown or the server restarted; verify the listing again with the saved UUID.")
+    if verification.get("kind") != "variations":
+        raise ValueError("This verification token does not belong to a variation proposal; verify the listing again.")
+    if verification["expires_at"] <= datetime.now(timezone.utc):
+        _VERIFICATIONS.pop(params.verification_token, None)
+        raise ValueError("The verification token expired; verify the listing again with the saved UUID.")
+    digest = _variation_proposal_digest(params.proposal)
+    if verification["digest"] != digest:
+        raise ValueError("The variation proposal changed after verification; verify the new proposal.")
+    if params.proposal.uuid and params.proposal.uuid != verification["uuid"]:
+        raise ValueError("The variation proposal UUID changed after verification; verify the proposal again.")
+    fees, verify_warnings, errors = await _verify_variations_proposal(params.proposal, verification["uuid"], client)
+    if errors:
+        raise ValueError(f"The variation listing no longer verifies: {errors[0].message}")
+    try:
+        defaults = await _required_add_defaults(client)
+        response = await client.call(
+            "AddFixedPriceItem",
+            _build_add_variations_request("AddFixedPriceItem", params.proposal, verification["uuid"], defaults),
+        )
+        item_id = value(response.root, "ItemID")
+        actual_fees = _parse_fees(response.root)
+        warnings = verify_warnings + response.warnings
+        recovered = False
+    except TradingAPIError as exc:
+        item_id = _duplicate_item_id(exc)
+        if not item_id:
+            raise
+        actual_fees = []
+        warnings = verify_warnings + [issue for issue in exc.issues if issue.severity.lower() != "error"]
+        recovered = True
+    if not item_id:
+        raise TradingAPIError("eBay accepted the variation add request but returned no item ID.")
+    final = await get_item(item_id, client)
+    return AddFixedPriceVariationsResult(
+        status="published",
+        item_id=item_id,
+        listing_url=final.listing_url,
+        fees=actual_fees,
+        actual_fee_gbp=_total_fees(actual_fees),
+        warnings=warnings,
+        final_listing=final,
+        idempotent_recovery=recovered,
+        uuid=verification["uuid"],
+        proposal_digest=digest,
     )

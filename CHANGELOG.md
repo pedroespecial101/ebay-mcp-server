@@ -1,3 +1,17 @@
+# 2026-08-09 - Direct Trading multi-variation listings
+
+- Added dedicated `trading_verify_add_fixed_price_variations` and
+  `trading_add_fixed_price_variations` tools for direct eBay UK fixed-price
+  listings with multiple purchasable variations.
+- Added local validation and Trading XML serialization for 2--5 shared
+  variation dimensions, unique SKU/value combinations, and exactly one
+  picture-mapped dimension.
+- Returned durable UUID and content digest with verification/publication, while
+  retaining short-lived token checks and duplicate-safe add recovery. GetItem
+  read-back now exposes normalized variation details.
+- Added focused mocked XML, validation, retry-safety and read-back tests; no
+  live seller calls were made.
+
 # 2026-07-15 - Private-seller fee gate removal
 
 - Removed fee-ceiling inputs and fee-based publication blockers from both direct

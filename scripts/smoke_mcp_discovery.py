@@ -40,6 +40,8 @@ EXPECTED_TOOLS = {
     "trading_upload_listing_pictures",
     "trading_verify_add_fixed_price_item",
     "trading_add_fixed_price_item",
+    "trading_verify_add_fixed_price_variations",
+    "trading_add_fixed_price_variations",
 }
 if os.getenv("EBAY_ENABLE_INTERACTIVE_AUTH", "1") == "1":
     EXPECTED_TOOLS.add("auth_trigger_ebay_login")
@@ -53,6 +55,7 @@ WRITE_TOOLS = {
     "listing_discard_draft",
     "trading_revise_fixed_price_item",
     "trading_add_fixed_price_item",
+    "trading_add_fixed_price_variations",
 }
 
 

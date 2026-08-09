@@ -24,6 +24,7 @@ from ebay_mcp.trading import service
 from ebay_mcp.media import ebay as media_api
 from models.ebay.trading import (
     AddFixedPriceItemInput, FixedPriceListingProposal, FixedPriceRevisionPatch,
+    AddFixedPriceVariationsInput, MultiVariationFixedPriceListingProposal,
     RecentSellerListingsInput, ReviseFixedPriceItemInput,
     ViewItemImagesInput,
 )
@@ -165,6 +166,39 @@ def proposal():
             "width_cm": "20",
             "height_cm": "10",
             "package_type": "PARCEL_OR_PADDED_ENVELOPE",
+        },
+    )
+
+
+def variation_proposal(uuid=None):
+    return MultiVariationFixedPriceListingProposal(
+        uuid=uuid,
+        title="Two finishes of the same fitting",
+        description="Two truthful variations, each photographed.",
+        category_id="123",
+        condition_id="3000",
+        item_specifics={"Brand": ["Acme"]},
+        picture_urls=["https://i.ebayimg.com/images/g/shared/s-l1600.jpg"],
+        variations=[
+            {
+                "sku": "ACME-BRASS-S",
+                "price_gbp": "12.50",
+                "quantity": 2,
+                "specifics": {"Finish": "Brass", "Size": "Small"},
+            },
+            {
+                "sku": "ACME-STEEL-S",
+                "price_gbp": "13.50",
+                "quantity": 3,
+                "specifics": {"Finish": "Steel", "Size": "Small"},
+            },
+        ],
+        picture_mapping={
+            "dimension": "Finish",
+            "sets": [
+                {"value": "Brass", "picture_urls": ["https://i.ebayimg.com/images/g/brass/s-l1600.jpg"]},
+                {"value": "Steel", "picture_urls": ["https://i.ebayimg.com/images/g/steel/s-l1600.jpg"]},
+            ],
         },
     )
 
@@ -407,6 +441,109 @@ def test_duplicate_uuid_recovers_original_item_as_idempotent_success():
     ), client))
     assert result.item_id == client.item_id
     assert result.idempotent_recovery is True
+
+
+def test_variation_proposal_requires_picture_values_from_its_single_mapped_dimension():
+    incomplete = variation_proposal().model_dump(mode="json")
+    incomplete["picture_mapping"] = {
+        "dimension": "Finish",
+        "sets": [{"value": "Copper", "picture_urls": ["https://i.ebayimg.com/images/g/copper/s-l1600.jpg"]}],
+    }
+    with pytest.raises(ValidationError, match="may only name values"):
+        MultiVariationFixedPriceListingProposal(**incomplete)
+    overlapping = variation_proposal().model_dump(mode="json")
+    overlapping["item_specifics"] = {"Finish": ["Brass"]}
+    with pytest.raises(ValidationError, match="cannot also be variation dimensions"):
+        MultiVariationFixedPriceListingProposal(**overlapping)
+
+
+def test_variation_verify_serializes_correct_xml_shape_and_returns_durable_identity():
+    client = FakeTradingClient()
+    verified = asyncio.run(service.verify_add_fixed_price_variations(variation_proposal(), client))
+    request = next(request for name, request in client.calls if name == "VerifyAddFixedPriceItem")
+    item = find(request, "Item")
+    assert verified.valid is True
+    assert verified.verification_token
+    assert verified.uuid and len(verified.uuid) == 32
+    assert verified.proposal_digest and len(verified.proposal_digest) == 64
+    assert value(request, "Item/UUID") == verified.uuid
+    assert find(request, "Item/StartPrice") is None
+    assert find(request, "Item/Quantity") is None
+    variations = find(item, "Variations")
+    assert [node.tag.rsplit("}", 1)[-1] for node in variations] == [
+        "Variation", "Variation", "Pictures", "VariationSpecificsSet",
+    ]
+    assert value(variations, "Pictures/VariationSpecificName") == "Finish"
+    assert [value(node, "VariationSpecificValue") for node in findall(variations, "Pictures/VariationSpecificPictureSet")] == [
+        "Brass", "Steel",
+    ]
+    dimensions = {
+        value(entry, "Name"): [node.text for node in findall(entry, "Value")]
+        for entry in findall(variations, "VariationSpecificsSet/NameValueList")
+    }
+    assert dimensions == {"Finish": ["Brass", "Steel"], "Size": ["Small"]}
+
+
+def test_variation_add_reuses_verified_uuid_and_reads_back_normalized_variations():
+    client = FakeTradingClient()
+    readback = item_response(client.item_id)
+    item = find(readback.root, "Item")
+    variations = element("Variations", parent=item)
+    for sku, finish, quantity in (("ACME-BRASS-S", "Brass", 2), ("ACME-STEEL-S", "Steel", 3)):
+        variation = element("Variation", parent=variations)
+        element("SKU", sku, variation)
+        element("StartPrice", "12.50", variation)
+        element("Quantity", quantity, variation)
+        specifics = element("VariationSpecifics", parent=variation)
+        for name, specific_value in (("Finish", finish), ("Size", "Small")):
+            pair = element("NameValueList", parent=specifics)
+            element("Name", name, pair)
+            element("Value", specific_value, pair)
+    pictures = element("Pictures", parent=variations)
+    element("VariationSpecificName", "Finish", pictures)
+    for finish in ("Brass", "Steel"):
+        picture_set = element("VariationSpecificPictureSet", parent=pictures)
+        element("VariationSpecificValue", finish, picture_set)
+        element("PictureURL", f"https://i.ebayimg.com/images/g/{finish}/s-l1600.jpg", picture_set)
+    dimension_set = element("VariationSpecificsSet", parent=variations)
+    for name, values in (("Finish", ("Brass", "Steel")), ("Size", ("Small",))):
+        pair = element("NameValueList", parent=dimension_set)
+        element("Name", name, pair)
+        for specific_value in values:
+            element("Value", specific_value, pair)
+
+    original_call = client.call
+
+    async def custom_call(name, request):
+        if name == "GetItem":
+            return readback
+        return await original_call(name, request)
+
+    client.call = custom_call
+    verified = asyncio.run(service.verify_add_fixed_price_variations(variation_proposal(), client))
+    result = asyncio.run(service.add_fixed_price_variations(AddFixedPriceVariationsInput(
+        proposal=variation_proposal(), verification_token=verified.verification_token,
+    ), client))
+    assert client.added_uuid == verified.uuid == result.uuid
+    assert result.proposal_digest == verified.proposal_digest
+    assert result.final_listing.variation_details.picture_dimension == "Finish"
+    assert result.final_listing.variation_details.picture_sets["Steel"][0].startswith("https://i.ebayimg.com/")
+    assert [variation.sku for variation in result.final_listing.variation_details.variations] == [
+        "ACME-BRASS-S", "ACME-STEEL-S",
+    ]
+
+
+def test_variation_verification_digest_rejects_changed_content_but_allows_saved_uuid_on_reverify():
+    client = FakeTradingClient()
+    verified = asyncio.run(service.verify_add_fixed_price_variations(variation_proposal(), client))
+    changed = variation_proposal().model_copy(update={"title": "Changed title"})
+    with pytest.raises(ValueError, match="changed after verification"):
+        asyncio.run(service.add_fixed_price_variations(AddFixedPriceVariationsInput(
+            proposal=changed, verification_token=verified.verification_token,
+        ), client))
+    retried = asyncio.run(service.verify_add_fixed_price_variations(variation_proposal(verified.uuid.lower()), client))
+    assert retried.uuid == verified.uuid
+    assert retried.proposal_digest == verified.proposal_digest
 
 
 def test_media_upload_returns_only_eps_metadata(monkeypatch):

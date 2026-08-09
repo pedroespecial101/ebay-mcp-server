@@ -78,6 +78,7 @@ class EditableSellerListing(BaseModel):
     quantity: int = 1
     quantity_sold: int = 0
     has_variations: bool = False
+    variation_details: "VariationListingDetails | None" = None
     is_charity: bool = False
     inventory_model: bool | None = None
     supported_for_revision: bool = False
@@ -194,6 +195,144 @@ class ListingPackage(BaseModel):
     ] = "PARCEL_OR_PADDED_ENVELOPE"
 
 
+class ListingVariation(BaseModel):
+    """One purchasable combination returned by or sent to the Trading API."""
+
+    sku: str | None = Field(default=None, min_length=1, max_length=80)
+    price_gbp: Decimal = Field(gt=0, decimal_places=2)
+    quantity: int = Field(ge=0, le=999_999)
+    quantity_sold: int = Field(default=0, ge=0)
+    specifics: dict[str, str] = Field(min_length=2, max_length=5)
+
+    @field_validator("specifics")
+    @classmethod
+    def validate_specifics(cls, value: dict[str, str]) -> dict[str, str]:
+        cleaned = {name.strip(): item.strip() for name, item in value.items()}
+        if len(cleaned) != len(value) or any(not name or not item for name, item in cleaned.items()):
+            raise ValueError("variation specific names and values must be non-empty")
+        return cleaned
+
+
+class VariationPictureSet(BaseModel):
+    value: str = Field(min_length=1, max_length=65)
+    picture_urls: list[str] = Field(min_length=1, max_length=12)
+
+    @field_validator("value")
+    @classmethod
+    def clean_value(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("must not be blank")
+        return value
+
+    @field_validator("picture_urls")
+    @classmethod
+    def eps_urls_only(cls, value: list[str]) -> list[str]:
+        if any(not url.startswith("https://") for url in value):
+            raise ValueError("picture URLs must use HTTPS")
+        return value
+
+
+class VariationPictureMapping(BaseModel):
+    """Pictures for all values of one, and only one, variation dimension."""
+
+    dimension: str = Field(min_length=1, max_length=65)
+    sets: list[VariationPictureSet] = Field(min_length=1)
+
+    @field_validator("dimension")
+    @classmethod
+    def clean_dimension(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("must not be blank")
+        return value
+
+    @model_validator(mode="after")
+    def unique_values(self):
+        values = [entry.value for entry in self.sets]
+        if len(values) != len(set(values)):
+            raise ValueError("each picture-mapped variation value may appear only once")
+        return self
+
+
+class VariationListingDetails(BaseModel):
+    """Normalized variation state parsed from Trading GetItem read-back."""
+
+    dimensions: dict[str, list[str]] = Field(default_factory=dict)
+    variations: list[ListingVariation] = Field(default_factory=list)
+    picture_dimension: str | None = None
+    picture_sets: dict[str, list[str]] = Field(default_factory=dict)
+
+
+class MultiVariationFixedPriceListingProposal(BaseModel):
+    """A direct fixed-price Trading proposal with 2--250 purchasable variations."""
+
+    uuid: str | None = Field(default=None, pattern=r"^[0-9A-Fa-f]{32}$")
+    title: str = Field(min_length=1, max_length=80)
+    description: str = Field(min_length=1, max_length=500_000)
+    category_id: str = Field(pattern=r"^\d+$")
+    condition_id: str = Field(pattern=r"^\d+$")
+    condition_description: str | None = Field(default=None, max_length=1000)
+    item_specifics: dict[str, list[str]] = Field(default_factory=dict)
+    picture_urls: list[str] = Field(min_length=1, max_length=24)
+    variations: list[ListingVariation] = Field(min_length=2, max_length=250)
+    picture_mapping: VariationPictureMapping
+    best_offer_enabled: bool = False
+    package: ListingPackage | None = None
+
+    @field_validator("uuid")
+    @classmethod
+    def normalize_uuid(cls, value: str | None) -> str | None:
+        return value.upper() if value else None
+
+    @field_validator("title", "description", "condition_description")
+    @classmethod
+    def clean_text(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        value = value.strip()
+        if not value:
+            raise ValueError("must not be blank")
+        return value
+
+    @field_validator("item_specifics")
+    @classmethod
+    def validate_item_specifics(cls, value: dict[str, list[str]]) -> dict[str, list[str]]:
+        if any(not key.strip() or not values or any(not item.strip() for item in values) for key, values in value.items()):
+            raise ValueError("item specific names and values must be non-empty")
+        return value
+
+    @field_validator("picture_urls")
+    @classmethod
+    def eps_urls_only(cls, value: list[str]) -> list[str]:
+        if any(not url.startswith("https://") for url in value):
+            raise ValueError("picture URLs must use HTTPS")
+        return value
+
+    @model_validator(mode="after")
+    def validate_variation_matrix(self):
+        first_names = set(self.variations[0].specifics)
+        if not 2 <= len(first_names) <= 5:
+            raise ValueError("each variation must use two to five variation dimensions")
+        if any(set(entry.specifics) != first_names for entry in self.variations):
+            raise ValueError("every variation must specify the same variation dimensions")
+        if first_names & set(self.item_specifics):
+            raise ValueError("item specifics cannot also be variation dimensions")
+        combinations = [tuple(entry.specifics[name] for name in sorted(first_names)) for entry in self.variations]
+        if len(combinations) != len(set(combinations)):
+            raise ValueError("each variation must have a unique combination of values")
+        skus = [entry.sku for entry in self.variations]
+        if any(sku is None for sku in skus) or len(skus) != len(set(skus)):
+            raise ValueError("every variation requires a unique SKU")
+        if self.picture_mapping.dimension not in first_names:
+            raise ValueError("the picture-mapped dimension must be a variation dimension")
+        dimension_values = {entry.specifics[self.picture_mapping.dimension] for entry in self.variations}
+        mapped_values = {entry.value for entry in self.picture_mapping.sets}
+        if not mapped_values <= dimension_values:
+            raise ValueError("picture mappings may only name values of the mapped variation dimension")
+        return self
+
+
 class FixedPriceListingProposal(BaseModel):
     sku: str | None = Field(default=None, min_length=1, max_length=50)
     title: str = Field(min_length=1, max_length=80)
@@ -260,3 +399,24 @@ class AddFixedPriceItemResult(BaseModel):
     warnings: list[TradingIssue] = Field(default_factory=list)
     final_listing: EditableSellerListing | None = None
     idempotent_recovery: bool = False
+
+
+class VerifyAddFixedPriceVariationsInput(BaseModel):
+    proposal: MultiVariationFixedPriceListingProposal
+
+
+class VerifyAddFixedPriceVariationsResult(VerifyAddFixedPriceItemResult):
+    """A short-lived confirmation record, safe to persist with its UUID and digest."""
+
+    uuid: str | None = None
+    proposal_digest: str | None = None
+
+
+class AddFixedPriceVariationsInput(BaseModel):
+    proposal: MultiVariationFixedPriceListingProposal
+    verification_token: str = Field(min_length=20)
+
+
+class AddFixedPriceVariationsResult(AddFixedPriceItemResult):
+    uuid: str
+    proposal_digest: str

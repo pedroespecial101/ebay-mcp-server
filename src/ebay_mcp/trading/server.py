@@ -7,18 +7,22 @@ from mcp.types import TextContent
 
 from ebay_mcp.trading.service import (
     add_fixed_price_item as add_listing,
+    add_fixed_price_variations as add_variation_listing,
     get_item as fetch_item,
     get_recent_seller_listings as fetch_recent,
     revise_fixed_price_item as revise_listing,
     upload_listing_pictures as upload_pictures,
     verify_add_fixed_price_item as verify_listing,
+    verify_add_fixed_price_variations as verify_variation_listing,
     view_item_images as fetch_item_images,
 )
 from models.ebay.trading import (
     AddFixedPriceItemInput, AddFixedPriceItemResult, EditableSellerListing,
+    AddFixedPriceVariationsInput, AddFixedPriceVariationsResult,
     GetSellerItemInput, RecentSellerListingsInput, RecentSellerListingsResult,
     ReviseFixedPriceItemInput, ReviseFixedPriceItemResult, UploadListingPicturesInput,
     UploadedListingPicture, VerifyAddFixedPriceItemInput, VerifyAddFixedPriceItemResult,
+    VerifyAddFixedPriceVariationsInput, VerifyAddFixedPriceVariationsResult,
     ViewItemImagesInput,
 )
 
@@ -109,3 +113,24 @@ async def verify_add_fixed_price_item(input: VerifyAddFixedPriceItemInput) -> Ve
 async def add_fixed_price_item(input: AddFixedPriceItemInput) -> AddFixedPriceItemResult:
     """Publish an unchanged verified proposal after explicit seller confirmation."""
     return await add_listing(input)
+
+
+@trading_mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "openWorldHint": True})
+async def verify_add_fixed_price_variations(
+    input: VerifyAddFixedPriceVariationsInput,
+) -> VerifyAddFixedPriceVariationsResult:
+    """Validate a multi-variation UK fixed-price proposal without creating a listing.
+
+    Persist the returned UUID and proposal digest with the confirmation token.
+    To safely resume after a restart, pass that UUID back in the proposal and
+    verify again before publication.
+    """
+    return await verify_variation_listing(input.proposal)
+
+
+@trading_mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": True, "openWorldHint": True})
+async def add_fixed_price_variations(
+    input: AddFixedPriceVariationsInput,
+) -> AddFixedPriceVariationsResult:
+    """Publish an unchanged, verified multi-variation proposal after explicit seller confirmation."""
+    return await add_variation_listing(input)
