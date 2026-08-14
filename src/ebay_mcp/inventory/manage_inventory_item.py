@@ -56,7 +56,7 @@ def _deep_compare_dict(dict1: Dict[str, Any], dict2: Dict[str, Any]) -> bool:
     for key in dict1.keys():
         if key not in dict2:
             return False
-        
+
         val1, val2 = dict1[key], dict2[key]
         if isinstance(val1, dict) and isinstance(val2, dict):
             if not _deep_compare_dict(val1, val2):
@@ -74,7 +74,7 @@ def _deep_compare_list(list1: List[Any], list2: List[Any]) -> bool:
     """Deep compare two lists, handling nested structures."""
     if len(list1) != len(list2):
         return False
-    
+
     for item1, item2 in zip(list1, list2):
         if isinstance(item1, dict) and isinstance(item2, dict):
             if not _deep_compare_dict(item1, item2):
@@ -93,7 +93,7 @@ async def _get_inventory_item_by_sku(sku: str, access_token: str, client: httpx.
     headers['Accept'] = 'application/json'  # Ensure JSON response
     url = f"https://api.ebay.com/sell/inventory/v1/inventory_item/{sku}"
     logger.info(f"_get_inventory_item_by_sku: Fetching inventory item for SKU '{sku}' from {url}")
-    
+
     response = await client.get(url, headers=headers)
     log_headers = headers.copy()
     log_headers['Authorization'] = "[REDACTED]"
@@ -130,7 +130,7 @@ async def manage_inventory_item_tool(inventory_mcp):
 
         async def _api_call_logic(access_token: str, client: httpx.AsyncClient): # params is available in this scope
             headers = get_standard_ebay_headers(access_token)
-            
+
             current_item = None
 
             # For modify, get - first get the item to get current state
@@ -140,7 +140,7 @@ async def manage_inventory_item_tool(inventory_mcp):
                 if not current_item:
                     raise ValueError(f"No existing inventory item found for SKU '{params.sku}' to perform '{params.action.value}'.")
 
-            # --- CREATE Action --- 
+            # --- CREATE Action ---
             if params.action == ManageInventoryItemAction.CREATE:
                 existing_item_check = await _get_inventory_item_by_sku(params.sku, access_token, client)
                 if existing_item_check:
@@ -149,7 +149,7 @@ async def manage_inventory_item_tool(inventory_mcp):
                 # Validation for item_data presence is now handled by ManageInventoryItemToolInput's model_validator
                 if not params.item_data:
                     raise ValueError("item_data is unexpectedly None for 'create' action despite validator.")
-                
+
                 # --- TEST: Temporarily disabled validation to test minimal API requirements (2025-06-16) ---
                 # The following block was commented out to allow sending a create request with only an SKU.
                 #
@@ -176,7 +176,7 @@ async def manage_inventory_item_tool(inventory_mcp):
                 #         raise ValueError(
                 #             f"Missing required product field '{field}' in item_data for 'create' action."
                 #         )
-                #  
+                #
                 # availability_model = params.item_data.availability
                 # if not availability_model:
                 #     raise ValueError("availability must be provided for 'create' action.")
@@ -195,12 +195,12 @@ async def manage_inventory_item_tool(inventory_mcp):
                 # --- END of temporarily disabled validation ---
 
                 payload = params.item_data.model_dump(exclude_none=True, by_alias=True) # API payload needs camelCase
-                
+
                 url = f"https://api.ebay.com/sell/inventory/v1/inventory_item/{params.sku}"
                 logger.debug(f"manage_inventory_item (CREATE): URL: {url}, Payload: {payload}")
                 response = await client.put(url, headers=headers, json=payload)
                 response.raise_for_status()
-                
+
                 logger.info(f"manage_inventory_item (CREATE): Successfully created inventory item for SKU '{params.sku}'. Status: {response.status_code}. Verifying...")
 
                 # Verification step
@@ -214,7 +214,7 @@ async def manage_inventory_item_tool(inventory_mcp):
                     ManageInventoryItemResponseDetails(sku=params.sku, status_code=response.status_code, message="Inventory item created and verified successfully.", details=verified_item)
                 ).model_dump_json(indent=2)
 
-            # --- MODIFY Action --- 
+            # --- MODIFY Action ---
             elif params.action == ManageInventoryItemAction.MODIFY:
                 if not current_item:
                      raise ValueError("Missing current_item details for modify action.") # Should be caught by earlier checks
@@ -226,7 +226,7 @@ async def manage_inventory_item_tool(inventory_mcp):
                 update_payload = current_item.copy() # Start with all fields from the fetched item
                 provided_updates = params.item_data.model_dump(exclude_none=True, by_alias=True) # Get updates with camelCase keys
                 update_payload.update(provided_updates) # Override with new values
-                
+
                 # Remove eBay-managed fields that shouldn't be sent in updates
                 ebay_managed_fields = ['sku', 'locale', 'groupIds'] # These are camelCase as they come from current_item or provided_updates
                 for field in ebay_managed_fields:
@@ -246,21 +246,21 @@ async def manage_inventory_item_tool(inventory_mcp):
                 # Create expected final state: original item + modifications
                 expected_final_state = current_item.copy()
                 expected_final_state.update(provided_updates)
-                
+
                 # Comprehensive verification: compare expected vs actual final state
                 discrepancies = []
-                
+
                 # Only check keys that we expect to be present (from expected_final_state)
                 # This allows eBay to add additional fields without triggering false positives
                 for key in expected_final_state.keys():
                     expected_value = expected_final_state.get(key)
                     actual_value = verified_item.get(key)
-                    
+
                     # Skip comparison for system-managed fields that eBay might update
                     system_managed_fields = {'sku', 'locale', 'groupIds'}
                     if key in system_managed_fields:
                         continue
-                    
+
                     # Deep comparison for complex objects
                     if isinstance(expected_value, dict) and isinstance(actual_value, dict):
                         if not _deep_compare_dict(expected_value, actual_value):
@@ -274,7 +274,7 @@ async def manage_inventory_item_tool(inventory_mcp):
                         actual_str = _normalize_for_comparison(actual_value)
                         if expected_str != actual_str:
                             discrepancies.append(f"Field '{key}': expected '{expected_value}', found '{actual_value}'")
-                
+
                 message = "Inventory item modified and verified successfully."
                 if discrepancies:
                     discrepancy_details = '; '.join(discrepancies)
@@ -293,7 +293,7 @@ async def manage_inventory_item_tool(inventory_mcp):
                     raise ValueError(f"No inventory item found for SKU '{params.sku}'.")
 
                 logger.info(f"manage_inventory_item (GET): Successfully retrieved inventory item for SKU '{params.sku}'.")
-                
+
                 return ManageInventoryItemToolResponse.success_response(
                     ManageInventoryItemResponseDetails(
                         sku=params.sku,
@@ -303,7 +303,7 @@ async def manage_inventory_item_tool(inventory_mcp):
                     )
                 ).model_dump_json(indent=2)
 
-            # --- DELETE Action --- 
+            # --- DELETE Action ---
             elif params.action == ManageInventoryItemAction.DELETE:
                 url = f"https://api.ebay.com/sell/inventory/v1/inventory_item/{params.sku}"
                 logger.debug(f"manage_inventory_item (DELETE): URL: {url}")
@@ -313,7 +313,7 @@ async def manage_inventory_item_tool(inventory_mcp):
                 return ManageInventoryItemToolResponse.success_response(
                     ManageInventoryItemResponseDetails(sku=params.sku, status_code=response.status_code, message="Inventory item deleted successfully.", details=None)
                 ).model_dump_json(indent=2)
-            
+
             else:
                 # Should not happen due to Enum validation
                 raise ValueError(f"Unhandled action: {params.action.value}")

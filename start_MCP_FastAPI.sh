@@ -13,7 +13,7 @@ pkill -f "uvicorn src.fastapi_integration:app"
 if [ ! -d "$VENV_DIR" ]; then
   echo "Virtual environment not found. Creating new virtual environment..."
   python3 -m venv "$VENV_DIR"
-  
+
   echo "Installing dependencies..."
   source "$VENV_DIR/bin/activate"
   pip install --upgrade pip
