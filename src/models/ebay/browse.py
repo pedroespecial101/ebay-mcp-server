@@ -8,7 +8,7 @@ from ..base import EbayBaseModel, EbayResponse
 
 class ItemSummary(EbayBaseModel):
     """Model for an item summary from the Browse API."""
-    
+
     item_id: str = Field(..., description="The eBay identifier of the item.")
     title: str = Field(..., description="The title of the item.")
     image_url: Optional[str] = Field(None, description="URL to the primary image of the item.")
@@ -16,11 +16,11 @@ class ItemSummary(EbayBaseModel):
     seller: Optional[Dict[str, Any]] = Field(None, description="Information about the seller.")
     condition: Optional[str] = Field(None, description="The condition of the item.")
     item_web_url: Optional[str] = Field(None, description="The URL to the item's web page on eBay.")
-    
+
 
 class SearchResult(EbayBaseModel):
     """Model for search results from the Browse API."""
-    
+
     total: int = Field(..., description="The total number of items found.")
     items: List[ItemSummary] = Field(default_factory=list, description="List of items found.")
     href: Optional[str] = Field(None, description="The URL to the current result set.")
@@ -32,21 +32,21 @@ class SearchResult(EbayBaseModel):
 
 class SearchRequest(EbayBaseModel):
     """Model for search request parameters."""
-    
+
     query: str = Field(..., description="The search query string.")
     limit: int = Field(10, description="The number of items to return per page.")
 
 
 class SearchByImageRequest(EbayBaseModel):
     """Model for searching items by image."""
-    
+
     image: str = Field(..., description="The Base64 string of the image.")
     category_ids: Optional[str] = Field(None, description="The category ID to limit search results.")
     limit: Optional[int] = Field(None, description="The number of items to return per page.")
     filter: Optional[str] = Field(None, description="Filter results (e.g. price range, condition).")
     aspect_filter: Optional[str] = Field(None, description="Filter by item aspects.")
-    
-    
+
+
 # Response wrappers
 SearchResponse = EbayResponse[SearchResult]
 SearchByImageResponse = EbayResponse[SearchResult]

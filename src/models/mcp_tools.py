@@ -8,10 +8,10 @@ from .base import EbayBaseModel, EbayResponse
 
 class SearchEbayItemsParams(EbayBaseModel):
     """Parameters for the search_ebay_items tool."""
-    
+
     query: str = Field(..., description="The search query string.")
     limit: int = Field(10, description="The maximum number of items to return.")
-    
+
     @field_validator('limit')
     def validate_limit(cls, v):
         """Validate that limit is a positive integer."""
@@ -22,9 +22,9 @@ class SearchEbayItemsParams(EbayBaseModel):
 
 class CategorySuggestionsParams(EbayBaseModel):
     """Parameters for the get_category_suggestions tool."""
-    
+
     query: str = Field(..., description="The query string to find category suggestions for.")
-    
+
     @field_validator("query")
     @classmethod
     def validate_query(cls, value):
@@ -37,9 +37,9 @@ class CategorySuggestionsParams(EbayBaseModel):
 class ItemAspectsParams(EbayBaseModel):
     """
 Parameters for the get_item_aspects_for_category tool."""
-    
+
     category_id: str = Field(..., description="The eBay category ID to get aspects for.")
-    
+
     @field_validator('category_id')
     def validate_category_id(cls, v):
         """Convert the category_id to string if it's an integer."""
@@ -53,7 +53,7 @@ class TestAuthResponse(EbayResponse[str]):
     """Response for the test_auth tool."""
 
     error_message: Optional[str] = Field(None, description="Error message if token acquisition failed.")
-    
+
     @classmethod
     def success_response(cls, token: str):
         """Create a success response with token information."""
@@ -61,7 +61,7 @@ class TestAuthResponse(EbayResponse[str]):
             status="success",
             data="eBay seller authentication is available.",
         )
-    
+
     @classmethod
     def error_response(cls, error_message: str):
         """Create an error response with the error message."""
@@ -109,10 +109,10 @@ class TriggerEbayLoginResponse(EbayResponse[str]):
 
 class GetInventoryItemsParams(EbayBaseModel):
     """Parameters for the get_inventory_items tool."""
-    
+
     limit: int = Field(25, description="The maximum number of inventory items to return per page (1-200).")
     offset: int = Field(0, description="The number of inventory items to skip before starting to return results.")
-    
+
     @field_validator('limit')
     @classmethod
     def validate_limit(cls, v):
@@ -120,7 +120,7 @@ class GetInventoryItemsParams(EbayBaseModel):
         if v < 1 or v > 200:
             raise ValueError("Limit must be between 1 and 200")
         return v
-    
+
     @field_validator('offset')
     @classmethod
     def validate_offset(cls, v):
@@ -132,13 +132,13 @@ class GetInventoryItemsParams(EbayBaseModel):
 
 class SearchByImageParams(EbayBaseModel):
     """Parameters for the search_by_image tool."""
-    
+
     image_url: str = Field(..., description="The URL of the image to search with.")
     category_ids: Optional[str] = Field(None, description="The category ID to limit search results.")
     limit: Optional[int] = Field(10, description="The number of items to return per page.")
     filter: Optional[str] = Field(None, description="Filter results (e.g. price range, condition).")
     aspect_filter: Optional[str] = Field(None, description="Filter by item aspects.")
-    
+
     @field_validator('limit')
     @classmethod
     def validate_limit(cls, v):
@@ -146,7 +146,7 @@ class SearchByImageParams(EbayBaseModel):
         if v is not None and (v < 1 or v > 200):
             raise ValueError("Limit must be between 1 and 200")
         return v
-        
+
     @field_validator('image_url')
     @classmethod
     def validate_image_url(cls, v):
