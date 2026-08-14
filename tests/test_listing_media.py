@@ -139,6 +139,114 @@ def test_eps_upload_refreshes_expired_token_once(monkeypatch):
     assert result[0].image_id == "123"
 
 
+def test_eps_upload_retries_transient_503_with_bounded_backoff(monkeypatch):
+    requests = []
+    delays = []
+
+    def handler(request):
+        requests.append(request)
+        if len(requests) < 3:
+            return httpx.Response(503, json={"errors": [{"message": "Temporarily unavailable"}]})
+        return httpx.Response(
+            201,
+            json={"imageUrl": "https://i.ebayimg.com/images/g/test/s-l1600.jpg"},
+            headers={"location": "https://apim.ebay.com/commerce/media/v1_beta/image/123"},
+        )
+
+    async def token():
+        return "seller-token"
+
+    async def record_sleep(delay):
+        delays.append(delay)
+
+    monkeypatch.setattr(ebay_media, "get_ebay_access_token", token)
+    monkeypatch.setattr(ebay_media, "get_staged_bytes", lambda _ref: (jpeg_bytes(), "photo.jpg"))
+    monkeypatch.setattr(ebay_media.asyncio, "sleep", record_sleep)
+    http = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+
+    async def run():
+        try:
+            return await ebay_media.upload_staged_pictures(["r2:test"], client=http)
+        finally:
+            await http.aclose()
+
+    result = asyncio.run(run())
+
+    assert len(requests) == 3
+    assert delays == [2.0, 6.0]
+    assert result[0].image_id == "123"
+
+
+def test_eps_upload_retries_only_the_unavailable_image(monkeypatch):
+    requests = []
+    delays = []
+
+    def handler(request):
+        requests.append(request)
+        if len(requests) == 2:
+            return httpx.Response(503)
+        image_id = str(len(requests))
+        return httpx.Response(
+            201,
+            json={"imageUrl": f"https://i.ebayimg.com/images/g/{image_id}/s-l1600.jpg"},
+            headers={"location": f"https://apim.ebay.com/commerce/media/v1_beta/image/{image_id}"},
+        )
+
+    async def token():
+        return "seller-token"
+
+    async def record_sleep(delay):
+        delays.append(delay)
+
+    monkeypatch.setattr(ebay_media, "get_ebay_access_token", token)
+    monkeypatch.setattr(
+        ebay_media,
+        "get_staged_bytes",
+        lambda reference: (jpeg_bytes(), f"{reference.removeprefix('r2:')}.jpg"),
+    )
+    monkeypatch.setattr(ebay_media.asyncio, "sleep", record_sleep)
+    http = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+
+    async def run():
+        try:
+            return await ebay_media.upload_staged_pictures(["r2:front", "r2:rear"], client=http)
+        finally:
+            await http.aclose()
+
+    result = asyncio.run(run())
+
+    assert len(requests) == 3
+    assert delays == [2.0]
+    assert [entry.image_ref for entry in result] == ["r2:front", "r2:rear"]
+    assert [entry.image_id for entry in result] == ["1", "3"]
+
+
+def test_eps_upload_does_not_retry_non_transient_rejection(monkeypatch):
+    requests = []
+
+    def handler(request):
+        requests.append(request)
+        return httpx.Response(400, json={"errors": [{"message": "Invalid image"}]})
+
+    async def token():
+        return "seller-token"
+
+    monkeypatch.setattr(ebay_media, "get_ebay_access_token", token)
+    monkeypatch.setattr(ebay_media, "get_staged_bytes", lambda _ref: (jpeg_bytes(), "photo.jpg"))
+    http = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+
+    async def run():
+        try:
+            with pytest.raises(ebay_media.EbayMediaUploadError, match="HTTP 400"):
+                await ebay_media.upload_staged_pictures(["r2:test"], client=http)
+        finally:
+            await http.aclose()
+
+    asyncio.run(run())
+
+    assert len(requests) == 1
+
+
 def test_eps_upload_explains_failed_automatic_refresh(monkeypatch):
     async def stale_token():
         return "stale-token"

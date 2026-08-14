@@ -15,6 +15,7 @@ from models.ebay.trading import UploadedListingPicture
 from utils.api_utils import get_standard_ebay_headers, is_token_error
 
 MEDIA_UPLOAD_URL = "https://apim.ebay.com/commerce/media/v1_beta/image/create_image_from_file"
+EPS_503_RETRY_DELAYS_SECONDS = (2.0, 6.0)
 logger = logging.getLogger(__name__)
 
 
@@ -82,6 +83,7 @@ async def upload_staged_pictures(
         for image_ref in image_refs:
             raw, filename = await asyncio.to_thread(get_staged_bytes, image_ref)
             refreshed = False
+            retry_delays = iter(EPS_503_RETRY_DELAYS_SECONDS)
             while True:
                 headers = get_standard_ebay_headers(token)
                 headers.pop("Content-Type", None)
@@ -90,18 +92,28 @@ async def upload_staged_pictures(
                     headers=headers,
                     files={"image": (filename, raw, "image/jpeg")},
                 )
-                if response.status_code != 401 or refreshed:
-                    break
-                logger.info("EPS image upload received HTTP 401; refreshing the seller access token once.")
-                token = await asyncio.to_thread(refresh_access_token)
-                if not token or is_token_error(token):
-                    raise EbayMediaUploadError(
-                        "The EPS image upload found an expired seller access token, but automatic "
-                        "refresh failed. Run the eBay login flow, then retry preparation."
-                        f"{_response_suffix(response)}"
-                    )
-                refreshed = True
-                logger.info("Seller access token refreshed; retrying the EPS image upload.")
+                if response.status_code == 401 and not refreshed:
+                    logger.info("EPS image upload received HTTP 401; refreshing the seller access token once.")
+                    token = await asyncio.to_thread(refresh_access_token)
+                    if not token or is_token_error(token):
+                        raise EbayMediaUploadError(
+                            "The EPS image upload found an expired seller access token, but automatic "
+                            "refresh failed. Run the eBay login flow, then retry preparation."
+                            f"{_response_suffix(response)}"
+                        )
+                    refreshed = True
+                    logger.info("Seller access token refreshed; retrying the EPS image upload.")
+                    continue
+                if response.status_code == 503:
+                    delay = next(retry_delays, None)
+                    if delay is not None:
+                        logger.warning(
+                            "EPS image upload received HTTP 503; retrying the same staged image in %.0f seconds.",
+                            delay,
+                        )
+                        await asyncio.sleep(delay)
+                        continue
+                break
             if response.status_code != 201:
                 raise _upload_error(response, refreshed=refreshed)
             try:
