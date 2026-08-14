@@ -43,6 +43,9 @@ EXPECTED_TOOLS = {
     "trading_verify_add_fixed_price_variations",
     "trading_add_fixed_price_variations",
     "trading_append_fixed_price_variation",
+    "trading_reorder_fixed_price_variations",
+    "trading_rename_key_code_variation_dimension",
+    "trading_end_fixed_price_item",
 }
 if os.getenv("EBAY_ENABLE_INTERACTIVE_AUTH", "1") == "1":
     EXPECTED_TOOLS.add("auth_trigger_ebay_login")
@@ -58,6 +61,9 @@ WRITE_TOOLS = {
     "trading_add_fixed_price_item",
     "trading_add_fixed_price_variations",
     "trading_append_fixed_price_variation",
+    "trading_reorder_fixed_price_variations",
+    "trading_rename_key_code_variation_dimension",
+    "trading_end_fixed_price_item",
 }
 
 

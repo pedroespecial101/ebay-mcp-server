@@ -1,3 +1,39 @@
+# 2026-08-14 - Safer local service and image uploads
+- Added a foreground Doppler/LaunchAgent service path so the server stays in the
+  supervisor's process tree instead of leaving an orphaned child with a stale
+  PID file. The tailnet wrapper now follows the same foreground model.
+- Made individual EPS uploads retry only temporary HTTP 503 responses with
+  bounded 2- and 6-second delays; seller-auth and other eBay errors still fail
+  immediately.
+
+# 2026-08-13 - Combined-postage discount profile support
+
+- Multi-variation Trading proposals now distinguish the shipping business
+  policy from the domestic combined-postage discount rule. The latter is sent
+  as `Item.ShippingDetails.ShippingDiscountProfileID` and returned by GetItem
+  alongside `SellerShippingProfile.ShippingProfileID`.
+
+# 2026-08-13 - Guarded compact Exact Key migration
+
+- Added an in-place Trading revision for an active, unsold, exactly
+  one-dimensional classic-key master. It accepts only a complete SKU-bound
+  `Key Code` to `Exact Key` selector map and requires a fresh revision token,
+  expected member count, durable operation ID and explicit confirmation.
+- The migration sends the complete variation and picture matrix and reports
+  success only after readback proves every SKU, price, quantity, sale count,
+  EPS URL and non-variation listing field was preserved.
+- Existing append and reorder operations now support both the legacy `Key Code`
+  and compact `Exact Key` dimensions.
+
+# 2026-08-12 - Bounded EPS transient retry
+
+- Retries an individual staged eBay Picture Services upload after an HTTP 503
+  with bounded 2-second and 6-second backoffs. It reuses the same staged image
+  reference and never reaches a Trading listing mutation until every requested
+  EPS URL has been returned.
+- Keeps authentication, validation, and other eBay rejections fail-fast rather
+  than concealing a non-transient error.
+
 # 2026-08-09 - Safe Trading variation append
 
 - Added `trading_append_fixed_price_variation`, the only supported mutation of
