@@ -10,6 +10,9 @@ from urllib.parse import urlparse
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 
+KEY_SELECTOR_DIMENSIONS = {"Key Code", "Exact Key"}
+
+
 class TradingIssue(BaseModel):
     code: str
     severity: str
@@ -58,6 +61,7 @@ class SellerPolicyReferences(BaseModel):
     payment_profile_id: str | None = None
     return_profile_id: str | None = None
     shipping_profile_id: str | None = None
+    shipping_discount_profile_id: str | None = None
 
 
 class EditableSellerListing(BaseModel):
@@ -196,6 +200,20 @@ class ListingPackage(BaseModel):
     ] = "PARCEL_OR_PADDED_ENVELOPE"
 
 
+class BuyerPaidPostage(BaseModel):
+    """Evidence for the flat combined-postage contract used by a key master.
+
+    ``SellerShippingProfile`` selects the account-level shipping business
+    policy; Trading ``ShippingDetails/ShippingDiscountProfileID`` selects the
+    domestic combined-postage discount rule. These amounts are evidence, not
+    ad-hoc shipping service-rate fields.
+    """
+
+    first_item_gbp: Decimal = Field(gt=0, decimal_places=2)
+    additional_item_gbp: Decimal = Field(ge=0, decimal_places=2)
+    simple_delivery: Literal[False] = False
+
+
 class ListingVariation(BaseModel):
     """One purchasable combination returned by or sent to the Trading API."""
 
@@ -266,7 +284,7 @@ class VariationListingDetails(BaseModel):
 
 
 class AppendFixedPriceVariationInput(BaseModel):
-    """The one safe variation mutation supported for an existing key master."""
+    """Append one stock-one member to an existing photographed variation matrix."""
 
     item_id: str = Field(pattern=r"^\d{8,20}$")
     expected_revision_token: str = Field(min_length=64, max_length=64)
@@ -277,14 +295,14 @@ class AppendFixedPriceVariationInput(BaseModel):
         description="Durable caller journal ID used to correlate safe retries.",
     )
     variation: ListingVariation
-    picture_dimension: Literal["Key Code"] = "Key Code"
-    picture_urls: list[str] = Field(min_length=2, max_length=2)
+    picture_dimension: Literal["Key Code", "Exact Key"] = "Key Code"
+    picture_urls: list[str] = Field(min_length=1, max_length=12)
 
     @field_validator("picture_urls")
     @classmethod
     def eps_urls_only(cls, urls: list[str]) -> list[str]:
-        if len(set(urls)) != 2:
-            raise ValueError("the two variation pictures must be distinct")
+        if len(set(urls)) != len(urls):
+            raise ValueError("variation pictures must be distinct")
         for url in urls:
             parsed = urlparse(url)
             if parsed.scheme != "https" or parsed.hostname != "i.ebayimg.com":
@@ -292,16 +310,15 @@ class AppendFixedPriceVariationInput(BaseModel):
         return urls
 
     @model_validator(mode="after")
-    def validate_single_key_variation(self):
+    def validate_candidate_variation(self):
         if self.variation.sku is None:
             raise ValueError("the appended variation requires a physical SKU")
         if self.variation.quantity != 1 or self.variation.quantity_sold != 0:
             raise ValueError("the appended variation must have quantity one and no sales")
         if set(self.variation.specifics) != {self.picture_dimension}:
-            raise ValueError("the appended variation must use only the Key Code dimension")
-        selector = self.variation.specifics[self.picture_dimension]
-        if len(selector) > 65:
-            raise ValueError("the Key Code selector must be at most 65 characters")
+            raise ValueError("the appended variation must use only its named key-selector dimension")
+        if len(self.picture_urls) != 2:
+            raise ValueError("a key-selector append requires exactly two distinct variation pictures")
         return self
 
 
@@ -309,6 +326,84 @@ class AppendFixedPriceVariationResult(BaseModel):
     status: Literal["appended", "already_applied"]
     item_id: str
     operation_id: str
+    warnings: list[TradingIssue] = Field(default_factory=list)
+    fees: list[TradingFee] = Field(default_factory=list)
+    final_listing: EditableSellerListing
+    idempotent_recovery: bool = False
+
+
+class SetFixedPriceVariationQuantityInput(BaseModel):
+    """Set one existing variation's *available* quantity to zero or one.
+
+    This deliberately accepts neither price nor selector changes.  The expected
+    revision token requires the caller to inspect the precise listing just before
+    changing availability, while ``operation_id`` makes timeout recovery
+    auditable in a caller-side journal.
+    """
+
+    item_id: str = Field(pattern=r"^\d{8,20}$")
+    expected_revision_token: str = Field(min_length=64, max_length=64)
+    operation_id: str = Field(
+        min_length=1,
+        max_length=100,
+        pattern=r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,99}$",
+    )
+    variation_sku: str = Field(min_length=1, max_length=80)
+    available_quantity: Literal[0, 1]
+
+
+class SetFixedPriceVariationQuantityResult(BaseModel):
+    status: Literal["quantity_set", "already_applied"]
+    item_id: str
+    operation_id: str
+    variation_sku: str
+    available_quantity: Literal[0, 1]
+    warnings: list[TradingIssue] = Field(default_factory=list)
+    fees: list[TradingFee] = Field(default_factory=list)
+    final_listing: EditableSellerListing
+    idempotent_recovery: bool = False
+
+
+class ReorderFixedPriceVariationsInput(BaseModel):
+    """Canonicalise the buyer-visible order of an unsold one-dimensional key master."""
+
+    item_id: str = Field(pattern=r"^\d{8,20}$")
+    expected_revision_token: str = Field(min_length=64, max_length=64)
+    operation_id: str = Field(
+        min_length=1,
+        max_length=100,
+        pattern=r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,99}$",
+        description="Durable caller journal ID used to correlate safe retries.",
+    )
+    picture_dimension: Literal["Key Code", "Exact Key"] = "Key Code"
+
+
+class ReorderFixedPriceVariationsResult(BaseModel):
+    status: Literal["reordered", "already_ordered"]
+    item_id: str
+    operation_id: str
+    warnings: list[TradingIssue] = Field(default_factory=list)
+    fees: list[TradingFee] = Field(default_factory=list)
+    final_listing: EditableSellerListing
+    idempotent_recovery: bool = False
+
+
+class EndFixedPriceItemInput(BaseModel):
+    """End one freshly inspected, unsold UK fixed-price listing.
+
+    The expected price and revision token make this intentionally unsuitable for
+    broad listing cleanup: callers must identify and inspect the exact listing
+    they intend to end immediately before the mutation.
+    """
+
+    item_id: str = Field(pattern=r"^\d{8,20}$")
+    expected_revision_token: str = Field(min_length=64, max_length=64)
+    expected_price_gbp: Decimal = Field(gt=0, decimal_places=2)
+
+
+class EndFixedPriceItemResult(BaseModel):
+    status: Literal["ended", "already_ended"]
+    item_id: str
     warnings: list[TradingIssue] = Field(default_factory=list)
     fees: list[TradingFee] = Field(default_factory=list)
     final_listing: EditableSellerListing
@@ -330,6 +425,9 @@ class MultiVariationFixedPriceListingProposal(BaseModel):
     picture_mapping: VariationPictureMapping
     best_offer_enabled: bool = False
     package: ListingPackage | None = None
+    shipping_profile_id: str | None = Field(default=None, min_length=1, max_length=64)
+    shipping_discount_profile_id: str | None = Field(default=None, min_length=1, max_length=64)
+    buyer_paid_postage: BuyerPaidPostage | None = None
 
     @field_validator("uuid")
     @classmethod
@@ -381,6 +479,10 @@ class MultiVariationFixedPriceListingProposal(BaseModel):
         mapped_values = {entry.value for entry in self.picture_mapping.sets}
         if mapped_values != dimension_values:
             raise ValueError("picture mappings must cover exactly every value of the mapped variation dimension")
+        if self.buyer_paid_postage is not None and not self.shipping_profile_id:
+            raise ValueError("buyer-paid postage requires a dedicated shipping business-policy ID")
+        if self.buyer_paid_postage is not None and not self.shipping_discount_profile_id:
+            raise ValueError("buyer-paid postage requires a distinct combined-postage discount-policy ID")
         return self
 
 

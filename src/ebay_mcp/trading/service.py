@@ -28,9 +28,11 @@ from models.ebay.trading import (
     SellerListingSummary, SellerPolicyReferences, TradingFee, TradingIssue,
     UploadedListingPicture, VerifyAddFixedPriceItemResult,
     AddFixedPriceVariationsInput, AddFixedPriceVariationsResult, ListingVariation,
-    MultiVariationFixedPriceListingProposal, VariationListingDetails,
+    KEY_SELECTOR_DIMENSIONS, MultiVariationFixedPriceListingProposal, VariationListingDetails,
     VerifyAddFixedPriceVariationsResult,
     AppendFixedPriceVariationInput, AppendFixedPriceVariationResult,
+    ReorderFixedPriceVariationsInput, ReorderFixedPriceVariationsResult,
+    EndFixedPriceItemInput, EndFixedPriceItemResult,
     ViewItemImagesInput,
 )
 from utils.api_utils import get_standard_ebay_headers
@@ -194,6 +196,7 @@ def _parse_policies(item: ET.Element) -> SellerPolicyReferences:
         payment_profile_id=value(item, "SellerProfiles/SellerPaymentProfile/PaymentProfileID"),
         return_profile_id=value(item, "SellerProfiles/SellerReturnProfile/ReturnProfileID"),
         shipping_profile_id=value(item, "SellerProfiles/SellerShippingProfile/ShippingProfileID"),
+        shipping_discount_profile_id=value(item, "ShippingDetails/ShippingDiscountProfileID"),
     )
 
 
@@ -536,6 +539,70 @@ async def revise_fixed_price_item(
     )
 
 
+def _end_fixed_price_request(item_id: str) -> ET.Element:
+    root = element("EndFixedPriceItemRequest")
+    element("ItemID", item_id, root)
+    element("EndingReason", "NotAvailable", root)
+    return root
+
+
+def _is_ended_unsold(listing: EditableSellerListing) -> bool:
+    return listing.status in {"Completed", "Ended"} and listing.quantity_sold == 0
+
+
+async def end_fixed_price_item(
+    params: EndFixedPriceItemInput,
+    client: TradingClient | None = None,
+) -> EndFixedPriceItemResult:
+    """End one unsold single Trading listing, with fresh state proof.
+
+    A network failure is ambiguous, so the current eBay state is always read
+    before reporting.  An already-ended unsold item is an idempotent recovery;
+    anything sold is never treated as safe to end.
+    """
+    if client is None:
+        async with TradingClient() as owned:
+            return await end_fixed_price_item(params, owned)
+    current = await get_item(params.item_id, client)
+    if current.quantity_sold > 0:
+        raise ValueError("This listing has sales and must not be ended by the guarded tool.")
+    if _is_ended_unsold(current):
+        return EndFixedPriceItemResult(
+            status="already_ended", item_id=params.item_id, final_listing=current,
+            idempotent_recovery=True,
+        )
+    if current.revision_token != params.expected_revision_token:
+        raise ValueError("The listing changed after it was inspected. Fetch it again before ending.")
+    if current.price_gbp != params.expected_price_gbp:
+        raise ValueError("The listing price changed after it was inspected. Fetch it again before ending.")
+    if not current.supported_for_revision:
+        raise ValueError(
+            "This listing cannot be ended by the guarded Trading tool: "
+            + ", ".join(current.restrictions)
+        )
+    try:
+        response = await client.call("EndFixedPriceItem", _end_fixed_price_request(params.item_id))
+    except TradingAPIError as exc:
+        if exc.root is not None or exc.issues or (exc.status_code is not None and exc.status_code < 500):
+            raise
+        recovered = await get_item(params.item_id, client)
+        if _is_ended_unsold(recovered):
+            return EndFixedPriceItemResult(
+                status="already_ended", item_id=params.item_id, final_listing=recovered,
+                idempotent_recovery=True,
+            )
+        raise exc
+    final = await get_item(params.item_id, client)
+    if final.quantity_sold > 0:
+        raise TradingAPIError("The listing recorded a sale while ending; it was not treated as a safe migration closure.")
+    if not _is_ended_unsold(final):
+        raise TradingAPIError("EndFixedPriceItem read-back did not prove that the listing ended.")
+    return EndFixedPriceItemResult(
+        status="ended", item_id=params.item_id, warnings=list(response.warnings),
+        fees=_parse_fees(response.root), final_listing=final,
+    )
+
+
 def _append_master_details(current: EditableSellerListing, picture_dimension: str) -> VariationListingDetails:
     """Validate the deliberately narrow kind of master this tool may extend."""
     problems: list[str] = []
@@ -557,10 +624,12 @@ def _append_master_details(current: EditableSellerListing, picture_dimension: st
     if problems:
         raise ValueError("This listing cannot be extended by the narrow variation append tool: " + ", ".join(problems))
 
+    if picture_dimension not in KEY_SELECTOR_DIMENSIONS:
+        raise ValueError("Only Key Code or Exact Key master dimensions are supported.")
     if details.picture_dimension != picture_dimension:
-        raise ValueError("The existing listing does not map pictures by Key Code.")
+        raise ValueError(f"The existing listing does not map pictures by {picture_dimension}.")
     if set(details.dimensions) != {picture_dimension}:
-        raise ValueError("The existing listing must have exactly one Key Code variation dimension.")
+        raise ValueError(f"The existing listing must have exactly one {picture_dimension} variation dimension.")
     if not details.variations:
         raise ValueError("The existing listing has no variations to preserve.")
     if len(details.variations) > 250:
@@ -574,14 +643,47 @@ def _append_master_details(current: EditableSellerListing, picture_dimension: st
         skus.append(variation.sku)
         selectors.append(variation.specifics[picture_dimension])
     if len(skus) != len(set(skus)) or len(selectors) != len(set(selectors)):
-        raise ValueError("The existing listing has duplicate variation SKUs or Key Code selectors.")
-    if details.dimensions[picture_dimension] != selectors:
-        raise ValueError("The existing Key Code specificity set does not exactly match its variations.")
+        raise ValueError(f"The existing listing has duplicate variation SKUs or {picture_dimension} selectors.")
+    if set(details.dimensions[picture_dimension]) != set(selectors):
+        raise ValueError(f"The existing {picture_dimension} specificity set does not exactly match its variations.")
     if set(details.picture_sets) != set(selectors):
-        raise ValueError("The existing Key Code picture mapping is incomplete.")
+        raise ValueError(f"The existing {picture_dimension} picture mapping is incomplete.")
     if any(not urls or len(urls) > 12 for urls in details.picture_sets.values()):
-        raise ValueError("The existing Key Code picture mapping is invalid.")
+        raise ValueError(f"The existing {picture_dimension} picture mapping is invalid.")
     return details
+
+
+def _key_code_display_order(values: list[str]) -> list[str]:
+    """Return compact key selectors in number, maker, then bracket-SKU order.
+
+    eBay's VariationSpecificsSet controls dropdown ordering independently of the
+    order of Variation elements.  Existing listings can therefore legitimately
+    have those two orders differ; preserve the complete value set while writing
+    a single canonical dropdown order on every guarded append.
+    """
+    def sort_key(selector: str) -> tuple[int, int, str, tuple[int, str], str, str]:
+        compact = selector.strip()
+        match = re.match(
+            r"^(?P<prefix>[A-Za-z]+)[ -]?(?P<number>\d+)(?:\s*[-—–]\s*(?P<tail>.*?))?$",
+            compact,
+        )
+        if match:
+            tail = (match.group("tail") or "").strip()
+            bracket = re.search(r"\[([^\]]*)\]\s*$", tail)
+            bracket_sku = bracket.group(1).strip() if bracket else ""
+            maker = tail[:bracket.start()].strip(" -—–") if bracket else tail
+            sku_number = re.match(r"^\d+$", bracket_sku)
+            return (
+                0,
+                int(match.group("number")),
+                maker.casefold(),
+                (int(bracket_sku) if sku_number else 0, bracket_sku.casefold()),
+                match.group("prefix").casefold(),
+                compact.casefold(),
+            )
+        return (1, 0, "", (0, ""), "", compact.casefold())
+
+    return sorted(values, key=sort_key)
 
 
 def _same_variation(left: ListingVariation, right: ListingVariation) -> bool:
@@ -651,7 +753,10 @@ def _build_append_variation_request(
     picture_sets = {**details.picture_sets}
     selector = params.variation.specifics[params.picture_dimension]
     picture_sets[selector] = params.picture_urls
-    for mapped_value in [*details.dimensions[params.picture_dimension], selector]:
+    display_values = _key_code_display_order([
+        *details.dimensions[params.picture_dimension], selector,
+    ])
+    for mapped_value in display_values:
         picture_set = element("VariationSpecificPictureSet", parent=pictures)
         element("VariationSpecificValue", mapped_value, picture_set)
         for url in picture_sets[mapped_value]:
@@ -660,9 +765,94 @@ def _build_append_variation_request(
     specificity_set = element("VariationSpecificsSet", parent=variations)
     pair = element("NameValueList", parent=specificity_set)
     element("Name", params.picture_dimension, pair)
-    for mapped_value in [*details.dimensions[params.picture_dimension], selector]:
+    for mapped_value in display_values:
         element("Value", mapped_value, pair)
     return root
+
+
+def _build_reorder_variations_request(
+    item_id: str,
+    display_values: list[str],
+    picture_dimension: str,
+) -> ET.Element:
+    """Write only the ordered Key Code value set for one unsold master."""
+    root = element("ReviseFixedPriceItemRequest")
+    item = element("Item", parent=root)
+    element("ItemID", item_id, item)
+    variations = element("Variations", parent=item)
+    specificity_set = element("VariationSpecificsSet", parent=variations)
+    pair = element("NameValueList", parent=specificity_set)
+    element("Name", picture_dimension, pair)
+    for mapped_value in display_values:
+        element("Value", mapped_value, pair)
+    return root
+
+
+def _assert_reorder_readback(
+    before: VariationListingDetails,
+    final: EditableSellerListing,
+    picture_dimension: str,
+) -> None:
+    """Prove a reorder retained every sale-critical member field and picture."""
+    after = _append_master_details(final, picture_dimension)
+    expected_values = _key_code_display_order(before.dimensions[picture_dimension])
+    if after.dimensions[picture_dimension] != expected_values:
+        raise TradingAPIError("Variation reorder read-back did not apply natural Key Code order.")
+    before_by_sku = {entry.sku: entry for entry in before.variations}
+    after_by_sku = {entry.sku: entry for entry in after.variations}
+    if set(after_by_sku) != set(before_by_sku):
+        raise TradingAPIError("Variation reorder read-back changed a physical SKU.")
+    if any(not _same_variation(entry, after_by_sku[sku]) for sku, entry in before_by_sku.items()):
+        raise TradingAPIError("Variation reorder read-back changed a price, quantity, sale count, or selector.")
+    if after.picture_sets != before.picture_sets:
+        raise TradingAPIError("Variation reorder read-back changed a picture mapping.")
+
+
+async def reorder_fixed_price_variations(
+    params: ReorderFixedPriceVariationsInput,
+    client: TradingClient | None = None,
+) -> ReorderFixedPriceVariationsResult:
+    """Canonicalise an active, unsold key master's buyer-facing Key Code order."""
+    if client is None:
+        async with TradingClient() as owned:
+            return await reorder_fixed_price_variations(params, owned)
+    lock = _APPEND_LOCKS.setdefault(params.item_id, asyncio.Lock())
+    async with lock:
+        current = await get_item(params.item_id, client)
+        before = _append_master_details(current, params.picture_dimension)
+        expected_values = _key_code_display_order(before.dimensions[params.picture_dimension])
+        if before.dimensions[params.picture_dimension] == expected_values:
+            return ReorderFixedPriceVariationsResult(
+                status="already_ordered", item_id=params.item_id, operation_id=params.operation_id,
+                final_listing=current,
+                idempotent_recovery=True,
+            )
+        if current.revision_token != params.expected_revision_token:
+            raise ValueError("The master listing changed after it was inspected. Fetch it again before reordering.")
+        if any(variation.quantity_sold for variation in before.variations):
+            raise ValueError("A master with sold variations cannot be reordered by the guarded tool.")
+        request = _build_reorder_variations_request(
+            current.item_id, expected_values, params.picture_dimension,
+        )
+        try:
+            response = await client.call("ReviseFixedPriceItem", request)
+        except TradingAPIError as exc:
+            if exc.root is not None or exc.issues or (exc.status_code is not None and exc.status_code < 500):
+                raise
+            recovered = await get_item(params.item_id, client)
+            _assert_reorder_readback(before, recovered, params.picture_dimension)
+            return ReorderFixedPriceVariationsResult(
+                status="already_ordered", item_id=params.item_id, operation_id=params.operation_id,
+                final_listing=recovered,
+                idempotent_recovery=True,
+            )
+        final = await get_item(params.item_id, client)
+        _assert_reorder_readback(before, final, params.picture_dimension)
+        return ReorderFixedPriceVariationsResult(
+            status="reordered", item_id=params.item_id, operation_id=params.operation_id,
+            warnings=list(response.warnings),
+            fees=_parse_fees(response.root), final_listing=final,
+        )
 
 
 def _assert_append_readback(
@@ -683,7 +873,9 @@ def _assert_append_readback(
     if not _same_variation(after_by_sku[params.variation.sku], params.variation):
         raise TradingAPIError("Variation append read-back did not preserve the requested price, quantity and selector.")
     selector = params.variation.specifics[params.picture_dimension]
-    expected_values = [*before.dimensions[params.picture_dimension], selector]
+    expected_values = _key_code_display_order([
+        *before.dimensions[params.picture_dimension], selector,
+    ])
     if after.dimensions[params.picture_dimension] != expected_values:
         raise TradingAPIError("Variation append read-back changed the Key Code specificity set.")
     if after.picture_sets.get(selector) != params.picture_urls:
@@ -883,13 +1075,16 @@ def _build_add_variations_request(
         major.set("unit", "kg")
         minor = element("WeightMinor", proposal.package.weight_grams % 1000, package)
         minor.set("unit", "gr")
+    if proposal.shipping_discount_profile_id:
+        shipping_details = element("ShippingDetails", parent=item)
+        element("ShippingDiscountProfileID", proposal.shipping_discount_profile_id, shipping_details)
     profiles = element("SellerProfiles", parent=item)
     payment = element("SellerPaymentProfile", parent=profiles)
     element("PaymentProfileID", defaults["payment"], payment)
     returns = element("SellerReturnProfile", parent=profiles)
     element("ReturnProfileID", defaults["return"], returns)
     shipping = element("SellerShippingProfile", parent=profiles)
-    element("ShippingProfileID", defaults["shipping"], shipping)
+    element("ShippingProfileID", proposal.shipping_profile_id or defaults["shipping"], shipping)
 
     variations = element("Variations", parent=item)
     dimension_names = list(proposal.variations[0].specifics)
@@ -909,9 +1104,15 @@ def _build_add_variations_request(
             if specific_value not in dimension_values[name]:
                 dimension_values[name].append(specific_value)
 
+    display_values_by_name = {
+        name: _key_code_display_order(values) if name == "Key Code" else values
+        for name, values in dimension_values.items()
+    }
     mapped_pictures = element("Pictures", parent=variations)
     element("VariationSpecificName", proposal.picture_mapping.dimension, mapped_pictures)
-    for picture_set in proposal.picture_mapping.sets:
+    picture_sets = {entry.value: entry for entry in proposal.picture_mapping.sets}
+    for mapped_value in display_values_by_name[proposal.picture_mapping.dimension]:
+        picture_set = picture_sets[mapped_value]
         set_node = element("VariationSpecificPictureSet", parent=mapped_pictures)
         element("VariationSpecificValue", picture_set.value, set_node)
         for url in picture_set.picture_urls:
@@ -921,7 +1122,7 @@ def _build_add_variations_request(
     for name in dimension_names:
         entry = element("NameValueList", parent=specific_set)
         element("Name", name, entry)
-        for specific_value in dimension_values[name]:
+        for specific_value in display_values_by_name[name]:
             element("Value", specific_value, entry)
     return root
 

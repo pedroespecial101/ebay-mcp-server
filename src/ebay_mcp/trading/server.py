@@ -9,6 +9,8 @@ from ebay_mcp.trading.service import (
     add_fixed_price_item as add_listing,
     add_fixed_price_variations as add_variation_listing,
     append_fixed_price_variation as append_variation,
+    reorder_fixed_price_variations as reorder_variations,
+    end_fixed_price_item as end_listing,
     get_item as fetch_item,
     get_recent_seller_listings as fetch_recent,
     revise_fixed_price_item as revise_listing,
@@ -21,6 +23,8 @@ from models.ebay.trading import (
     AddFixedPriceItemInput, AddFixedPriceItemResult, EditableSellerListing,
     AddFixedPriceVariationsInput, AddFixedPriceVariationsResult,
     AppendFixedPriceVariationInput, AppendFixedPriceVariationResult,
+    ReorderFixedPriceVariationsInput, ReorderFixedPriceVariationsResult,
+    EndFixedPriceItemInput, EndFixedPriceItemResult,
     GetSellerItemInput, RecentSellerListingsInput, RecentSellerListingsResult,
     ReviseFixedPriceItemInput, ReviseFixedPriceItemResult, UploadListingPicturesInput,
     UploadedListingPicture, VerifyAddFixedPriceItemInput, VerifyAddFixedPriceItemResult,
@@ -149,3 +153,26 @@ async def append_fixed_price_variation(
     then reads it back before reporting success.
     """
     return await append_variation(input)
+
+
+@trading_mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": True, "openWorldHint": True})
+async def reorder_fixed_price_variations(
+    input: ReorderFixedPriceVariationsInput,
+) -> ReorderFixedPriceVariationsResult:
+    """Naturally order the Key Code buyer dropdown of one active, unsold key master.
+
+    The operation preserves every SKU, selector, price, stock count, sale count,
+    and picture mapping. It rejects stale, sold, unsupported, or already-changed
+    masters and proves the complete eBay read-back before returning success.
+    """
+    return await reorder_variations(input)
+
+
+@trading_mcp.tool(annotations={"readOnlyHint": False, "destructiveHint": True, "openWorldHint": True})
+async def end_fixed_price_item(input: EndFixedPriceItemInput) -> EndFixedPriceItemResult:
+    """End one freshly inspected unsold UK fixed-price listing.
+
+    The tool refuses sold, ended-with-sales, changed, non-UK, non-fixed-price,
+    multi-variation, inventory-model, charity, and non-seller listings.
+    """
+    return await end_listing(input)
