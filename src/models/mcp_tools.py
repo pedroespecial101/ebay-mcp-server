@@ -1,7 +1,8 @@
 """
 Models for MCP tool parameters and responses.
 """
-from typing import Any, Dict, List, Optional, Union
+from datetime import datetime
+from typing import Any, Dict, List, Literal, Optional, Union
 from pydantic import Field, field_validator
 from .base import EbayBaseModel, EbayResponse
 
@@ -154,3 +155,70 @@ class SearchByImageParams(EbayBaseModel):
         if not v.startswith('http://') and not v.startswith('https://'):
             raise ValueError("Image URL must start with http:// or https://")
         return v
+
+
+class GetOrdersParams(EbayBaseModel):
+    """Parameters for the fulfillment_get_orders tool."""
+
+    order_ids: Optional[str] = Field(
+        None,
+        description="Comma-separated list of 1--50 specific order IDs to retrieve.",
+    )
+    creation_date_start: Optional[str] = Field(None, description="ISO 8601 datetime string for the start of the creation date range (e.g., '2023-01-01T00:00:00.000Z').")
+    creation_date_end: Optional[str] = Field(None, description="ISO 8601 datetime string for the end of the creation date range.")
+    last_modified_date_start: Optional[str] = Field(None, description="ISO 8601 datetime string for the start of the last modified date range.")
+    last_modified_date_end: Optional[str] = Field(None, description="ISO 8601 datetime string for the end of the last modified date range.")
+    order_fulfillment_status: Optional[Literal["NOT_STARTED", "IN_PROGRESS", "FULFILLED"]] = Field(
+        None,
+        description="Filter by fulfillment status.",
+    )
+    limit: int = Field(50, description="The maximum number of orders to return per page (1-200).")
+    offset: int = Field(0, description="The number of orders to skip before starting to return results.")
+
+    @field_validator('limit')
+    @classmethod
+    def validate_limit(cls, v):
+        """Validate that limit is within acceptable range."""
+        if v < 1 or v > 200:
+            raise ValueError("Limit must be between 1 and 200")
+        return v
+
+    @field_validator('offset')
+    @classmethod
+    def validate_offset(cls, v):
+        """Validate that offset is non-negative."""
+        if v < 0:
+            raise ValueError("Offset cannot be negative")
+        return v
+
+    @field_validator(
+        "creation_date_start",
+        "creation_date_end",
+        "last_modified_date_start",
+        "last_modified_date_end",
+    )
+    @classmethod
+    def validate_iso8601_datetime(cls, value):
+        """Require the UTC-aware ISO 8601 timestamps accepted by eBay."""
+        if value is None:
+            return value
+        try:
+            parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError as exc:
+            raise ValueError("Date filters must be ISO 8601 datetimes") from exc
+        if parsed.tzinfo is None:
+            raise ValueError("Date filters must include a timezone")
+        return value
+
+    @field_validator("order_ids")
+    @classmethod
+    def validate_order_ids(cls, value):
+        """Keep the multi-order query within eBay's documented 50-ID limit."""
+        if value is None:
+            return value
+        order_ids = [order_id.strip() for order_id in value.split(",")]
+        if not all(order_ids):
+            raise ValueError("order_ids must be a comma-separated list without empty values")
+        if len(order_ids) > 50:
+            raise ValueError("order_ids supports at most 50 values")
+        return ",".join(order_ids)
