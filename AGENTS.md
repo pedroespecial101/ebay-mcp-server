@@ -33,8 +33,17 @@
   suite; they can create, publish, withdraw, or delete real account data.
 - Doppler-backed MCP discovery/live smoke checks and seller mutations require a
   separately authorized task and current credential/runtime verification.
-- Use a `codex/omarchy-ebay-setup` branch for this setup and open a draft PR.
-  Do not merge.
+
+## Git handoff
+
+- Before a new task, inspect this checkout's branch, working tree, upstream,
+  unpushed commits, and other worktrees. Finish or explicitly park earlier work
+  before starting an unrelated branch; preserve unknown changes.
+- Use a focused `codex/` branch for changes. At a safe checkpoint, commit and
+  push only this task's files. Report the branch, commit, PR, checks, and any
+  unfinished work at handoff. Keep cross-repository commits and PRs separate.
+- A Git merge does not deploy the OCI container or prove seller-tool
+  acceptance. Follow the separate live-operation rules above.
 
 ## Deferred fulfillment work
 

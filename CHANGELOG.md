@@ -1,3 +1,7 @@
+# 2026-09-27 - Ongoing Git handoff guidance
+- Replaced the one-time Omarchy setup branch instruction with a start and end
+  checkpoint for ordinary Codex development, including unfinished branches.
+
 # 2026-09-27 - Omarchy development instructions
 - Added portable Agent Context discovery and documented safe, non-mutating
   validation for Omarchy development checkouts.
