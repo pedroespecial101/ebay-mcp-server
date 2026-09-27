@@ -20,8 +20,11 @@
   development setup.
 - The Listing Studio dependency and its guarded publication boundary remain
   distinct from the seller MCP's lower-level mutation tools.
-- Verify the current owning host and runbook before runtime or deployment work.
-  This development setup does not start services or change live seller data.
+- OCI is the current live development runtime. The seller container and
+  Tailscale sidecar were observed running on 27 September 2026; the exact
+  image build commit and seller business-tool acceptance remain unverified.
+  Verify current host state and the Agent Context OCI record before runtime
+  or deployment work.
 
 ## Safe validation
 

@@ -1,5 +1,16 @@
 # eBay MCP Server
 
+## Current OCI development runtime
+
+Pete is using the OCI seller MCP as part of the live development eBay suite.
+The container and Tailscale sidecar were observed running on 27 September
+2026. The running image was tagged `latest`, so its exact build commit and
+seller business-tool acceptance were not established by that check. The
+tailnet-only stack and deployment script live in `OCI-Server-Config` under
+`stacks/ebay-mcp-server/` and `scripts/deploy-ebay-mcp-server.sh`. Do not use
+legacy inventory or offer integration tests as general validation; they can
+mutate the live account.
+
 For new second-hand listings, use the `research_*`, `media_*`, and `listing_*`
 tools as one combined endpoint. Research tools provide read-only ebay.co.uk live
 listing research; media and listing tools provide private image staging,
@@ -517,7 +528,6 @@ Potential enhancements for the project:
 5. **Rate Limiting**: Implement rate limiting to comply with eBay API usage policies
 6. **Web Interface**: Add a web dashboard for monitoring the server status and token management
 7. **Webhook Support**: Enable webhooks for eBay notifications
-8. **OCI Packaging**: Add a tailnet-only container deployment using the same Doppler keys
 
 ## Security Considerations
 
