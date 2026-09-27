@@ -1,3 +1,7 @@
+# 2026-09-27 - Omarchy development instructions
+- Added portable Agent Context discovery and documented safe, non-mutating
+  validation for Omarchy development checkouts.
+
 # 2026-08-14 - Safer local service and image uploads
 - Added a foreground Doppler/LaunchAgent service path so the server stays in the
   supervisor's process tree instead of leaving an orphaned child with a stale
