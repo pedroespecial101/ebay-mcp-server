@@ -28,6 +28,23 @@ DEFAULT_SCOPES = (
     "https://api.ebay.com/oauth/api_scope/commerce.identity.readonly",
 )
 
+REPORTING_READONLY_SCOPES = (
+    "https://api.ebay.com/oauth/api_scope/sell.analytics.readonly",
+    "https://api.ebay.com/oauth/api_scope/sell.marketing.readonly",
+    "https://api.ebay.com/oauth/api_scope/sell.fulfillment.readonly",
+)
+
+
+def requested_scopes():
+    """Opt in to new scopes only during deliberate seller reauthorization.
+
+    Existing refresh tokens cannot acquire new scopes. Keeping this opt-in
+    prevents a code deployment from invalidating the current seller runtime.
+    """
+    if os.getenv("EBAY_ENABLE_REPORTING_SCOPES") == "1":
+        return DEFAULT_SCOPES + REPORTING_READONLY_SCOPES
+    return DEFAULT_SCOPES
+
 LOCAL_SERVER_PORT = 9292 
 LOCAL_CALLBACK_PATH = "/oauth/callback" # Must match eBay RuName redirection and local server path Cloudflare forwards to
 
@@ -343,7 +360,7 @@ def initiate_user_login():
         "client_id": client_id,
         "response_type": "code",
         "redirect_uri": ebay_ru_name, # Use the RuName here as per eBay docs for auth request
-        "scope": ' '.join(s.strip() for s in DEFAULT_SCOPES),
+        "scope": ' '.join(s.strip() for s in requested_scopes()),
         "prompt": "login", # Optional: forces user to login even if already sessioned with eBay
         "state": oauth_state # For CSRF protection
     }
@@ -428,7 +445,7 @@ def refresh_access_token(client_id=None, client_secret=None, refresh_token_val=N
     payload = {
         "grant_type": "refresh_token",
         "refresh_token": current_refresh_token,
-        "scope": ' '.join(s.strip() for s in DEFAULT_SCOPES), # Recommended to include scopes
+        "scope": ' '.join(s.strip() for s in requested_scopes()), # Recommended to include scopes
     }
     auth_header_val = f"{client_id}:{client_secret}"
     auth_header = b64encode(auth_header_val.encode()).decode()

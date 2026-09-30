@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import asyncio
+import re
+from datetime import datetime, timezone
 
 from fastmcp import FastMCP
 
 from ebay_mcp.media.storage import get_staged_bytes
+from ebay_mcp.research.key_cohort import compare_key_cohorts
 
 from .client import EbayClient
 from .models import (
@@ -86,6 +89,94 @@ def create_server(client: EbayClient | None = None) -> FastMCP:
     async def get_item(item_id: str) -> ItemDetail:
         """Get compact details for one live eBay item; this is not sold-history data."""
         return await ebay.get_item(item_id)
+
+    @server.tool(
+        annotations={"readOnlyHint": True, "destructiveHint": False, "openWorldHint": True}
+    )
+    async def snapshot_key_cohort(
+        series: str,
+        exact_codes: list[str],
+        maker: str | None = None,
+        own_listing_ids: list[str] | None = None,
+        per_query_limit: int = 30,
+    ) -> dict:
+        """Take a dated, parent-deduplicated snapshot of live UK key competitors.
+
+        Exact-code matches are title/aspect candidates until a human verifies
+        the physical key and variation. A live parent's cumulative sold count
+        is only a historical signal, never same-code or recent sold evidence.
+        """
+        series = series.strip().upper()
+        exact_codes = [code.strip().upper() for code in exact_codes]
+        if not re.fullmatch(r"[A-Z]{1,5}", series):
+            raise ValueError("series must be a short alphabetic key prefix.")
+        if len(exact_codes) > 10 or any(not re.fullmatch(r"[A-Z]{1,5}[0-9]{1,5}", code) for code in exact_codes):
+            raise ValueError("Provide at most ten exact alphanumeric key codes.")
+        if not 1 <= per_query_limit <= 50:
+            raise ValueError("per_query_limit must be 1-50.")
+        own = set(own_listing_ids or [])
+        queries = [f"{series} classic car key"] + [
+            f"{code} {maker or ''} original key".strip() for code in exact_codes
+        ]
+        query_log = []
+        parents = {}
+        for query in queries:
+            response = await ebay.search_items(SearchRequest(
+                query=query, item_location_country="GB", limit=per_query_limit,
+            ))
+            query_log.append({"query": query, "result_total": response.total,
+                              "returned": len(response.items),
+                              "capped": response.total > len(response.items)})
+            for item in response.items:
+                parent_id = item.legacy_item_id or item.item_id
+                if parent_id in own:
+                    continue
+                if parent_id not in parents:
+                    parents[parent_id] = {"parent_item_id": parent_id,
+                                          "browse_item_id": item.item_id,
+                                          "matched_queries": [], "title": item.title,
+                                          "asking_price": item.price.model_dump() if item.price else None,
+                                          "item_creation_date": item.item_creation_date,
+                                          "quantity_sold": None}
+                parents[parent_id]["matched_queries"].append(query)
+        enrichment_failures = []
+        for parent in list(parents.values())[:25]:
+            try:
+                detail = await ebay.get_item(parent["browse_item_id"])
+            except Exception:
+                enrichment_failures.append(parent["parent_item_id"])
+                continue
+            parent["quantity_sold"] = detail.quantity_sold
+            parent["shipping"] = [entry.model_dump() for entry in detail.shipping]
+            parent["condition"] = detail.condition
+            parent["seller"] = detail.seller.username if detail.seller else None
+            parent["item_creation_date"] = detail.item_creation_date or parent["item_creation_date"]
+            parent["url"] = detail.url
+            searchable = " ".join([detail.title, detail.description or ""] + [
+                str(value) for values in detail.aspects.values() for value in values
+            ]).upper()
+            parent["possible_exact_codes"] = [
+                code for code in exact_codes if re.search(rf"(?<![A-Z0-9]){re.escape(code)}(?![A-Z0-9])", searchable)
+            ]
+        return {
+            "source": "eBay Browse active UK listings", "captured_at": datetime.now(timezone.utc).isoformat(),
+            "series": series, "exact_codes_requested": exact_codes, "maker": maker,
+            "query_log": query_log, "parent_count": len(parents),
+            "parents": list(parents.values()), "enrichment_failures": enrichment_failures,
+            "enrichment_cap": 25,
+            "limitations": [
+                "Asking prices are not realised sale prices.",
+                "quantity_sold is cumulative for a live parent, not recent or variation-level sales.",
+                "A possible exact-code match requires human review of variation and physical form.",
+            ],
+        }
+
+    @server.tool(
+        annotations={"readOnlyHint": True, "destructiveHint": False, "openWorldHint": True}
+    )
+    async def compare_key_cohort_snapshots(previous: dict, current: dict) -> dict:
+        """Compare two dated snapshots; cumulative-sold growth is an activity proxy only."""
+        return compare_key_cohorts(previous, current)
 
     @server.tool(
         annotations={"readOnlyHint": True, "destructiveHint": False, "openWorldHint": True}
