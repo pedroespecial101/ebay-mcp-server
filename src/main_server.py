@@ -111,6 +111,7 @@ from ebay_mcp.catalog.server import catalog_mcp
 from ebay_mcp.media.server import media_mcp
 from ebay_mcp.listing.server import listing_mcp
 from ebay_mcp.trading.server import trading_mcp
+from ebay_mcp.insights.server import insights_mcp
 
 # Create the main MCP server
 instruction_text = """This MCP server provides one tailnet-ready endpoint for eBay UK research and seller workflows.
@@ -228,6 +229,9 @@ def mount_servers():
 
     mcp.mount(trading_mcp, namespace="trading")
     logger.info("Mounted narrow Trading API MCP server")
+
+    mcp.mount(insights_mcp, namespace="seller")
+    logger.info("Mounted seller performance reporting MCP server")
     
 
 # Mount all servers

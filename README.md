@@ -41,6 +41,41 @@ delete operations. If a request times out, the tool reads eBay before
 reporting or retrying; an already-present exact variation returns
 `already_applied` rather than creating a duplicate.
 
+## Read-only key-sales analysis
+
+The `seller_get_traffic_report`, `seller_get_promotion_performance`, and
+`seller_get_key_order_lines` tools support an on-demand UK key-listing report.
+The `research_snapshot_key_cohort` and `research_compare_key_cohort_snapshots`
+tools provide dated active-competitor snapshots. The latter labels growth in a
+live parent listing's cumulative sold counter as a **proxy**, never as a
+completed sale of a particular key code.
+
+For a report run on date `D`, use the last complete UK day `D-1`, the 30 days
+ending then, the preceding 30 days, and a 90-day context window. Query active
+masters and recently ended or relisted ItemIDs together. Use LISTING traffic
+for each 30-day window, and use DAY traffic only for account-level context;
+eBay does not provide daily per-variation traffic. Query order lines for the
+same parent IDs and windows, then reconcile traffic `TRANSACTION` counts with
+order **units** before attributing a change to particular selectors. Ad clicks
+have a different denominator from all listing-page views. Keep paid-campaign
+rates and buyer-facing discounts distinct. Compare exact-code competitors
+separately from broad series and multi-series parents.
+
+The reporting tools require the seller to authorize these additional OAuth
+scopes: `sell.analytics.readonly`, `sell.marketing.readonly`, and
+`sell.fulfillment.readonly`. Existing refresh tokens cannot gain them through
+refresh, and refresh requests omit `scope` so the granted scope set is retained.
+Set `EBAY_ENABLE_REPORTING_SCOPES=1` only while deliberately running a seller
+reauthorization to request these scopes; changing the setting alone does not
+reauthorize the account. It is off by default so existing seller access
+continues unchanged. Do not print or store OAuth tokens in reports. A `403`
+means the read is unavailable, not a zero metric.
+Ad-report task creation is a reporting-only POST; it does not change listings
+or campaigns. Recently attributed ad sales remain provisional.
+
+See [the repeatable report recipe](analysis/key-sales-report-recipe.md) for
+metric definitions, evidence checks, and the exact reporting sequence.
+
 ## Overview
 
 This project implements a Model Context Protocol (MCP) server for eBay UK
