@@ -445,7 +445,6 @@ def refresh_access_token(client_id=None, client_secret=None, refresh_token_val=N
     payload = {
         "grant_type": "refresh_token",
         "refresh_token": current_refresh_token,
-        "scope": ' '.join(s.strip() for s in requested_scopes()), # Recommended to include scopes
     }
     auth_header_val = f"{client_id}:{client_secret}"
     auth_header = b64encode(auth_header_val.encode()).decode()

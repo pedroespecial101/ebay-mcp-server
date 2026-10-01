@@ -10,8 +10,12 @@ def compare_key_cohorts(previous: dict[str, Any], current: dict[str, Any]) -> di
     """Compare parent counters only; never call the delta completed sales."""
     if previous.get("source") != "eBay Browse active UK listings" or current.get("source") != previous.get("source"):
         raise ValueError("Both inputs must be Browse key-cohort snapshots.")
-    if previous.get("series") != current.get("series"):
-        raise ValueError("Snapshots must be for the same key series.")
+    previous_config = previous.get("search_config")
+    current_config = current.get("search_config")
+    if not isinstance(previous_config, dict) or not isinstance(current_config, dict):
+        raise ValueError("Both snapshots must include search_config; capture comparable snapshots with the current tool.")
+    if previous_config != current_config:
+        raise ValueError("Snapshots must use the same search configuration; capture comparable snapshots.")
     earlier = datetime.fromisoformat(previous["captured_at"].replace("Z", "+00:00"))
     later = datetime.fromisoformat(current["captured_at"].replace("Z", "+00:00"))
     if later <= earlier:
@@ -38,7 +42,8 @@ def compare_key_cohorts(previous: dict[str, Any], current: dict[str, Any]) -> di
         })
     return {
         "source": "Comparison of eBay Browse active UK listing snapshots",
-        "series": current["series"], "previous_captured_at": previous["captured_at"],
+        "series": current["series"], "search_config": current_config,
+        "previous_captured_at": previous["captured_at"],
         "current_captured_at": current["captured_at"], "parents": rows,
         "limitations": [
             "Counter growth is a proxy for activity, not completed-order evidence or a same-code sale.",

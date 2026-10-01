@@ -114,9 +114,11 @@ def create_server(client: EbayClient | None = None) -> FastMCP:
             raise ValueError("Provide at most ten exact alphanumeric key codes.")
         if not 1 <= per_query_limit <= 50:
             raise ValueError("per_query_limit must be 1-50.")
-        own = set(own_listing_ids or [])
+        normalized_maker = maker.strip() if maker and maker.strip() else None
+        normalized_own = sorted({str(item).strip() for item in (own_listing_ids or []) if str(item).strip()})
+        own = set(normalized_own)
         queries = [f"{series} classic car key"] + [
-            f"{code} {maker or ''} original key".strip() for code in exact_codes
+            f"{code} {normalized_maker or ''} original key".strip() for code in exact_codes
         ]
         query_log = []
         parents = {}
@@ -160,7 +162,14 @@ def create_server(client: EbayClient | None = None) -> FastMCP:
             ]
         return {
             "source": "eBay Browse active UK listings", "captured_at": datetime.now(timezone.utc).isoformat(),
-            "series": series, "exact_codes_requested": exact_codes, "maker": maker,
+            "series": series, "exact_codes_requested": exact_codes, "maker": normalized_maker,
+            "search_config": {
+                "series": series,
+                "exact_codes": sorted(set(exact_codes)),
+                "maker": normalized_maker.casefold() if normalized_maker else None,
+                "excluded_own_listing_ids": normalized_own,
+                "per_query_limit": per_query_limit,
+            },
             "query_log": query_log, "parent_count": len(parents),
             "parents": list(parents.values()), "enrichment_failures": enrichment_failures,
             "enrichment_cap": 25,

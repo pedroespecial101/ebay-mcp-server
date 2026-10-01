@@ -8,6 +8,7 @@ from functools import wraps
 import httpx
 import pytest
 
+from ebay_auth import ebay_auth
 from ebay_auth.ebay_auth import requested_scopes
 from ebay_mcp.insights.client import SellerInsightsClient
 from ebay_mcp.insights.service import (
@@ -66,9 +67,12 @@ async def test_orders_are_filtered_and_strip_buyer_data():
             "creationDate": "2026-09-15T10:00:00Z", "buyer": {"username": "private"},
             "shippingStep": {"shipTo": {"addressLine1": "private"}},
             "cancelStatus": {"cancelState": "NONE_REQUESTED"},
+            "paymentSummary": {"refunds": [{"amount": {"value": "3.04", "currency": "GBP"}}]},
             "lineItems": [
                 {"legacyItemId": "123", "sku": "FS101", "quantity": 2,
                  "lineItemCost": {"value": "6.08", "currency": "GBP"},
+                 "refunds": [{"refundAmount": {"value": "3.04", "currency": "GBP"},
+                              "refundDate": "2026-09-20T12:00:00Z"}],
                  "variationAspects": [{"name": "Exact Key", "value": "FS101"}]},
                 {"legacyItemId": "999", "sku": "OTHER", "quantity": 1},
             ],
@@ -81,6 +85,10 @@ async def test_orders_are_filtered_and_strip_buyer_data():
     assert len(result["lines"]) == 1
     assert result["lines"][0]["variation_sku"] == "FS101"
     assert result["lines"][0]["realised_item_price_per_unit"]["value"] == "3.04"
+    assert result["lines"][0]["units"] == 2
+    assert result["lines"][0]["refunds"][0]["amount"]["value"] == "3.04"
+    assert result["lines"][0]["refunds"][0]["date"] == "2026-09-20T12:00:00Z"
+    assert result["lines"][0]["order_level_refund_present"] is True
     assert "private" not in str(result)
 
 
@@ -90,7 +98,8 @@ async def test_promotion_inventory_separates_paid_ads_and_discounts():
         path = request.url.path
         if path.endswith("/ad_campaign"):
             return httpx.Response(200, json={"campaigns": [{"campaignId": "55", "campaignName": "Keys",
-                "campaignStatus": "RUNNING", "startDate": "2026-08-14"}]})
+                "campaignStatus": "RUNNING", "startDate": "2026-08-14",
+                "fundingStrategy": {"fundingModel": "COST_PER_SALE", "adRateStrategy": "DYNAMIC"}}]})
         if path.endswith("/55/ad"):
             return httpx.Response(200, json={"ads": [{"listingId": "123", "bidPercentage": "17"},
                                                       {"listingId": "999", "bidPercentage": "8"}]})
@@ -105,8 +114,33 @@ async def test_promotion_inventory_separates_paid_ads_and_discounts():
         async with SellerInsightsClient(http, "test-token") as client:
             result = await get_promotion_inventory(client, listing_ids=["123"])
     assert result["paid_ads"][0]["bid_percentage"] == "17"
+    assert result["paid_ads"][0]["funding_model"] == "COST_PER_SALE"
+    assert result["paid_ads"][0]["ad_rate_strategy"] == "DYNAMIC"
     assert result["discounts"][0]["promotion_type"] == "MARKDOWN_SALE"
     assert len(result["paid_ads"]) == 1
+
+
+@async_test
+async def test_promotion_inventory_skips_offsite_and_marks_campaign_failures():
+    def handler(request):
+        path = request.url.path
+        if path.endswith("/ad_campaign"):
+            return httpx.Response(200, json={"campaigns": [
+                {"campaignId": "55", "channels": ["OFF_SITE"]},
+                {"campaignId": "56", "fundingStrategy": "COST_PER_SALE"},
+            ]})
+        if path.endswith("/56/ad"):
+            return httpx.Response(403)
+        if path.endswith("/promotion"):
+            return httpx.Response(200, json={"promotions": []})
+        raise AssertionError(path)
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as http:
+        async with SellerInsightsClient(http, "test-token") as client:
+            result = await get_promotion_inventory(client, listing_ids=["123"])
+    assert result["coverage"]["skipped_offsite_campaign_ids"] == ["55"]
+    assert result["coverage"]["campaign_ad_failures"][0]["campaign_id"] == "56"
+    assert result["coverage"]["campaign_scan_truncated"] is True
 
 
 @async_test
@@ -139,6 +173,30 @@ def test_reporting_scopes_are_opt_in(monkeypatch):
     assert all("sell.analytics.readonly" not in scope for scope in requested_scopes())
     monkeypatch.setenv("EBAY_ENABLE_REPORTING_SCOPES", "1")
     assert sum("readonly" in scope for scope in requested_scopes()) == 4
+
+
+@pytest.mark.parametrize("reporting_scopes", [False, True])
+def test_refresh_omits_scope_for_existing_grant(monkeypatch, reporting_scopes):
+    if reporting_scopes:
+        monkeypatch.setenv("EBAY_ENABLE_REPORTING_SCOPES", "1")
+    else:
+        monkeypatch.delenv("EBAY_ENABLE_REPORTING_SCOPES", raising=False)
+    captured = {}
+
+    class Response:
+        def raise_for_status(self):
+            pass
+
+        def json(self):
+            return {"access_token": "access"}
+
+    def post(*args, **kwargs):
+        captured.update(kwargs)
+        return Response()
+
+    monkeypatch.setattr(ebay_auth.requests, "post", post)
+    assert ebay_auth.refresh_access_token("client", "secret", "refresh") == "access"
+    assert "scope" not in captured["data"]
 
 
 @async_test
@@ -176,15 +234,32 @@ async def test_orders_paginate_and_include_ended_parent_ids():
 
 
 def test_competitor_relist_gap_is_not_misread_as_zero_sales():
+    search_config = {"series": "MRN", "exact_codes": [], "maker": None,
+                     "excluded_own_listing_ids": [], "per_query_limit": 30}
     previous = {"source": "eBay Browse active UK listings", "series": "MRN",
+        "search_config": search_config,
         "captured_at": "2026-09-01T00:00:00Z", "parents": [
             {"parent_item_id": "100", "quantity_sold": 7}]}
     current = {"source": "eBay Browse active UK listings", "series": "MRN",
+        "search_config": search_config,
         "captured_at": "2026-09-30T00:00:00Z", "parents": [
             {"parent_item_id": "200", "quantity_sold": 1}]}
     compared = compare_key_cohorts(previous, current)
     assert compared["parents"][0]["status"] == "absent_from_current_search"
     assert all(row["cumulative_sold_delta_proxy"] is None for row in compared["parents"])
+
+
+def test_competitor_comparison_rejects_search_config_mismatch_and_legacy():
+    previous = {"source": "eBay Browse active UK listings", "series": "MRN",
+                "captured_at": "2026-09-01T00:00:00Z", "parents": []}
+    current = {**previous, "captured_at": "2026-09-02T00:00:00Z"}
+    with pytest.raises(ValueError, match="search_config"):
+        compare_key_cohorts(previous, current)
+    previous["search_config"] = {"series": "MRN", "exact_codes": [], "maker": None,
+                                 "excluded_own_listing_ids": [], "per_query_limit": 30}
+    current["search_config"] = {**previous["search_config"], "per_query_limit": 20}
+    with pytest.raises(ValueError, match="same search configuration"):
+        compare_key_cohorts(previous, current)
 
 
 @async_test

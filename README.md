@@ -64,11 +64,12 @@ separately from broad series and multi-series parents.
 The reporting tools require the seller to authorize these additional OAuth
 scopes: `sell.analytics.readonly`, `sell.marketing.readonly`, and
 `sell.fulfillment.readonly`. Existing refresh tokens cannot gain them through
-refresh. `EBAY_ENABLE_REPORTING_SCOPES=1` opts the *authorization flow* into
-requesting them; it does not reauthorize the account by itself and is off by
-default so existing seller access continues unchanged. Reauthorize the seller
-deliberately before a live MCP acceptance check. Do not print or store OAuth
-tokens in reports. A `403` means the read is unavailable, not a zero metric.
+refresh, and refresh requests omit `scope` so the granted scope set is retained.
+Set `EBAY_ENABLE_REPORTING_SCOPES=1` only while deliberately running a seller
+reauthorization to request these scopes; changing the setting alone does not
+reauthorize the account. It is off by default so existing seller access
+continues unchanged. Do not print or store OAuth tokens in reports. A `403`
+means the read is unavailable, not a zero metric.
 Ad-report task creation is a reporting-only POST; it does not change listings
 or campaigns. Recently attributed ad sales remain provisional.
 

@@ -166,7 +166,12 @@ async def get_key_order_lines(
                     "units": line.get("quantity"),
                     "realised_item_price_per_unit": _unit_item_price(line),
                     "cancellation_state": (order.get("cancelStatus") or {}).get("cancelState"),
-                    "refund_present": bool(line.get("refunds")),
+                    "refunds": [
+                        {"amount": _safe_amount(refund.get("refundAmount")),
+                         "date": refund.get("refundDate")}
+                        for refund in (line.get("refunds") or []) if isinstance(refund, dict)
+                    ],
+                    "order_level_refund_present": bool((order.get("paymentSummary") or {}).get("refunds")),
                 })
         offset += len(orders)
         if not orders or len(orders) < 200 or (isinstance(total, int) and offset >= total):
@@ -210,14 +215,26 @@ async def get_promotion_inventory(
     wanted = set(listing_ids)
     campaigns, campaign_cap = await _paged(client, "/sell/marketing/v1/ad_campaign", "campaigns")
     ads: list[dict[str, Any]] = []
+    skipped_offsite: list[str] = []
+    campaign_failures: list[dict[str, str]] = []
     for campaign in campaigns:
         campaign_id = str(campaign.get("campaignId") or "")
         if not campaign_id.isdecimal():
             continue
-        campaign_ads, ad_cap = await _paged(
-            client, f"/sell/marketing/v1/ad_campaign/{campaign_id}/ad", "ads",
-            params={"listing_ids": ",".join(listing_ids)}, max_pages=5,
-        )
+        funding_strategy = campaign.get("fundingStrategy")
+        channels = campaign.get("channels") or []
+        if any(str(channel).upper() == "OFF_SITE" for channel in channels) or str(campaign.get("campaignType") or "").upper() == "PROMOTED_OFFSITE":
+            skipped_offsite.append(campaign_id)
+            continue
+        try:
+            campaign_ads, ad_cap = await _paged(
+                client, f"/sell/marketing/v1/ad_campaign/{campaign_id}/ad", "ads",
+                params={"listing_ids": ",".join(listing_ids)}, max_pages=5,
+            )
+        except SellerInsightsError as exc:
+            campaign_failures.append({"campaign_id": campaign_id, "reason": str(exc)})
+            campaign_cap = True
+            continue
         for ad in campaign_ads:
             if str(ad.get("listingId") or "") in wanted:
                 ads.append({
@@ -226,10 +243,10 @@ async def get_promotion_inventory(
                     "campaign_status": campaign.get("campaignStatus"),
                     "campaign_start_date": campaign.get("startDate"),
                     "campaign_end_date": campaign.get("endDate"),
-                    "funding_model": campaign.get("fundingStrategy"),
+                    "funding_model": funding_strategy.get("fundingModel") if isinstance(funding_strategy, dict) else funding_strategy,
                     "ad_id": ad.get("adId"), "ad_status": ad.get("adStatus"),
                     "bid_percentage": ad.get("bidPercentage"),
-                    "ad_rate_strategy": campaign.get("adRateStrategy"),
+                    "ad_rate_strategy": funding_strategy.get("adRateStrategy") if isinstance(funding_strategy, dict) else None,
                 })
         campaign_cap = campaign_cap or ad_cap
     promotion_error = None
@@ -270,6 +287,8 @@ async def get_promotion_inventory(
         "marketplace_id": "EBAY_GB", "listing_ids_requested": listing_ids,
         "paid_ads": ads, "discounts": discounts,
         "coverage": {"campaign_scan_truncated": campaign_cap, "promotion_scan_truncated": promotion_cap,
+                     "skipped_offsite_campaign_ids": skipped_offsite,
+                     "campaign_ad_failures": campaign_failures,
                      "discount_coverage_error": promotion_error},
         "note": "A paid ad rate is a seller fee percentage; a markdown is a buyer-facing price reduction.",
     }

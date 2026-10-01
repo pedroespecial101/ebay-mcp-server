@@ -56,17 +56,25 @@ proof there is no promotion. A paid ad rate is a seller fee, not a buyer
 markdown.
 
 Call `seller_get_key_order_lines` for both windows and the 90-day context,
-including ended/relisted ItemIDs. This tool projects only dates, ItemID,
-variation SKU/selectors, units, realised item price, cancellation/refund state.
-Before interpreting variation demand, reconcile its order-line units and
-cancellations with `TRANSACTION`; the metrics can differ by definition and
-timing. Join current and historical availability to distinguish absent demand
-from a key that was unavailable.
+including ended/relisted ItemIDs. The tool projects dates, ItemID, variation
+SKU/selectors, purchased units, realised item price, cancellation state, and
+line refund amount/date, plus whether the order has an order-level refund.
+Refund records do not include refunded quantity: keep purchased units unchanged
+and mark adjusted variation units **unknown** whenever refunds are present.
+Order-level refunds cannot be assigned to a variation and must also leave
+adjusted variation units unknown. Before interpreting variation demand,
+reconcile purchased order-line units and cancellations with `TRANSACTION`; the
+metrics can differ by definition and timing. Join current and historical
+availability to distinguish absent demand from a key that was unavailable.
 
 ## 4. Matched competitors
 
 Use `research_snapshot_key_cohort` for each series with a bounded list of
-exact key codes, maker, and the seller's ItemIDs to exclude. Review the
+exact key codes, maker, the seller's ItemIDs to exclude, and the per-query
+limit. Store each snapshot's normalized `search_config`; only compare snapshots
+whose series, exact codes, maker, excluded IDs, and per-query limit all match.
+Older snapshots without `search_config` cannot be compared and must be
+recaptured. Review the
 candidate physical key form and selector before calling it an exact match.
 Compare live asking price plus postage, listing age, and parent cumulative
 sold signal within exact-code, same-series, cut-to-code, and broad multi-series
