@@ -7,6 +7,7 @@ from functools import wraps
 
 import httpx
 import pytest
+from fastmcp import Client
 
 from ebay_auth import ebay_auth
 from ebay_auth.ebay_auth import requested_scopes
@@ -16,6 +17,8 @@ from ebay_mcp.insights.service import (
     get_traffic_report, start_ad_report,
 )
 from ebay_mcp.research.key_cohort import compare_key_cohorts
+from ebay_mcp.research import server as research_server
+from ebay_mcp.research.models import SearchResponse
 
 
 def async_test(fn):
@@ -71,7 +74,7 @@ async def test_orders_are_filtered_and_strip_buyer_data():
             "lineItems": [
                 {"legacyItemId": "123", "sku": "FS101", "quantity": 2,
                  "lineItemCost": {"value": "6.08", "currency": "GBP"},
-                 "refunds": [{"refundAmount": {"value": "3.04", "currency": "GBP"},
+                 "refunds": [{"amount": {"value": "3.04", "currency": "GBP"},
                               "refundDate": "2026-09-20T12:00:00Z"}],
                  "variationAspects": [{"name": "Exact Key", "value": "FS101"}]},
                 {"legacyItemId": "999", "sku": "OTHER", "quantity": 1},
@@ -195,6 +198,7 @@ def test_refresh_omits_scope_for_existing_grant(monkeypatch, reporting_scopes):
         return Response()
 
     monkeypatch.setattr(ebay_auth.requests, "post", post)
+    monkeypatch.setattr(ebay_auth, "_save_to_env", lambda values: None)
     assert ebay_auth.refresh_access_token("client", "secret", "refresh") == "access"
     assert "scope" not in captured["data"]
 
@@ -260,6 +264,35 @@ def test_competitor_comparison_rejects_search_config_mismatch_and_legacy():
     current["search_config"] = {**previous["search_config"], "per_query_limit": 20}
     with pytest.raises(ValueError, match="same search configuration"):
         compare_key_cohorts(previous, current)
+
+
+def test_snapshot_queries_are_canonical_and_match_search_config():
+    class FakeEbayClient:
+        def __init__(self):
+            self.queries = []
+
+        async def search_items(self, request):
+            self.queries.append(request.query)
+            return SearchResponse(total=0, limit=request.limit, offset=request.offset)
+
+    fake = FakeEbayClient()
+
+    async def run():
+        async with Client(research_server.create_server(fake)) as client:
+            return await client.call_tool("snapshot_key_cohort", {
+                "series": "mrn", "exact_codes": ["FS101", "FS101", "FS100"],
+                "maker": "  Bosch ", "own_listing_ids": ["2", "1", "2"],
+                "per_query_limit": 10,
+            })
+
+    result = asyncio.run(run())
+    assert not result.is_error
+    assert fake.queries == ["MRN classic car key", "FS100 Bosch original key", "FS101 Bosch original key"]
+    snapshot = result.data
+    assert snapshot["search_config"] == {
+        "series": "MRN", "exact_codes": ["FS100", "FS101"], "maker": "bosch",
+        "excluded_own_listing_ids": ["1", "2"], "per_query_limit": 10,
+    }
 
 
 @async_test

@@ -112,6 +112,7 @@ def create_server(client: EbayClient | None = None) -> FastMCP:
             raise ValueError("series must be a short alphabetic key prefix.")
         if len(exact_codes) > 10 or any(not re.fullmatch(r"[A-Z]{1,5}[0-9]{1,5}", code) for code in exact_codes):
             raise ValueError("Provide at most ten exact alphanumeric key codes.")
+        exact_codes = sorted(set(exact_codes))
         if not 1 <= per_query_limit <= 50:
             raise ValueError("per_query_limit must be 1-50.")
         normalized_maker = maker.strip() if maker and maker.strip() else None
@@ -165,7 +166,7 @@ def create_server(client: EbayClient | None = None) -> FastMCP:
             "series": series, "exact_codes_requested": exact_codes, "maker": normalized_maker,
             "search_config": {
                 "series": series,
-                "exact_codes": sorted(set(exact_codes)),
+                "exact_codes": exact_codes,
                 "maker": normalized_maker.casefold() if normalized_maker else None,
                 "excluded_own_listing_ids": normalized_own,
                 "per_query_limit": per_query_limit,

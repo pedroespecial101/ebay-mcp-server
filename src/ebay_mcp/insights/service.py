@@ -167,7 +167,7 @@ async def get_key_order_lines(
                     "realised_item_price_per_unit": _unit_item_price(line),
                     "cancellation_state": (order.get("cancelStatus") or {}).get("cancelState"),
                     "refunds": [
-                        {"amount": _safe_amount(refund.get("refundAmount")),
+                        {"amount": _safe_amount(refund.get("amount")),
                          "date": refund.get("refundDate")}
                         for refund in (line.get("refunds") or []) if isinstance(refund, dict)
                     ],
