@@ -38,7 +38,7 @@ from models.ebay.trading import (
 from utils.api_utils import get_standard_ebay_headers
 
 INVENTORY_OFFERS_URL = "https://api.ebay.com/sell/inventory/v1/offer"
-VERIFICATION_TTL = timedelta(minutes=15)
+VERIFICATION_TTL = timedelta(hours=4)
 SUPPORTED_LISTING_TYPES = {"FixedPriceItem", "StoresFixedPrice"}
 _VERIFICATIONS: dict[str, dict[str, Any]] = {}
 _APPEND_LOCKS: dict[str, asyncio.Lock] = {}
