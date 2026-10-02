@@ -111,6 +111,7 @@ from ebay_mcp.catalog.server import catalog_mcp
 from ebay_mcp.media.server import media_mcp
 from ebay_mcp.listing.server import listing_mcp
 from ebay_mcp.trading.server import trading_mcp
+from ebay_mcp.fulfillment.server import fulfillment_mcp
 
 # Create the main MCP server
 instruction_text = """This MCP server provides one tailnet-ready endpoint for eBay UK research and seller workflows.
@@ -165,6 +166,7 @@ Use the mandatory SKU as the idempotency and recovery key. Retry the same SKU an
 AVAILABLE OPERATIONS:
 • Inventory Items: CREATE, GET, MODIFY, DELETE
 • Offers: CREATE, GET, MODIFY, PUBLISH, WITHDRAW
+• Fulfillment: GET ORDERS (fulfillment_get_orders)
 • Catalog: SEARCH BY GTIN (catalogAPI_search_by_gtin)
 
 KEY CONCEPTS:
@@ -228,7 +230,9 @@ def mount_servers():
 
     mcp.mount(trading_mcp, namespace="trading")
     logger.info("Mounted narrow Trading API MCP server")
-    
+
+    mcp.mount(fulfillment_mcp, namespace="fulfillment")
+    logger.info("Mounted fulfillment API MCP server")
 
 # Mount all servers
 mount_servers()
